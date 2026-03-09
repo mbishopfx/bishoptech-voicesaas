@@ -1,0 +1,20 @@
+[
+  {
+    "name": "Warm Front Desk Female",
+    "provider": "vapi",
+    "providerVoiceId": "preset_warm_female_01",
+    "styleNotes": "Friendly, patient, clear confirmations"
+  },
+  {
+    "name": "Confident Scheduler Male",
+    "provider": "vapi",
+    "providerVoiceId": "preset_confident_male_01",
+    "styleNotes": "Direct, professional, concise"
+  },
+  {
+    "name": "Premium Concierge Neutral",
+    "provider": "vapi",
+    "providerVoiceId": "preset_concierge_neutral_01",
+    "styleNotes": "High-trust, polished, empathetic"
+  }
+]
