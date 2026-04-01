@@ -2,6 +2,7 @@ import { AppShell } from '@/components/app-shell';
 import {
   ClientAgentsSection,
   ClientCampaignsSection,
+  ClientControlDeckSection,
   ClientMetricsGrid,
   ClientOutcomeChartSection,
   ClientRecentCallsSection,
@@ -25,6 +26,8 @@ export default async function ClientPage() {
       description="Your live voice operation at a glance."
       actions={null}
     >
+      <ClientControlDeckSection data={data} />
+
       <ClientMetricsGrid metrics={data.metrics} />
 
       <div className="command-content-grid">

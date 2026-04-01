@@ -1,17 +1,17 @@
 import type { Metadata } from 'next';
-import { Inter, Space_Grotesk } from 'next/font/google';
+import { Manrope, Sora } from 'next/font/google';
 import type { ReactNode } from 'react';
 
 import '@/app/globals.css';
 import { appConfig } from '@/lib/app-config';
 
-const bodyFont = Inter({
+const bodyFont = Manrope({
   subsets: ['latin'],
   variable: '--font-body',
   display: 'swap',
 });
 
-const labelFont = Space_Grotesk({
+const labelFont = Sora({
   subsets: ['latin'],
   variable: '--font-label',
   display: 'swap',

@@ -1,6 +1,6 @@
 import Link from 'next/link';
 import type { Route } from 'next';
-import { Bot, Building2, PhoneCall, Send, Sparkles } from 'lucide-react';
+import { AudioLines, Bot, Building2, PhoneCall, Send, Sparkles } from 'lucide-react';
 
 import { formatRelativeTime } from '@/lib/format';
 import type { DemoBlueprintSummary, MetricCard, OrganizationSummary, RecentCall } from '@/lib/types';
@@ -21,6 +21,134 @@ function SectionAction({ href, label }: ActionProps) {
     <Link className="text-link" href={href as Route}>
       {label}
     </Link>
+  );
+}
+
+export function AdminControlDeckSection({
+  metrics,
+  organizations,
+  recentCalls,
+}: {
+  metrics: MetricCard[];
+  organizations: OrganizationSummary[];
+  recentCalls: RecentCall[];
+}) {
+  const activeCall = recentCalls[0];
+  const activeOrganizations = organizations.filter((organization) => organization.isActive).length;
+  const liveAgents = organizations.reduce((sum, organization) => sum + organization.liveAgentCount, 0);
+  const surfacedMetrics = metrics.slice(0, 4);
+
+  return (
+    <section className="glass-card command-control-deck">
+      <div className="command-control-head">
+        <div>
+          <span className="eyebrow-text">Platform control</span>
+          <h2>Live operations and account orchestration</h2>
+          <p>
+            Bishop Tech now treats the admin surface like a real control room: account load, active traffic, routing,
+            and rollout health all inside one view.
+          </p>
+        </div>
+        <span className="command-status-pill is-live">Production online</span>
+      </div>
+
+      <div className="command-session-grid">
+        <div className="command-session-panel">
+          <div className="command-panel-head">
+            <div>
+              <span className="eyebrow-text">Active session</span>
+              <h3>{activeCall ? `${activeCall.organizationName} • ${activeCall.direction} call` : 'Waiting for traffic'}</h3>
+            </div>
+            <AudioLines size={18} />
+          </div>
+
+          <p className="command-card-copy">
+            {activeCall?.summary ??
+              'Recent call summaries will surface here once the first live conversations land in the platform.'}
+          </p>
+
+          <div className="command-waveform" aria-hidden="true">
+            {Array.from({ length: 12 }).map((_, index) => (
+              <span key={index} style={{ animationDelay: `${index * 110}ms` }} />
+            ))}
+          </div>
+
+          <div className="command-stat-strip">
+            <div>
+              <span>Outcome</span>
+              <strong>{activeCall?.outcome ?? 'Idle'}</strong>
+            </div>
+            <div>
+              <span>Duration</span>
+              <strong>{activeCall?.duration ?? 'No recent call'}</strong>
+            </div>
+            <div>
+              <span>Route</span>
+              <strong>{activeCall?.direction ?? 'standby'}</strong>
+            </div>
+          </div>
+        </div>
+
+        <div className="command-console-stack">
+          <article className="command-transcript-panel">
+            <div className="command-panel-head">
+              <div>
+                <span className="eyebrow-text">Operator feed</span>
+                <h3>Control notes</h3>
+              </div>
+            </div>
+
+            <div className="command-console-log">
+              <p>
+                <strong>[caller]</strong> {activeCall?.summary ?? 'No live transcript available yet.'}
+              </p>
+              <p>
+                <strong>[system]</strong> {activeOrganizations} active organizations currently provisioned across the
+                Bishop Tech platform.
+              </p>
+              <p>
+                <strong>[ops]</strong> {liveAgents} live assistants visible across onboarding, demo, and production
+                workspaces.
+              </p>
+            </div>
+          </article>
+
+          <article className="command-routing-panel">
+            <div className="command-panel-head">
+              <div>
+                <span className="eyebrow-text">Routing logic</span>
+                <h3>Runtime checkpoints</h3>
+              </div>
+            </div>
+
+            <div className="command-route-list">
+              <div>
+                <span>Account health sweep</span>
+                <strong>{activeOrganizations} live</strong>
+              </div>
+              <div>
+                <span>Call queue visibility</span>
+                <strong>{recentCalls.length} recent events</strong>
+              </div>
+              <div>
+                <span>Assistant coverage</span>
+                <strong>{liveAgents} active agents</strong>
+              </div>
+            </div>
+          </article>
+        </div>
+
+        <div className="command-mini-grid">
+          {surfacedMetrics.map((metric) => (
+            <article key={metric.label} className={`command-mini-card tone-${metric.tone ?? 'neutral'}`}>
+              <span>{metric.label}</span>
+              <strong>{metric.value}</strong>
+              <p>{metric.delta}</p>
+            </article>
+          ))}
+        </div>
+      </div>
+    </section>
   );
 }
 

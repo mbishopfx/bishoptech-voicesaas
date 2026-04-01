@@ -46,6 +46,129 @@ export function ClientMetricsGrid({ metrics }: { metrics: MetricCard[] }) {
   );
 }
 
+export function ClientControlDeckSection({
+  data,
+}: {
+  data: ClientDashboardData;
+}) {
+  const activeCall = data.recentCalls[0];
+  const primaryAgent = data.agents[0];
+  const surfacedMetrics = data.metrics.slice(0, 4);
+
+  return (
+    <section className="glass-card command-control-deck">
+      <div className="command-control-head">
+        <div>
+          <span className="eyebrow-text">Workspace control</span>
+          <h2>{data.organizationName} live voice operations</h2>
+          <p>
+            The client workspace now opens like a live command deck for agents, recent traffic, outbound flow, and the
+            current reporting state.
+          </p>
+        </div>
+        <span className="command-status-pill is-live">{data.planName ?? 'Managed workspace'}</span>
+      </div>
+
+      <div className="command-session-grid">
+        <div className="command-session-panel">
+          <div className="command-panel-head">
+            <div>
+              <span className="eyebrow-text">Live workspace session</span>
+              <h3>{activeCall ? `${activeCall.direction} conversation` : 'Workspace standing by'}</h3>
+            </div>
+            <AudioLines size={18} />
+          </div>
+
+          <p className="command-card-copy">
+            {activeCall?.summary ??
+              'Recent call summaries will surface here as soon as the workspace starts receiving or placing traffic.'}
+          </p>
+
+          <div className="command-waveform" aria-hidden="true">
+            {Array.from({ length: 12 }).map((_, index) => (
+              <span key={index} style={{ animationDelay: `${index * 110}ms` }} />
+            ))}
+          </div>
+
+          <div className="command-stat-strip">
+            <div>
+              <span>Primary agent</span>
+              <strong>{primaryAgent?.name ?? 'Pending'}</strong>
+            </div>
+            <div>
+              <span>Outcome</span>
+              <strong>{activeCall?.outcome ?? 'Idle'}</strong>
+            </div>
+            <div>
+              <span>Campaigns</span>
+              <strong>{data.campaigns.length}</strong>
+            </div>
+          </div>
+        </div>
+
+        <div className="command-console-stack">
+          <article className="command-transcript-panel">
+            <div className="command-panel-head">
+              <div>
+                <span className="eyebrow-text">AI console</span>
+                <h3>Current workspace context</h3>
+              </div>
+            </div>
+
+            <div className="command-console-log">
+              <p>
+                <strong>[agent]</strong> {primaryAgent?.purpose ?? 'No assistant has been provisioned yet.'}
+              </p>
+              <p>
+                <strong>[system]</strong> {data.phoneNumbers.length || 0} active numbers available inside the
+                workspace.
+              </p>
+              <p>
+                <strong>[ops]</strong> {data.recentBlueprints.length} saved demo blueprints and {data.campaigns.length}{' '}
+                outbound campaigns currently visible.
+              </p>
+            </div>
+          </article>
+
+          <article className="command-routing-panel">
+            <div className="command-panel-head">
+              <div>
+                <span className="eyebrow-text">Routing logic</span>
+                <h3>Next operational checks</h3>
+              </div>
+            </div>
+
+            <div className="command-route-list">
+              <div>
+                <span>Agent sync state</span>
+                <strong>{primaryAgent?.lastSyncedAt ?? 'Pending sync'}</strong>
+              </div>
+              <div>
+                <span>Recent call load</span>
+                <strong>{data.recentCalls.length} calls</strong>
+              </div>
+              <div>
+                <span>Timezone</span>
+                <strong>{data.timezone}</strong>
+              </div>
+            </div>
+          </article>
+        </div>
+
+        <div className="command-mini-grid">
+          {surfacedMetrics.map((metric) => (
+            <article key={metric.label} className={`command-mini-card tone-${metric.tone ?? 'neutral'}`}>
+              <span>{metric.label}</span>
+              <strong>{metric.value}</strong>
+              <p>{metric.delta}</p>
+            </article>
+          ))}
+        </div>
+      </div>
+    </section>
+  );
+}
+
 export function ClientAgentsSection({
   agents,
   organizationName,

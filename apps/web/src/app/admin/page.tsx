@@ -1,5 +1,6 @@
 import { AppShell } from '@/components/app-shell';
 import {
+  AdminControlDeckSection,
   AdminBlueprintHistorySection,
   AdminMetricsGrid,
   AdminRecentCallsSection,
@@ -15,6 +16,8 @@ export default async function AdminPage() {
 
   return (
     <AppShell current="admin" viewer={viewer} activeNav="dashboard" headerMode="hidden">
+      <AdminControlDeckSection metrics={data.metrics} organizations={data.organizations} recentCalls={data.recentCalls} />
+
       <AdminMetricsGrid metrics={data.metrics} />
 
       <div className="command-content-grid">

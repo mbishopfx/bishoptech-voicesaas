@@ -3,7 +3,6 @@ import type { Route } from 'next';
 import {
   ArrowRight,
   AudioLines,
-  ChartNoAxesCombined,
   CheckCircle2,
   LockKeyhole,
   PhoneCall,
@@ -27,68 +26,92 @@ type LoginPageProps = {
   }>;
 };
 
-const valuePills = ['10 live personas to test', '5 inbound + 5 outbound', 'OpenAI Realtime + cedar/marin'];
+const heroSignals = [
+  { label: 'Latency', value: '120ms', detail: 'voice routing response' },
+  { label: 'Coverage', value: '24/7', detail: 'inbound and outbound flow' },
+  { label: 'Voices', value: '10 live', detail: 'homepage personas ready to test' },
+];
+
+const launchInclusions = [
+  'Ten live Vapi personas embedded on the homepage for instant proof.',
+  'Inbound and outbound assistants mapped to your actual business flow.',
+  'Workspace access for transcripts, recordings, campaigns, and live reporting.',
+  'Lean monthly management after setup instead of an inflated agency retainer.',
+];
 
 const platformCards = [
   {
-    eyebrow: 'Unified workspace',
-    title: 'See the entire voice operation from one login.',
+    eyebrow: 'Live persona lab',
+    title: 'Let buyers hear the stack before they ever book.',
     description:
-      'Every assistant, call, lead, transcript, recording, and outbound campaign stays tied to the same BishopTech Voice workspace instead of getting buried across tools and inboxes.',
-    icon: ChartNoAxesCombined,
-    tone: 'large',
+      'The homepage exposes ten live assistants tied to your Vapi account, so visitors can evaluate tone, pacing, and transcript quality in the browser.',
+    icon: AudioLines,
   },
   {
-    eyebrow: 'Live demos',
-    title: 'Let visitors test real personas before they book.',
+    eyebrow: 'Command center',
+    title: 'Operate calls, campaigns, and routing from one interface.',
     description:
-      'The homepage now exposes ten live assistants so buyers can hear the stack instantly instead of waiting for a custom demo call.',
-    icon: Sparkles,
-    tone: 'small',
+      'The platform keeps inbound coverage, outbound campaigns, recordings, and workspace reporting inside the same Bishop Tech control surface.',
+    icon: PhoneCall,
   },
   {
-    eyebrow: 'Outbound',
-    title: 'Run follow-up and blast campaigns without CSV chaos.',
+    eyebrow: 'Workflow boards',
+    title: 'Show the handoff logic before anything goes live.',
     description:
-      'Clean numbers, attach the right script, and launch outbound campaigns from the same stack that handles daily call routing.',
-    icon: Send,
-    tone: 'small',
-  },
-  {
-    eyebrow: 'Workflow control',
-    title: 'Map handoffs, objections, and call logic visually.',
-    description:
-      'Use the built-in canvas to show exactly how inbound, outbound, and specialist handoff should work before anything goes live.',
+      'Visual workflow maps make objections, escalations, specialist routing, and follow-up paths easier to approve and maintain.',
     icon: Workflow,
-    tone: 'wide',
+  },
+  {
+    eyebrow: 'Managed launch',
+    title: 'Keep ownership without paying for agency theater.',
+    description:
+      'Bishop Tech handles the build, prompt structure, provisioning, and optimization while keeping ongoing management intentionally lean.',
+    icon: ShieldCheck,
   },
 ];
 
-const provisioningItems = [
-  'Ten live homepage personas for instant browser testing and meeting qualification.',
-  'Inbound voice assistants for missed calls, lead capture, qualification, and coverage.',
-  'Outbound campaign assistants for follow-up, reminders, win-back, and reactivation.',
-  'Dashboard access for leads, transcripts, recordings, campaigns, and reporting.',
+const workflowRail = [
+  {
+    id: '01',
+    title: 'Capture the intent',
+    body: 'Voice, transcript, caller context, and first-party business rules stay connected from the first utterance.',
+  },
+  {
+    id: '02',
+    title: 'Route the response',
+    body: 'Assistants can resolve, escalate, schedule, qualify, or trigger outbound follow-up from the same orchestration layer.',
+  },
+  {
+    id: '03',
+    title: 'Close the loop',
+    body: 'Calls, outcomes, recordings, and campaigns land back in the workspace so the operation stays visible after launch.',
+  },
+];
+
+const pricingPoints = [
+  'One-time setup for planning, provisioning, prompt architecture, and launch prep.',
+  '$99 monthly management after launch.',
+  'Bring your own API stack and keep visibility into the operating layer.',
 ];
 
 const onboardingSteps = [
   {
     step: '01',
-    title: 'Test the voices and book the strategy call',
+    title: 'Test the personas and define the operating model',
     description:
-      'Visitors can hear the personas on the homepage, then book the call once they know the quality, speed, and tone fit the brand.',
+      'Visitors hear the assistants first, then we scope the production flow around your calls, objections, goals, and escalation paths.',
   },
   {
     step: '02',
-    title: 'We build and provision the stack',
+    title: 'Provision the workspace and voice stack',
     description:
-      'BishopTech configures the assistants, routing, prompt structure, dashboard access, and reporting layers for the business.',
+      'Bishop Tech configures assistants, routing, numbers, workflow boards, dashboards, and live demo surfaces around the approved plan.',
   },
   {
     step: '03',
-    title: 'Launch with lean ongoing management',
+    title: 'Launch with a clean reporting layer',
     description:
-      'You get the platform plus $99 monthly management so the system stays tuned without paying an agency thousands just to babysit it.',
+      'Your team gets a real control surface for calls, leads, recordings, and campaigns instead of waiting on an agency to explain what happened.',
   },
 ];
 
@@ -106,6 +129,7 @@ export default async function LoginPage({ searchParams }: LoginPageProps) {
     <main className="voice-landing-shell">
       <div className="voice-orb voice-orb-mint" />
       <div className="voice-orb voice-orb-violet" />
+      <div className="voice-grid-overlay" />
 
       <nav className="voice-topbar">
         <div className="voice-topbar-group">
@@ -117,10 +141,10 @@ export default async function LoginPage({ searchParams }: LoginPageProps) {
           </a>
 
           <div className="voice-nav-links">
-            <a href="#personas">Live personas</a>
+            <a href="#personas">Personas</a>
             <a href="#platform">Platform</a>
+            <a href="#workflow">Workflow</a>
             <a href="#pricing">Pricing</a>
-            <a href="#onboarding">Onboarding</a>
             <a href="#insights">Insights</a>
           </div>
         </div>
@@ -141,15 +165,14 @@ export default async function LoginPage({ searchParams }: LoginPageProps) {
       <section className="voice-hero-section" id="top">
         <div className="voice-hero-grid">
           <div className="voice-hero-copy">
-            <span className="voice-badge">Live AI voice personas on the homepage</span>
+            <span className="voice-badge">Bishop Tech voice platform</span>
             <h1>
-              Let buyers hear ten distinct <span>voice agents</span> before they ever book the call.
+              A voice AI platform that feels like a <span>real command center</span>, not a loose stack of tools.
             </h1>
             <p>
-              BishopTech Voice now gives prospects instant proof. They can test five inbound and five outbound
-              assistants in the browser, hear realistic low-latency voice output, and understand the value before the
-              meeting even starts. Then you take them into a real platform for onboarding, transcripts, recordings,
-              campaigns, and ongoing management.
+              This project now sells and operates the same way. Buyers can test live personas on the homepage, then
+              move into a Bishop Tech workspace for onboarding, routing, transcripts, recordings, workflow boards, and
+              outbound campaigns.
             </p>
 
             <div className="voice-cta-row">
@@ -157,110 +180,149 @@ export default async function LoginPage({ searchParams }: LoginPageProps) {
                 Test live personas
                 <ArrowRight size={18} />
               </a>
-              <a
-                className="voice-secondary-button"
-                href="mailto:matt@bishoptech.dev?subject=BishopTech%20Voice%20Strategy%20Call"
-              >
-                Book strategy call
+              <a className="voice-secondary-button" href="#platform">
+                Explore the platform
               </a>
             </div>
 
-            <div className="voice-pill-row">
-              {valuePills.map((pill) => (
-                <span key={pill} className="voice-pill">
-                  {pill}
-                </span>
+            <div className="voice-stat-grid">
+              {heroSignals.map((signal) => (
+                <article key={signal.label} className="glass-card voice-stat-card">
+                  <span>{signal.label}</span>
+                  <strong>{signal.value}</strong>
+                  <p>{signal.detail}</p>
+                </article>
               ))}
             </div>
           </div>
 
-          <aside className="glass-card voice-login-card" id="sign-in">
-            <div>
-              <span className="voice-section-eyebrow">Secure entry</span>
-              <h2>Sign in to BishopTech Voice</h2>
-              <p>
-                Existing accounts can sign in now. New workspaces are provisioned after the kickoff call and setup
-                approval.
-              </p>
+          <aside className="glass-card voice-signal-panel">
+            <div className="voice-panel-head">
+              <div>
+                <span className="voice-section-eyebrow">Live signal</span>
+                <h2>Mission control for demos, routing, and launch</h2>
+              </div>
+              <span className="voice-live-chip">Active</span>
             </div>
 
-            <form className="voice-login-form" action={loginAction}>
-              <label className="field">
-                <span>Email</span>
-                <input name="email" type="email" placeholder="you@yourbusiness.com" required />
-              </label>
-              <label className="field">
-                <span>Password</span>
-                <input name="password" type="password" placeholder="Enter your password" required />
-              </label>
-              <button className="voice-primary-button voice-button-full" type="submit">
-                Enter platform
-              </button>
-            </form>
+            <div className="voice-panel-console">
+              <div className="voice-signal-field">
+                <div className="voice-signal-header">
+                  <span>BishopTech Voice OS</span>
+                  <span>NODE-7 / ORD</span>
+                </div>
+                <pre className="voice-signal-ascii">{`[::] live transcript   -> intent parse
+[//] semantic routing -> agent dispatch
+[==] crm context      -> next best action
+[##] outbound queue   -> follow-up trigger`}</pre>
+                <div className="voice-signal-meters" aria-hidden="true">
+                  {Array.from({ length: 11 }).map((_, index) => (
+                    <span key={index} style={{ animationDelay: `${index * 120}ms` }} />
+                  ))}
+                </div>
+              </div>
 
-            <div className="voice-login-note">
-              <span className="voice-section-eyebrow">What launch includes</span>
-              <div className="voice-check-list">
-                {provisioningItems.map((item) => (
-                  <div key={item} className="voice-check-row">
-                    <CheckCircle2 size={16} />
-                    <p>{item}</p>
+              <div className="voice-panel-stack">
+                <article className="voice-console-card">
+                  <span className="voice-section-eyebrow">AI console</span>
+                  <div className="voice-console-log">
+                    <p>
+                      <strong>[agent]</strong> I can answer questions, qualify callers, and route the conversation in
+                      real time.
+                    </p>
+                    <p>
+                      <strong>[system]</strong> Vapi assistant live, transcript streaming, escalation path armed.
+                    </p>
+                    <p>
+                      <strong>[ops]</strong> Homepage demos and client workspaces now share the same Bishop Tech design
+                      language.
+                    </p>
                   </div>
-                ))}
+                </article>
+
+                <article className="voice-console-card">
+                  <span className="voice-section-eyebrow">Launch stack</span>
+                  <div className="voice-console-list">
+                    <div>
+                      <strong>Homepage personas</strong>
+                      <p>Five inbound and five outbound assistants live in-browser.</p>
+                    </div>
+                    <div>
+                      <strong>Workflow control</strong>
+                      <p>Routing boards, onboarding studio, and campaign surfaces inside the product.</p>
+                    </div>
+                    <div>
+                      <strong>Workspace reporting</strong>
+                      <p>Calls, outcomes, recordings, and summaries stay visible after launch.</p>
+                    </div>
+                  </div>
+                </article>
               </div>
             </div>
-
-            {errorMessage ? <p className="notice error-notice">{errorMessage}</p> : null}
           </aside>
         </div>
+      </section>
 
-        <div className="glass-card voice-command-board">
-          <div className="voice-board-header">
-            <div className="voice-board-status">
-              <span className="voice-live-dot" />
-              <span>BishopTech Voice demo layer</span>
+      <section className="voice-entry-strip" id="sign-in">
+        <div className="glass-card voice-login-card">
+          <div className="voice-panel-head">
+            <div>
+              <span className="voice-section-eyebrow">Secure entry</span>
+              <h2>Sign in to the Bishop Tech workspace</h2>
             </div>
-            <span className="voice-board-chip">Ten live persona testers</span>
           </div>
+          <p>
+            Existing customers can enter now. New workspaces are provisioned after the kickoff call so the platform is
+            scoped around the real business before anything goes live.
+          </p>
 
-          <div className="voice-board-grid">
-            <article className="voice-board-panel is-primary">
-              <div className="voice-panel-icon">
-                <PhoneCall size={18} />
-              </div>
-              <strong>Five inbound styles</strong>
-              <p>Warm front desk, concierge, medical intake, dispatch, and legal-style intake ready for live browser tests.</p>
-            </article>
+          <form className="voice-login-form" action={loginAction}>
+            <label className="field">
+              <span>Email</span>
+              <input name="email" type="email" placeholder="you@yourbusiness.com" required />
+            </label>
+            <label className="field">
+              <span>Password</span>
+              <input name="password" type="password" placeholder="Enter your password" required />
+            </label>
+            <button className="voice-primary-button voice-button-full" type="submit">
+              Enter platform
+            </button>
+          </form>
 
-            <article className="voice-board-panel">
-              <div className="voice-panel-icon">
-                <Send size={18} />
-              </div>
-              <strong>Five outbound styles</strong>
-              <p>Callbacks, promos, reminders, consultative follow-up, and gentle win-back sequences ready to compare side by side.</p>
-            </article>
+          {errorMessage ? <p className="notice error-notice">{errorMessage}</p> : null}
+        </div>
 
-            <article className="voice-board-panel">
-              <div className="voice-panel-icon">
-                <AudioLines size={18} />
-              </div>
-              <strong>Transcript proof</strong>
-              <p>Visitors can watch the transcript stream in real time while they listen to the assistant handle their questions.</p>
-            </article>
+        <div className="voice-utility-grid">
+          <article className="glass-card voice-utility-card">
+            <span className="voice-section-eyebrow">Included at launch</span>
+            <div className="voice-check-list">
+              {launchInclusions.map((item) => (
+                <div key={item} className="voice-check-row">
+                  <CheckCircle2 size={16} />
+                  <p>{item}</p>
+                </div>
+              ))}
+            </div>
+          </article>
 
-            <article className="voice-board-panel is-visual">
-              <div className="voice-waveform">
-                {Array.from({ length: 13 }).map((_, index) => (
-                  <span key={index} style={{ animationDelay: `${index * 120}ms` }} />
-                ))}
+          <article className="glass-card voice-utility-card is-highlight">
+            <span className="voice-section-eyebrow">Project scope</span>
+            <div className="voice-console-list">
+              <div>
+                <strong>Homepage</strong>
+                <p>Live persona testing and direct proof of voice quality.</p>
               </div>
-              <div className="voice-board-footer">
-                <span>Low latency</span>
-                <span>Realistic voice</span>
-                <span>Meeting-ready demos</span>
+              <div>
+                <strong>Admin command center</strong>
+                <p>Account load, recent call activity, onboarding, and workflow control.</p>
               </div>
-            </article>
-          </div>
+              <div>
+                <strong>Client workspace</strong>
+                <p>Agents, transcripts, campaigns, outcomes, and reporting in one login.</p>
+              </div>
+            </div>
+          </article>
         </div>
       </section>
 
@@ -272,11 +334,11 @@ export default async function LoginPage({ searchParams }: LoginPageProps) {
         <div className="voice-section-head">
           <div>
             <span className="voice-section-eyebrow">Platform</span>
-            <h2>One command center for the full voice stack.</h2>
+            <h2>Designed around the actual Bishop Tech voice workflow.</h2>
           </div>
           <p>
-            BishopTech Voice is built to replace fragmented agency services with one managed platform that is easier to
-            launch, easier to operate, and far less expensive to keep running.
+            This redesign is not generic SaaS chrome. It is scoped around the project in this repo: live Vapi demos,
+            onboarding, workflow boards, call visibility, and outbound campaign management.
           </p>
         </div>
 
@@ -285,14 +347,9 @@ export default async function LoginPage({ searchParams }: LoginPageProps) {
             const Icon = card.icon;
 
             return (
-              <article
-                key={card.title}
-                className={`glass-card voice-feature-card ${card.tone === 'large' ? 'is-large' : ''} ${
-                  card.tone === 'wide' ? 'is-wide' : ''
-                }`}
-              >
+              <article key={card.title} className="glass-card voice-feature-card">
                 <div className="voice-feature-icon">
-                  <Icon size={22} />
+                  <Icon size={20} />
                 </div>
                 <span className="voice-section-eyebrow">{card.eyebrow}</span>
                 <h3>{card.title}</h3>
@@ -303,63 +360,89 @@ export default async function LoginPage({ searchParams }: LoginPageProps) {
         </div>
       </section>
 
+      <section className="voice-section" id="workflow">
+        <div className="voice-section-head">
+          <div>
+            <span className="voice-section-eyebrow">Workflow</span>
+            <h2>From the first utterance to the final follow-up.</h2>
+          </div>
+          <p>
+            The product now frames the operating story clearly: capture context, route intelligently, and keep the
+            downstream reporting visible inside the same Bishop Tech surface.
+          </p>
+        </div>
+
+        <div className="voice-workflow-grid">
+          {workflowRail.map((step) => (
+            <article key={step.id} className="glass-card voice-workflow-card">
+              <span className="voice-workflow-step">{step.id}</span>
+              <h3>{step.title}</h3>
+              <p>{step.body}</p>
+            </article>
+          ))}
+
+          <aside className="glass-card voice-stack-card">
+            <span className="voice-section-eyebrow">System spine</span>
+            <h3>What the platform is centered around</h3>
+            <div className="voice-stack-grid">
+              <div>
+                <strong>Vapi assistants</strong>
+                <p>Live voices for inbound and outbound scenarios.</p>
+              </div>
+              <div>
+                <strong>Realtime transcripts</strong>
+                <p>Proof during demos and visibility after production calls.</p>
+              </div>
+              <div>
+                <strong>Workflow boards</strong>
+                <p>Shared planning layer for routing, handoffs, and objections.</p>
+              </div>
+              <div>
+                <strong>Outbound campaigns</strong>
+                <p>One workspace for callback, reminder, and reactivation flows.</p>
+              </div>
+            </div>
+          </aside>
+        </div>
+      </section>
+
       <section className="voice-section" id="pricing">
         <div className="voice-section-head">
           <div>
             <span className="voice-section-eyebrow">Pricing</span>
-            <h2>Pay for the build once. Keep management lean after launch.</h2>
+            <h2>Build it once. Keep the management lean.</h2>
           </div>
           <p>
-            The point of BishopTech Voice is to make serious voice automation accessible without forcing businesses into
-            another expensive agency retainer.
+            The product story stays direct: Bishop Tech builds the stack, keeps it visible, and avoids the agency
+            pattern where “management” becomes the expensive part.
           </p>
         </div>
 
         <div className="voice-pricing-grid">
           <article className="glass-card voice-pricing-card">
             <span className="voice-section-eyebrow">What you pay</span>
-            <h3>One-time setup fee + $99 monthly management</h3>
+            <h3>One-time setup fee plus $99 monthly management</h3>
             <p>
-              Setup covers planning, assistant provisioning, routing, dashboard access, launch preparation, and BYO-API
-              configuration. After that, the ongoing management stays at $99 per month.
+              Setup covers planning, provisioning, prompt structure, workflow design, dashboard access, and launch
+              readiness. Ongoing management stays intentionally lean after that.
             </p>
             <div className="voice-check-list">
-              <div className="voice-check-row">
-                <ShieldCheck size={16} />
-                <p>Done-for-you assistant build and provisioning.</p>
-              </div>
-              <div className="voice-check-row">
-                <ShieldCheck size={16} />
-                <p>Routing logic, voice selection, and workflow mapping included.</p>
-              </div>
-              <div className="voice-check-row">
-                <ShieldCheck size={16} />
-                <p>Lean monthly management instead of a bloated retainer.</p>
-              </div>
+              {pricingPoints.map((item) => (
+                <div key={item} className="voice-check-row">
+                  <ShieldCheck size={16} />
+                  <p>{item}</p>
+                </div>
+              ))}
             </div>
           </article>
 
           <article className="glass-card voice-pricing-card is-contrast">
             <span className="voice-section-eyebrow">What you avoid</span>
-            <h3>No need to pay thousands just to have someone “manage” your voice agents.</h3>
+            <h3>No fragmented vendors. No black-box handoffs. No fake operating layer.</h3>
             <p>
-              You should not need an agency-sized invoice just to keep prompts updated, leads visible, and calls routed
-              correctly. BishopTech Voice is built around fair pricing, direct execution, and practical support.
+              Buyers can hear the product quality, admins can see the live account load, and clients can work from a
+              real dashboard instead of waiting on outside reports to explain what happened.
             </p>
-            <div className="voice-avoid-grid">
-              <div>
-                <strong>No fragmented vendors</strong>
-                <p>Assistants, demos, reporting, and outbound campaigns stay under one roof.</p>
-              </div>
-              <div>
-                <strong>No inflated retainers</strong>
-                <p>The platform replaces the usual $1,000+ monthly “management” model with something realistic.</p>
-              </div>
-              <div>
-                <strong>No black-box handoffs</strong>
-                <p>You can see the workflow, review the transcripts, and hear the recordings yourself.</p>
-              </div>
-            </div>
           </article>
         </div>
       </section>
@@ -368,11 +451,11 @@ export default async function LoginPage({ searchParams }: LoginPageProps) {
         <div className="voice-section-head">
           <div>
             <span className="voice-section-eyebrow">Onboarding</span>
-            <h2>How BishopTech Voice gets launched properly.</h2>
+            <h2>Launch the right voice operation, not just a prettier demo.</h2>
           </div>
           <p>
-            This is not self-serve software dropped on your lap. The rollout starts with a real strategy call so the
-            system is scoped around your business from day one.
+            The redesign is tied to a real operating model, so onboarding now reads as a system build with clear
+            workspace outcomes instead of vague setup promises.
           </p>
         </div>
 
@@ -390,31 +473,21 @@ export default async function LoginPage({ searchParams }: LoginPageProps) {
       <section className="voice-section" id="insights">
         <div className="voice-section-head">
           <div>
-            <span className="voice-section-eyebrow">Authority pages</span>
-            <h2>Clear answers for buyers who want the economics to make sense.</h2>
+            <span className="voice-section-eyebrow">Insights</span>
+            <h2>Authority pages that support the new platform story.</h2>
           </div>
           <p>
-            These pages break down the practical case for BishopTech Voice: why you do not need an agency wrapper, why
-            the pricing is intentionally lean, and how most accounts can move from kickoff to launch within about 24
-            hours.
+            The authority layer still matters, but it now sits behind a clearer product narrative and a stronger Bishop
+            Tech visual system.
           </p>
         </div>
 
         <div className="voice-authority-grid">
-          {authorityPages.map((page) => (
+          {authorityPages.slice(0, 3).map((page) => (
             <article key={page.slug} className="glass-card voice-authority-card">
               <span className="voice-section-eyebrow">{page.eyebrow}</span>
               <h3>{page.title}</h3>
               <p>{page.description}</p>
-
-              <div className="voice-pill-row">
-                {page.pills.slice(0, 2).map((pill) => (
-                  <span key={pill} className="voice-pill">
-                    {pill}
-                  </span>
-                ))}
-              </div>
-
               <Link className="voice-inline-link" href={`/insights/${page.slug}` as Route}>
                 Read the full breakdown
                 <ArrowRight size={16} />
@@ -427,10 +500,10 @@ export default async function LoginPage({ searchParams }: LoginPageProps) {
       <section className="voice-final-section">
         <div className="glass-card voice-final-card">
           <span className="voice-section-eyebrow">BishopTech Voice</span>
-          <h2>Let them test the quality first. Then close the meeting with proof already on the table.</h2>
+          <h2>Let them hear the system first, then let them step into the platform that runs it.</h2>
           <p>
-            The homepage now carries the first layer of selling for you. Visitors can hear the personas, review the
-            transcript quality, and move straight into a strategy call when they are ready to see their own stack built.
+            The redesign now frames the project as one Bishop Tech voice product from the first homepage demo to the
+            admin and client command centers behind login.
           </p>
           <div className="voice-cta-row">
             <a className="voice-primary-button" href="#personas">

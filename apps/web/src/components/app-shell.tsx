@@ -16,6 +16,7 @@ import {
   Send,
   Settings,
   ShieldCheck,
+  Search,
   Sparkles,
   WandSparkles,
   Workflow,
@@ -195,6 +196,7 @@ export function AppShell({
   const workspaceName = viewer.memberships[0]?.organizationName ?? 'BishopTech Voice';
   const activityHref =
     current === 'help' ? '#prompt-starters' : current === 'admin' ? '/admin/calls' : '/client/calls';
+  const readinessCount = availability.filter((item) => item.ready).length;
 
   return (
     <div className="command-shell">
@@ -222,7 +224,18 @@ export function AppShell({
           </nav>
         </div>
 
+        <div className="command-topbar-center">
+          <label className="command-search-shell" aria-label="Search the workspace">
+            <Search size={16} />
+            <input type="search" placeholder="Search calls, agents, prompts, campaigns..." />
+          </label>
+        </div>
+
         <div className="command-topbar-tools">
+          <div className="command-runtime-pill">
+            <span className="command-runtime-dot" />
+            <span>{readinessCount}/{availability.length} runtime checks live</span>
+          </div>
           <a className="command-icon-button" href={activityHref} aria-label="Recent activity">
             <Bell size={18} />
           </a>
@@ -246,7 +259,13 @@ export function AppShell({
               <p>{workspaceName}</p>
             </div>
           </div>
-          <span className="command-sidebar-kicker">{current === 'admin' ? 'Admin operations' : current === 'client' ? 'Workspace operations' : 'Guides and playbooks'}</span>
+          <span className="command-sidebar-kicker">
+            {current === 'admin' ? 'Admin operations' : current === 'client' ? 'Workspace operations' : 'Guides and playbooks'}
+          </span>
+          <div className="command-sidebar-live">
+            <span className="command-live-dot" />
+            <span>{viewerBadge}</span>
+          </div>
         </div>
 
         <nav className="command-sidebar-nav" aria-label="Section navigation">
