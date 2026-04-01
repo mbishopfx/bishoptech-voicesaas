@@ -2,6 +2,7 @@ import Link from 'next/link';
 import type { Route } from 'next';
 import { AudioLines, Bot, ChartNoAxesCombined, PhoneCall, Send } from 'lucide-react';
 
+import { CommandDeckPlayer } from '@/components/animated-voice-surfaces';
 import type { ClientDashboardData, DashboardAgent, LeadRecord, MetricCard, RecentCall } from '@/lib/types';
 
 const metricIcons = [ChartNoAxesCombined, Bot, PhoneCall, Send] as const;
@@ -60,10 +61,10 @@ export function ClientControlDeckSection({
       <div className="command-control-head">
         <div>
           <span className="eyebrow-text">Workspace control</span>
-          <h2>{data.organizationName} live voice operations</h2>
+          <h2>{data.organizationName} live voice overview</h2>
           <p>
-            The client workspace now opens like a live command deck for agents, recent traffic, outbound flow, and the
-            current reporting state.
+            Keep active conversations, lead flow, and assistant performance in view without turning the workspace into a
+            developer console.
           </p>
         </div>
         <span className="command-status-pill is-live">{data.planName ?? 'Managed workspace'}</span>
@@ -73,10 +74,22 @@ export function ClientControlDeckSection({
         <div className="command-session-panel">
           <div className="command-panel-head">
             <div>
-              <span className="eyebrow-text">Live workspace session</span>
+              <span className="eyebrow-text">Conversation pulse</span>
               <h3>{activeCall ? `${activeCall.direction} conversation` : 'Workspace standing by'}</h3>
             </div>
             <AudioLines size={18} />
+          </div>
+
+          <div className="command-live-visual">
+            <CommandDeckPlayer className="command-deck-player" accent="violet" />
+            <div className="command-live-fabric" aria-hidden="true">
+              <span>attention / resolution / bookings / follow-up</span>
+              <span>░░ conversation energy moving through the workspace ░░</span>
+            </div>
+            <div className="command-live-overlay">
+              <span>{primaryAgent?.name ?? 'Voice workspace'}</span>
+              <strong>{activeCall?.outcome ?? 'Tracking attention, resolution, and call flow in real time'}</strong>
+            </div>
           </div>
 
           <p className="command-card-copy">
@@ -84,15 +97,9 @@ export function ClientControlDeckSection({
               'Recent call summaries will surface here as soon as the workspace starts receiving or placing traffic.'}
           </p>
 
-          <div className="command-waveform" aria-hidden="true">
-            {Array.from({ length: 12 }).map((_, index) => (
-              <span key={index} style={{ animationDelay: `${index * 110}ms` }} />
-            ))}
-          </div>
-
           <div className="command-stat-strip">
             <div>
-              <span>Primary agent</span>
+              <span>Lead assistant</span>
               <strong>{primaryAgent?.name ?? 'Pending'}</strong>
             </div>
             <div>
@@ -110,22 +117,22 @@ export function ClientControlDeckSection({
           <article className="command-transcript-panel">
             <div className="command-panel-head">
               <div>
-                <span className="eyebrow-text">AI console</span>
+                <span className="eyebrow-text">Highlights</span>
                 <h3>Current workspace context</h3>
               </div>
             </div>
 
             <div className="command-console-log">
               <p>
-                <strong>[agent]</strong> {primaryAgent?.purpose ?? 'No assistant has been provisioned yet.'}
+                <strong>Lead assistant</strong> {primaryAgent?.purpose ?? 'No assistant has been provisioned yet.'}
               </p>
               <p>
-                <strong>[system]</strong> {data.phoneNumbers.length || 0} active numbers available inside the
-                workspace.
+                <strong>Phone coverage</strong> {data.phoneNumbers.length || 0} active numbers are currently available
+                inside the workspace.
               </p>
               <p>
-                <strong>[ops]</strong> {data.recentBlueprints.length} saved demo blueprints and {data.campaigns.length}{' '}
-                outbound campaigns currently visible.
+                <strong>Campaign activity</strong> {data.recentBlueprints.length} saved demo blueprints and{' '}
+                {data.campaigns.length} outbound campaigns are currently visible.
               </p>
             </div>
           </article>
@@ -133,8 +140,8 @@ export function ClientControlDeckSection({
           <article className="command-routing-panel">
             <div className="command-panel-head">
               <div>
-                <span className="eyebrow-text">Routing logic</span>
-                <h3>Next operational checks</h3>
+                <span className="eyebrow-text">Today at a glance</span>
+                <h3>Operational checkpoints</h3>
               </div>
             </div>
 

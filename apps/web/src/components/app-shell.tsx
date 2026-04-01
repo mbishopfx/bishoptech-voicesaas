@@ -234,7 +234,7 @@ export function AppShell({
         <div className="command-topbar-tools">
           <div className="command-runtime-pill">
             <span className="command-runtime-dot" />
-            <span>{readinessCount}/{availability.length} runtime checks live</span>
+            <span>{readinessCount === availability.length ? 'Platform ready' : `${readinessCount}/${availability.length} services ready`}</span>
           </div>
           <a className="command-icon-button" href={activityHref} aria-label="Recent activity">
             <Bell size={18} />
@@ -255,7 +255,7 @@ export function AppShell({
               <Headphones size={16} />
             </div>
             <div>
-              <h2>Command Center</h2>
+              <h2>Voice Workspace</h2>
               <p>{workspaceName}</p>
             </div>
           </div>
@@ -292,7 +292,7 @@ export function AppShell({
           <div className="command-status-head">
             <div>
               <span className="eyebrow-text">Environment</span>
-              <h3>Runtime readiness</h3>
+              <h3>Connected services</h3>
             </div>
             <ClipboardPenLine size={18} />
           </div>

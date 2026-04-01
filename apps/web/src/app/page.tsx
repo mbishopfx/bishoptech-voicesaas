@@ -15,6 +15,7 @@ import {
 import { redirect } from 'next/navigation';
 
 import { loginAction } from '@/app/auth/actions';
+import { CommandDeckPlayer, MatrixHeroPlayer, MatrixTerminalPlayer } from '@/components/animated-voice-surfaces';
 import { HomepagePersonaLab } from '@/components/homepage-persona-lab';
 import { getViewerContext } from '@/lib/auth';
 import { appConfig } from '@/lib/app-config';
@@ -28,33 +29,51 @@ type LoginPageProps = {
   }>;
 };
 
-const statusPills = ['LATENCY: 140MS', 'TOKENS: 800K/S'];
+const statusPills = ['INBOUND + OUTBOUND', 'BRAND-TRAINED', 'BOOKING + FOLLOW-UP'];
 
-const trustRail = ['OpenAI Realtime', 'Vapi orchestration', 'Prompt control', 'Transcript intelligence', '24/7 routing'];
+const trustRail = ['Sales teams', 'Support desks', 'Service businesses', 'Schedulers', 'After-hours coverage'];
+
+const heroVisualCards = [
+  {
+    label: 'Brand voice',
+    value: 'Answers shaped around your tone, offers, and FAQs.',
+    tone: 'cyan',
+  },
+  {
+    label: 'Conversation outcomes',
+    value: 'Book, qualify, route, and follow up from the same call.',
+    tone: 'violet',
+  },
+  {
+    label: 'Live visibility',
+    value: 'Calls, transcripts, workflows, and CRM updates in one loop.',
+    tone: 'mint',
+  },
+];
 
 const matrixCards = [
   {
-    code: 'MOD_SALES_001',
-    title: 'Closing Engine',
+    code: 'SALES',
+    title: 'Sales closer',
     description:
-      'Dynamic objection handling and real-time payment processing integration for high-conversion voice flows.',
-    bullets: ['Sentiment Mirroring', 'CRM Real-time Sync', 'Strike-Price Logic'],
+      'Guide buyers from the first question to the booked appointment or payment without losing your tone.',
+    bullets: ['Handles objections naturally', 'Books from the call', 'Pushes clean CRM notes'],
     icon: PhoneCall,
     tone: 'cyan',
   },
   {
-    code: 'MOD_SUPP_002',
-    title: 'Empathy Core',
-    description: 'Context-aware technical troubleshooting with the ability to navigate complex nested knowledge bases.',
-    bullets: ['Intent Recognition', 'Human Handoff Bridge', 'Multi-step Resolution'],
+    code: 'SUPPORT',
+    title: 'Support guide',
+    description: 'Answer common issues, pull the right knowledge, and hand off with context when a human should step in.',
+    bullets: ['Pulls from your KB', 'Knows when to escalate', 'Summarizes every call'],
     icon: Headphones,
     tone: 'violet',
   },
   {
-    code: 'MOD_QUAL_003',
-    title: 'Lead Sorter',
-    description: 'Ultra-fast lead qualification using BANT or custom scoring frameworks within the first 30 seconds.',
-    bullets: ['Zero-Latency Tagging', 'Prospect Profiling', 'Auto-Scheduling'],
+    code: 'QUALIFICATION',
+    title: 'Lead qualifier',
+    description: 'Screen, score, and route incoming interest fast enough for your team to act while intent is still high.',
+    bullets: ['Captures fit signals early', 'Routes by priority', 'Triggers instant follow-up'],
     icon: Workflow,
     tone: 'mint',
   },
@@ -62,65 +81,49 @@ const matrixCards = [
 
 const deconstructionItems = [
   {
-    title: 'Acoustic fingerprinting',
-    body: 'Voiceprint-aware orchestration picks up cadence, urgency, and emotional drift before the assistant chooses a branch.',
+    title: 'Learns your language',
+    body: 'Offers, policies, talk tracks, and FAQs get translated into call behavior that sounds like your team on its best day.',
     icon: MessagesSquare,
     tone: 'cyan',
   },
   {
-    title: 'Biometric trust layers',
-    body: 'Integrated validation layers make each voice interaction more trustworthy for regulated and high-value workflows.',
+    title: 'Moves with the caller',
+    body: 'Each conversation can slow down, reassure, qualify harder, or hand off faster based on the moment in front of it.',
     icon: ShieldCheck,
     tone: 'violet',
   },
   {
-    title: 'Universal transduction',
-    body: 'Prompt logic, tools, transcripts, and knowledge layers stay synchronized across inbound and outbound motion.',
+    title: 'Keeps every next step connected',
+    body: 'Calls, transcripts, scheduling, CRM updates, and workflows stay stitched together instead of living in separate tools.',
     icon: Sparkles,
     tone: 'mint',
   },
 ];
 
-const encryptionLogs = [
-  '> Initializing AES-256 Quantum Shield...',
-  '> [SUCCESS] End-to-end tunneling active.',
-  '> SOC2 Type II Compliance verified.',
-  '> GDPR PII Redaction Layer: ON.',
-];
-
-const runtimeStats = [
-  { label: 'TLS_HANDSHAKE', value: 'SECURE', tone: 'mint' },
-  { label: 'LATENCY_STAB', value: '0.02MS', tone: 'cyan' },
-  { label: 'PACKET_FRAG', value: '0% LOSS', tone: 'muted' },
-  { label: 'AUTH_KEY_ROT', value: 'ACTIVE', tone: 'violet' },
+const terminalLines = [
+  '> Listening for intent, urgency, and call context...',
+  '> Pulling answers from your scripts, FAQs, and offers.',
+  '> Routing to booking, follow-up, or the right human when needed.',
+  '> Saving transcript highlights, tags, and next steps automatically.',
 ];
 
 const useCaseCards = [
   {
     title: 'Sales',
-    body: 'Outbound qualification, objection handling, payment capture, and instant follow-up from the same agent framework.',
+    body: 'Qualification, objection handling, booking, and payment-ready follow-up from the same voice layer.',
     icon: Send,
   },
   {
     title: 'Support',
-    body: 'Tier-one troubleshooting, policy-aware guidance, escalation routing, and callback orchestration across live queues.',
+    body: 'First-line troubleshooting, policy guidance, callback management, and clean escalation notes every time.',
     icon: Headphones,
   },
   {
     title: 'Qualification',
-    body: 'Lead scoring, transcript tagging, CRM enrichment, and booking logic designed for fast operator review.',
+    body: 'Lead scoring, transcript tagging, CRM enrichment, and booking logic designed for fast human review.',
     icon: ChartNoAxesCombined,
   },
 ];
-
-const asciiFabric = `░░▒▒▓▓  SIGNAL_FABRIC // VOICE_MATRIX  ▓▓▒▒░░
-┌────────────────────────────────────────────┐
-│ MIC_INPUT  >>  INTENT_PARSE  >>  ROUTER    │
-│ CRM_SYNC   >>  TOOL_CHAIN    >>  RESPONSE  │
-└────────────────────────────────────────────┘
-~~~╱╲~~~╱╲~~~╱╲~~~╱╲~~~╱╲~~~╱╲~~~╱╲~~~
-<< living waveform / semantic current / control >>
-0101 0011 1100   audio_in   audio_out   1010 0110`;
 
 export default async function LoginPage({ searchParams }: LoginPageProps) {
   const viewer = await getViewerContext();
@@ -165,20 +168,19 @@ export default async function LoginPage({ searchParams }: LoginPageProps) {
 
         <section className="matrix-hero" id="top">
           <div className="matrix-hero-copy">
-            <span className="matrix-kicker">PROTOCOL: MATRIX_V2</span>
+            <span className="matrix-kicker">Bishop Tech Voice Platform</span>
             <h1>
-              The Voice
-              <span>Orchestrator.</span>
+              Voice agents made for
+              <span>your business&apos;s voice.</span>
             </h1>
             <p>
-              A cinematic synthesis of voice intelligence. Map, route, and execute complex agent behaviors through a
-              unified liquid interface built for Bishop Tech&apos;s inbound, outbound, transcript, and orchestration
-              stack.
+              Train inbound and outbound voice agents to sound on-brand, route conversations correctly, and turn every
+              call into a booked meeting, solved issue, or qualified next step.
             </p>
 
             <div className="matrix-hero-actions">
               <a className="matrix-primary-button" href="#sandbox">
-                Open sandbox
+                Hear live agents
                 <ArrowRight size={16} />
               </a>
               <a className="matrix-secondary-button" href="#sign-in">
@@ -197,30 +199,29 @@ export default async function LoginPage({ searchParams }: LoginPageProps) {
           </div>
 
           <div className="matrix-hero-visual">
-            <div className="matrix-visual-core">
-              <div className="matrix-mic-node">
-                <PhoneCall size={22} />
+            <div className="matrix-hero-player-shell">
+              <MatrixHeroPlayer className="matrix-hero-player" />
+              <div className="matrix-hero-fabric" aria-hidden="true">
+                <span>░░ BISHOP TECH VOICE // SIGNAL FABRIC // LIVE CALL FLOW ░░</span>
+                <span>intent &gt; route &gt; answer &gt; booking &gt; follow-up</span>
+                <span>faq graph / schedule path / crm memory / transcript loop</span>
               </div>
-              <pre className="matrix-ascii-fabric" aria-hidden="true">
-                {asciiFabric}
-              </pre>
-              <div className="matrix-wave-layer layer-cyan" />
-              <div className="matrix-wave-layer layer-violet" />
-              <div className="matrix-wave-layer layer-mint" />
-            </div>
+              <div className="matrix-hero-ribbon ribbon-cyan" aria-hidden="true" />
+              <div className="matrix-hero-ribbon ribbon-violet" aria-hidden="true" />
+              <div className="matrix-hero-ribbon ribbon-mint" aria-hidden="true" />
 
-            <div className="matrix-logic-stack">
-              <div className="matrix-logic-card tone-cyan">
-                <span>LOGIC LAYER</span>
-                <strong>LLM: GPT-4o-Audio</strong>
+              <div className="matrix-hero-caption">
+                <span>Live voice fabric</span>
+                <strong>Animated ASCII signal art meets the call logic, transcript flow, and routing layer behind every conversation.</strong>
               </div>
-              <div className="matrix-logic-card tone-violet">
-                <span>KNOWLEDGE BASE</span>
-                <strong>Vector: Pinecone-1</strong>
-              </div>
-              <div className="matrix-logic-card tone-mint">
-                <span>SYNTHESIS</span>
-                <strong>Model: ElevenLabs V2</strong>
+
+              <div className="matrix-hero-overlay-stack">
+                {heroVisualCards.map((card) => (
+                  <article key={card.label} className={`matrix-hero-overlay-card tone-${card.tone}`}>
+                    <span>{card.label}</span>
+                    <strong>{card.value}</strong>
+                  </article>
+                ))}
               </div>
             </div>
           </div>
@@ -236,9 +237,9 @@ export default async function LoginPage({ searchParams }: LoginPageProps) {
           <div className="matrix-section-head">
             <div>
               <h2>
-                VERTICAL <span>MATRIX.</span>
+                Voice flows for <span>real teams.</span>
               </h2>
-              <p>Precision-engineered voice behaviors for mission-critical operations.</p>
+              <p>Choose the conversation pattern you need, then tune it to the offers, objections, and handoffs that matter to your business.</p>
             </div>
 
             <div className="matrix-tab-row">
@@ -277,23 +278,25 @@ export default async function LoginPage({ searchParams }: LoginPageProps) {
 
         <section className="matrix-signal-section">
           <div className="matrix-media-card">
-            <div className="matrix-media-glow" />
+            <CommandDeckPlayer className="matrix-deck-player" accent="mint" />
+            <div className="matrix-media-fabric" aria-hidden="true">
+              <span>voice mesh // tool chain // transcript pulse</span>
+              <span>bookings / follow-up / human handoff / crm sync</span>
+            </div>
             <div className="matrix-media-ascii" aria-hidden="true">
-              <span>┌── SIGNAL ARRAY / BISHOPTECH / LIVE ──┐</span>
-              <span>│ neural cache    voice mesh    intent │</span>
-              <span>│ 011001         ▒▒▒▒▒▒▒▒       ↯↯↯↯   │</span>
-              <span>└──────────────────────────────────────┘</span>
+              <span>VOICE MATCH // TRANSCRIPTS // AUTOMATIONS</span>
+              <span>ASCII SIGNAL FABRIC RUNNING ACROSS EVERY TURN</span>
             </div>
             <div className="matrix-media-footer">
-              <span>Signal Analysis: Active</span>
-              <span>98.2% Accuracy</span>
+              <span>Conversation pulse: live</span>
+              <span>Ready for routing, booking, and follow-up</span>
             </div>
             <div className="matrix-progress-line" />
           </div>
 
           <div className="matrix-copy-stack">
             <h2>
-              SIGNAL <span>DECONSTRUCTION.</span>
+              Conversations that <span>actually move.</span>
             </h2>
             <div className="matrix-detail-list">
               {deconstructionItems.map((item) => {
@@ -323,43 +326,33 @@ export default async function LoginPage({ searchParams }: LoginPageProps) {
                 <span />
                 <span />
               </div>
-              <span>SECURE SHELL // ADMIN_ROOT</span>
+              <span>LIVE CALL ENGINE // BISHOP TECH</span>
             </div>
 
-            <div className="matrix-terminal-grid">
-              <div className="matrix-terminal-copy">
-                <h2>ENCRYPTION PROTOCOLS.</h2>
-                <div className="matrix-terminal-log">
-                  {encryptionLogs.map((line) => (
-                    <p key={line}>{line}</p>
-                  ))}
-                </div>
-                <p className="matrix-terminal-note">
-                  Our infrastructure sits within a &quot;Compliance Void&quot;: an isolated execution environment where
-                  data exists only for the duration of the compute cycle before permanent scrub-down.
-                </p>
-              </div>
-
-              <div className="matrix-runtime-card" id="security">
-                <span className="matrix-runtime-label">SYSTEM_LOGS_REALTIME</span>
-                <div className="matrix-runtime-stats">
-                  {runtimeStats.map((stat) => (
-                    <div key={stat.label} className="matrix-runtime-row">
-                      <span>{stat.label}</span>
-                      <strong className={`tone-${stat.tone}`}>{stat.value}</strong>
-                    </div>
-                  ))}
-                </div>
-                <div className="matrix-runtime-bars" aria-hidden="true">
-                  <span />
-                  <span className="is-cyan" />
-                  <span />
-                  <span />
-                  <span />
-                  <span className="is-violet" />
-                </div>
-              </div>
+            <MatrixTerminalPlayer
+              className="matrix-terminal-player-shell"
+              title="Every live call stays in motion."
+              lines={terminalLines}
+            />
+            <div className="matrix-terminal-fabric" aria-hidden="true">
+              <span>LISTENING // REASONING // ROUTING // SAVING NEXT STEPS</span>
+              <span>░░ transcript current / workflow pulse / follow-up sync ░░</span>
             </div>
+          </div>
+
+          <div className="matrix-terminal-insights" id="security">
+            <article className="matrix-terminal-insight-card">
+              <span>Trust</span>
+              <strong>Role-based access, transcript controls, and workspace separation built in.</strong>
+            </article>
+            <article className="matrix-terminal-insight-card">
+              <span>Reliability</span>
+              <strong>Fallback logic, handoff paths, and human review keep the experience steady.</strong>
+            </article>
+            <article className="matrix-terminal-insight-card">
+              <span>Visibility</span>
+              <strong>Calls, outcomes, and follow-up actions stay visible across the dashboard in real time.</strong>
+            </article>
           </div>
         </section>
 
@@ -367,9 +360,9 @@ export default async function LoginPage({ searchParams }: LoginPageProps) {
           <div className="matrix-section-head is-stack">
             <div>
               <h2>
-                COMMAND <span>SANDBOX.</span>
+                Hear the difference <span>before you buy.</span>
               </h2>
-              <p>Live Vapi personas, transcript streaming, and browser-call testing inside the same brand system.</p>
+              <p>Let prospects test live personas in the browser and hear how your voice agents sound across inbound and outbound scenarios.</p>
             </div>
           </div>
 
@@ -380,9 +373,9 @@ export default async function LoginPage({ searchParams }: LoginPageProps) {
           <div className="matrix-section-head is-stack">
             <div>
               <h2>
-                OUTCOME <span>MODULES.</span>
+                Built for the calls <span>that matter.</span>
               </h2>
-              <p>Use-case surfaces tuned for real operational outcomes rather than generic feature marketing.</p>
+              <p>From revenue calls to support tickets, the platform is organized around business outcomes instead of generic AI feature lists.</p>
             </div>
           </div>
 
@@ -405,22 +398,22 @@ export default async function LoginPage({ searchParams }: LoginPageProps) {
 
         <section className="matrix-cta-section" id="sign-in">
           <div className="matrix-cta-copy">
-            <span className="matrix-kicker">PLATFORM ENTRY</span>
-            <h2>Deploy the Bishop Tech voice matrix into a real workspace.</h2>
+            <span className="matrix-kicker">Start the conversation</span>
+            <h2>Launch a Bishop Tech voice workspace built around your team.</h2>
             <p>
-              Sign in if you already have access, or use the sandbox and schedule a strategy call to scope the
-              production system around your business.
+              Sign in if you already have access, or use the live demo experience to scope the right call flows,
+              follow-up logic, and reporting setup for your business.
             </p>
             <div className="matrix-inline-badges">
               <span>Inbound + outbound orchestration</span>
-              <span>Workflow and prompt control</span>
-              <span>Transcript and call analytics</span>
+              <span>Booking and routing logic</span>
+              <span>Transcripts and call analytics</span>
             </div>
           </div>
 
           <form className="matrix-login-card" action={loginAction}>
             <div className="matrix-login-head">
-              <span className="matrix-kicker">AUTH_GATE</span>
+              <span className="matrix-kicker">Workspace access</span>
               <LockKeyhole size={18} />
             </div>
             <label className="field">

@@ -6,6 +6,67 @@ type MermaidPreviewProps = {
   chart: string;
 };
 
+type MermaidBrowserApi = {
+  initialize: (config: Record<string, unknown>) => void;
+  render: (id: string, chart: string) => Promise<{ svg: string }>;
+};
+
+declare global {
+  interface Window {
+    mermaid?: MermaidBrowserApi;
+    __bishopTechMermaidReady?: Promise<MermaidBrowserApi>;
+  }
+}
+
+function loadMermaid() {
+  if (typeof window === 'undefined') {
+    return Promise.reject(new Error('Mermaid can only load in the browser.'));
+  }
+
+  if (window.mermaid) {
+    return Promise.resolve(window.mermaid);
+  }
+
+  if (window.__bishopTechMermaidReady) {
+    return window.__bishopTechMermaidReady;
+  }
+
+  window.__bishopTechMermaidReady = new Promise<MermaidBrowserApi>((resolve, reject) => {
+    const existingScript = document.querySelector<HTMLScriptElement>('script[data-mermaid-loader="bishoptech"]');
+
+    if (existingScript) {
+      existingScript.addEventListener('load', () => {
+        if (window.mermaid) {
+          resolve(window.mermaid);
+          return;
+        }
+
+        reject(new Error('Mermaid script loaded, but the global API was not found.'));
+      });
+
+      existingScript.addEventListener('error', () => reject(new Error('Unable to load Mermaid.')));
+      return;
+    }
+
+    const script = document.createElement('script');
+    script.src = 'https://cdn.jsdelivr.net/npm/mermaid@11.12.0/dist/mermaid.min.js';
+    script.async = true;
+    script.dataset.mermaidLoader = 'bishoptech';
+    script.onload = () => {
+      if (window.mermaid) {
+        resolve(window.mermaid);
+        return;
+      }
+
+      reject(new Error('Mermaid script loaded, but the global API was not found.'));
+    };
+    script.onerror = () => reject(new Error('Unable to load Mermaid.'));
+    document.head.appendChild(script);
+  });
+
+  return window.__bishopTechMermaidReady;
+}
+
 export function MermaidPreview({ chart }: MermaidPreviewProps) {
   const id = useId().replace(/:/g, '');
   const [svg, setSvg] = useState<string>('');
@@ -16,7 +77,7 @@ export function MermaidPreview({ chart }: MermaidPreviewProps) {
 
     async function renderMermaid() {
       try {
-        const mermaid = (await import('mermaid')).default;
+        const mermaid = await loadMermaid();
         mermaid.initialize({
           startOnLoad: false,
           theme: 'base',

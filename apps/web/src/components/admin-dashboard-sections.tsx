@@ -2,6 +2,7 @@ import Link from 'next/link';
 import type { Route } from 'next';
 import { AudioLines, Bot, Building2, PhoneCall, Send, Sparkles } from 'lucide-react';
 
+import { CommandDeckPlayer } from '@/components/animated-voice-surfaces';
 import { formatRelativeTime } from '@/lib/format';
 import type { DemoBlueprintSummary, MetricCard, OrganizationSummary, RecentCall } from '@/lib/types';
 
@@ -43,23 +44,35 @@ export function AdminControlDeckSection({
       <div className="command-control-head">
         <div>
           <span className="eyebrow-text">Platform control</span>
-          <h2>Live operations and account orchestration</h2>
+          <h2>Live account visibility without the clutter</h2>
           <p>
-            Bishop Tech now treats the admin surface like a real control room: account load, active traffic, routing,
-            and rollout health all inside one view.
+            Watch conversation volume, client readiness, and rollout health from one fluid surface instead of digging
+            through disconnected tools.
           </p>
         </div>
-        <span className="command-status-pill is-live">Production online</span>
+        <span className="command-status-pill is-live">Traffic flowing</span>
       </div>
 
       <div className="command-session-grid">
         <div className="command-session-panel">
           <div className="command-panel-head">
             <div>
-              <span className="eyebrow-text">Active session</span>
-              <h3>{activeCall ? `${activeCall.organizationName} • ${activeCall.direction} call` : 'Waiting for traffic'}</h3>
+              <span className="eyebrow-text">Live pulse</span>
+              <h3>{activeCall ? `${activeCall.organizationName} • ${activeCall.direction} conversation` : 'Waiting for the next conversation'}</h3>
             </div>
             <AudioLines size={18} />
+          </div>
+
+          <div className="command-live-visual">
+            <CommandDeckPlayer className="command-deck-player" accent="cyan" />
+            <div className="command-live-fabric" aria-hidden="true">
+              <span>accounts / calls / coverage / readiness</span>
+              <span>░░ live call pulse moving across every workspace ░░</span>
+            </div>
+            <div className="command-live-overlay">
+              <span>{activeCall?.organizationName ?? 'Platform wide view'}</span>
+              <strong>{activeCall?.outcome ?? 'Monitoring active conversations and workspace health'}</strong>
+            </div>
           </div>
 
           <p className="command-card-copy">
@@ -67,23 +80,17 @@ export function AdminControlDeckSection({
               'Recent call summaries will surface here once the first live conversations land in the platform.'}
           </p>
 
-          <div className="command-waveform" aria-hidden="true">
-            {Array.from({ length: 12 }).map((_, index) => (
-              <span key={index} style={{ animationDelay: `${index * 110}ms` }} />
-            ))}
-          </div>
-
           <div className="command-stat-strip">
             <div>
-              <span>Outcome</span>
+              <span>Latest outcome</span>
               <strong>{activeCall?.outcome ?? 'Idle'}</strong>
             </div>
             <div>
-              <span>Duration</span>
+              <span>Talk time</span>
               <strong>{activeCall?.duration ?? 'No recent call'}</strong>
             </div>
             <div>
-              <span>Route</span>
+              <span>Direction</span>
               <strong>{activeCall?.direction ?? 'standby'}</strong>
             </div>
           </div>
@@ -93,22 +100,22 @@ export function AdminControlDeckSection({
           <article className="command-transcript-panel">
             <div className="command-panel-head">
               <div>
-                <span className="eyebrow-text">Operator feed</span>
-                <h3>Control notes</h3>
+                <span className="eyebrow-text">Highlights</span>
+                <h3>What needs attention</h3>
               </div>
             </div>
 
             <div className="command-console-log">
               <p>
-                <strong>[caller]</strong> {activeCall?.summary ?? 'No live transcript available yet.'}
+                <strong>Latest summary</strong> {activeCall?.summary ?? 'No live transcript available yet.'}
               </p>
               <p>
-                <strong>[system]</strong> {activeOrganizations} active organizations currently provisioned across the
-                Bishop Tech platform.
+                <strong>Accounts live</strong> {activeOrganizations} active organizations are currently provisioned
+                across the Bishop Tech platform.
               </p>
               <p>
-                <strong>[ops]</strong> {liveAgents} live assistants visible across onboarding, demo, and production
-                workspaces.
+                <strong>Assistants ready</strong> {liveAgents} live assistants are visible across onboarding, demo, and
+                production workspaces.
               </p>
             </div>
           </article>
@@ -116,18 +123,18 @@ export function AdminControlDeckSection({
           <article className="command-routing-panel">
             <div className="command-panel-head">
               <div>
-                <span className="eyebrow-text">Routing logic</span>
-                <h3>Runtime checkpoints</h3>
+                <span className="eyebrow-text">Readiness</span>
+                <h3>Coverage checkpoints</h3>
               </div>
             </div>
 
             <div className="command-route-list">
               <div>
-                <span>Account health sweep</span>
+                <span>Account health</span>
                 <strong>{activeOrganizations} live</strong>
               </div>
               <div>
-                <span>Call queue visibility</span>
+                <span>Recent activity</span>
                 <strong>{recentCalls.length} recent events</strong>
               </div>
               <div>

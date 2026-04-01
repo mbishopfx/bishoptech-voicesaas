@@ -164,8 +164,8 @@ export function HomepagePersonaLab({ publicKey, personas }: HomepagePersonaLabPr
           <h2>Ten live assistants. Five inbound. Five outbound.</h2>
         </div>
         <p>
-          These are real Vapi assistants running on your connected account, configured for fast browser testing with
-          realistic voice output. Let visitors hear the difference before they book the meeting.
+          Let visitors hear how different inbound and outbound voices handle the same moment, then move into the exact
+          persona that fits their business before they ever book the call.
         </p>
       </div>
 
@@ -188,8 +188,8 @@ export function HomepagePersonaLab({ publicKey, personas }: HomepagePersonaLabPr
         </div>
 
         <div className="voice-persona-toolbar-copy">
-          <span>Realtime model</span>
-          <strong>OpenAI Realtime + cedar/marin</strong>
+          <span>Live testing</span>
+          <strong>Browser voice demos with real transcript feedback</strong>
         </div>
       </div>
 
