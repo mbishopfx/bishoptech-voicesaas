@@ -150,10 +150,10 @@ async function vapiFetch(path, init = {}, idempotencyKey) {
 
 async function claimWorkerJobs(queueName) {
   const client = ensureSupabase();
-  const result = await client.rpc('claim_worker_jobs', {
+  const result = await client.rpc('claim_worker_jobs_v2', {
+    batch_size: batchSize,
     target_queue: queueName,
     worker_name: workerId,
-    batch_size: batchSize,
   });
 
   if (result.error) {

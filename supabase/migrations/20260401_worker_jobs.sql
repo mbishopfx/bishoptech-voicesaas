@@ -90,3 +90,14 @@ end;
 $$;
 
 grant execute on function public.claim_worker_jobs(text, text, integer) to service_role;
+
+create or replace function public.claim_worker_jobs_v2(batch_size integer, target_queue text, worker_name text)
+returns setof public.worker_jobs
+language sql
+security definer
+set search_path = public
+as $$
+  select * from public.claim_worker_jobs(target_queue, worker_name, batch_size);
+$$;
+
+grant execute on function public.claim_worker_jobs_v2(integer, text, text) to service_role;
