@@ -4,6 +4,7 @@
 
 ### Admin surface (you)
 - Tenant + client provisioning
+- One-click onboarding that creates the client login and three-assistant stack
 - Fast assistant creation from prebuilt vertical templates
 - Voice template assignment (pre-approved realistic presets)
 - Global policy guardrails (compliance phrases, escalation behavior)
@@ -19,6 +20,9 @@
   - missed call recovery
   - booked appointments
   - call disposition trends
+- Blast campaign launcher
+  - CSV upload + number normalization
+  - outbound calls from dedicated outreach assistant
 - Embedded docs copilot scoped to DIY tasks
 
 ## 2) Core backend components
@@ -81,3 +85,27 @@ Design tokens recommended:
 3. Webhook pipeline and event normalization
 4. Metrics pages and client-safe settings editor
 5. AI docs ingestion + retrieval + scoped response policy
+
+## 7) New production MVP additions
+
+- **Demo Studio**
+  - Inputs: website URL, raw Google Business Profile text, demo goal, optional notes
+  - Output: generated assistant prompt pack, first message, lead capture fields, and Mermaid workflow
+  - Server route: `POST /api/demo-template`
+- **Onboarding Studio**
+  - Inputs: business info, client email/password, orchestration mode
+  - Output: Supabase auth user + tenant membership + inbound/outbound/specialist assistants
+  - Server route: `POST /api/admin/onboard-client`
+- **Live Demo Call Orchestration**
+  - Create assistant under the shared Vapi account
+  - Use a dedicated Vapi demo number ID for outbound calls
+  - Server route: `POST /api/demo-call`
+- **Blast Campaigns**
+  - Inputs: CSV contact list, campaign name, blast script, outbound assistant
+  - Output: normalized recipients and a launched outbound campaign
+  - Server route: `POST /api/blast-campaign`
+- **Workflow Canvas**
+  - Visual-only note/link canvas for client demos
+  - Mermaid export so the same logic can be reused in docs and proposals
+- **Client Assets**
+  - Recordings, transcripts, summaries, and lead payloads should persist as first-class client-facing assets

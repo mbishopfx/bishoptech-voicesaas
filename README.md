@@ -29,6 +29,16 @@ Production-oriented scaffold for a multi-tenant SaaS dashboard to sell/manage Va
   - **Vercel**: web app
   - **Railway**: workers/background jobs/webhooks processors
 
+## What was added in this build pass
+
+- Production-shaped Next.js app shell for the admin surface, client portal, and operator copilot
+- Gemini-powered demo template route that accepts website + GBP raw text and returns a full assistant pack
+- Vapi demo-call route that creates the assistant under one shared Vapi account and triggers an outbound test call
+- Visual workflow canvas with drag, link, and Mermaid export/preview
+- Schema extensions for demo blueprints, workflow boards, and client-facing downloadable assets
+- Admin onboarding route that creates the client auth user plus an inbound, outbound, and specialist assistant stack
+- Client blast-campaign route that parses CSV uploads, normalizes phone numbers, and launches outbound list blasts
+
 ---
 
 ## Folder layout

@@ -27,10 +27,20 @@ Suggested worker endpoints:
 
 Never expose:
 - `VAPI_API_KEY`
+- `GEMINI_API_KEY`
 - `SUPABASE_SERVICE_ROLE_KEY`
 - `XAI_API_KEY`
 
 Keep those server-side only.
+
+## New required environment variables for demo mode
+
+- `VAPI_DEMO_PHONE_NUMBER_ID` — Vapi phone number ID reserved for outbound live demos
+- `VAPI_OUTBOUND_PHONE_NUMBER_ID` — Vapi phone number ID reserved for client blast campaigns
+- `VAPI_DEFAULT_MODEL_NAME` — default low-latency voice model for new assistants
+- `VAPI_DEFAULT_VOICE_ID` — primary realistic demo voice
+- `VAPI_FALLBACK_VOICE_ID` — fallback voice for resilience
+- `GEMINI_API_KEY` — Google AI Studio key for generating demo templates from raw business inputs
 
 ## CI/CD suggestions
 
