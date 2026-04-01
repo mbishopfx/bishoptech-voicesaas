@@ -16,6 +16,7 @@ import { redirect } from 'next/navigation';
 
 import { loginAction } from '@/app/auth/actions';
 import { CommandDeckPlayer, MatrixHeroPlayer, MatrixTerminalPlayer } from '@/components/animated-voice-surfaces';
+import { BookingCtaDrawer } from '@/components/booking-cta-drawer';
 import { HomepagePersonaLab } from '@/components/homepage-persona-lab';
 import { getViewerContext } from '@/lib/auth';
 import { appConfig } from '@/lib/app-config';
@@ -357,19 +358,6 @@ export default async function LoginPage({ searchParams }: LoginPageProps) {
           </div>
         </section>
 
-        <section className="matrix-section" id="sandbox">
-          <div className="matrix-section-head is-stack">
-            <div>
-              <h2>
-                Hear the difference <span>before you buy.</span>
-              </h2>
-              <p>Let prospects test live personas in the browser and hear how your voice agents sound across inbound and outbound scenarios.</p>
-            </div>
-          </div>
-
-          <HomepagePersonaLab publicKey={appConfig.vapi.publicKey} personas={homepagePersonas} />
-        </section>
-
         <section className="matrix-section">
           <div className="matrix-section-head is-stack">
             <div>
@@ -395,6 +383,19 @@ export default async function LoginPage({ searchParams }: LoginPageProps) {
               );
             })}
           </div>
+        </section>
+
+        <section className="matrix-section" id="sandbox">
+          <div className="matrix-section-head is-stack">
+            <div>
+              <h2>
+                Hear the difference <span>before you buy.</span>
+              </h2>
+              <p>Let prospects test live personas in the browser and hear how your voice agents sound across inbound and outbound scenarios.</p>
+            </div>
+          </div>
+
+          <HomepagePersonaLab publicKey={appConfig.vapi.publicKey} personas={homepagePersonas} />
         </section>
 
         <section className="matrix-cta-section" id="sign-in">
@@ -438,6 +439,7 @@ export default async function LoginPage({ searchParams }: LoginPageProps) {
           </form>
         </section>
       </div>
+      <BookingCtaDrawer />
     </main>
   );
 }

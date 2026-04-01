@@ -5,6 +5,7 @@ import { useEffect, useMemo, useRef, useState } from 'react';
 import { ArrowRight, Mic, PhoneOff, Radio, Sparkles, Volume2, Waves } from 'lucide-react';
 import Vapi from '@vapi-ai/web';
 
+import { BOOKING_LINK, LEAD_CAPTURE_STORAGE_KEY } from '@/lib/booking';
 import type { HomepagePersona, HomepagePersonaRole } from '@/lib/homepage-personas';
 
 type TranscriptEntry = {
@@ -19,8 +20,6 @@ type HomepagePersonaLabProps = {
 };
 
 const MAX_DEMO_SECONDS = 45;
-const BOOKING_LINK = 'https://calendar.app.google/c7LEPDz1Z5PnsnAo8';
-
 function roleLabel(role: HomepagePersonaRole) {
   return role === 'inbound' ? 'Inbound' : 'Outbound';
 }
@@ -279,7 +278,7 @@ export function HomepagePersonaLab({ publicKey, personas }: HomepagePersonaLabPr
 
     if (typeof window !== 'undefined') {
       window.sessionStorage.setItem(
-        'bishoptech-voice-demo-lead',
+        LEAD_CAPTURE_STORAGE_KEY,
         JSON.stringify({
           ...leadForm,
           persona: selectedPersona?.headline ?? '',
@@ -297,7 +296,6 @@ export function HomepagePersonaLab({ publicKey, personas }: HomepagePersonaLabPr
         <div className="voice-section-head">
           <div>
             <span className="voice-section-eyebrow">Interactive voice demos</span>
-            <h2>Choose the voice your business should be known for.</h2>
           </div>
           <p>
             Let prospects compare inbound and outbound styles, hear the pacing live, and move into the exact voice that
