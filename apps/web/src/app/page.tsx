@@ -127,6 +127,7 @@ const useCaseCards = [
 
 export default async function LoginPage({ searchParams }: LoginPageProps) {
   const viewer = await getViewerContext();
+  const authConfigured = Boolean(appConfig.supabase.url && appConfig.supabase.anonKey);
 
   if (viewer) {
     redirect('/launch');
@@ -418,16 +419,21 @@ export default async function LoginPage({ searchParams }: LoginPageProps) {
             </div>
             <label className="field">
               <span>Email</span>
-              <input name="email" type="email" placeholder="you@company.com" required />
+              <input name="email" type="email" placeholder="you@company.com" required disabled={!authConfigured} />
             </label>
             <label className="field">
               <span>Password</span>
-              <input name="password" type="password" placeholder="Enter your password" required />
+              <input name="password" type="password" placeholder="Enter your password" required disabled={!authConfigured} />
             </label>
-            <button className="matrix-primary-button matrix-button-full" type="submit">
-              Enter platform
+            <button className="matrix-primary-button matrix-button-full" type="submit" disabled={!authConfigured}>
+              {authConfigured ? 'Enter platform' : 'Auth not configured'}
             </button>
 
+            {!authConfigured ? (
+              <p className="notice">
+                Sign-in is disabled until the Supabase environment variables are added to Vercel for this project.
+              </p>
+            ) : null}
             {errorMessage ? <p className="notice error-notice">{errorMessage}</p> : null}
           </form>
         </section>

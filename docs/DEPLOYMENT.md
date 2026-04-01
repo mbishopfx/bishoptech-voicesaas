@@ -13,9 +13,14 @@ Create a worker service for:
 - Async retries/sync jobs
 - nightly analytics rollups (optional)
 
+The worker now assumes a queue-backed flow:
+- `public.worker_jobs` in Supabase for claimable background jobs
+- `public.claim_worker_jobs(...)` for `FOR UPDATE SKIP LOCKED` claiming across replicas
+- `public.worker_event_ingests` for durable webhook ingestion before normalization
+
 Suggested worker endpoints:
 - `POST /webhooks/vapi/call-events`
-- `POST /jobs/sync-assistants`
+- `POST /jobs/blast-dispatch`
 
 ## Supabase
 
@@ -37,10 +42,17 @@ Keep those server-side only.
 
 - `VAPI_DEMO_PHONE_NUMBER_ID` — Vapi phone number ID reserved for outbound live demos
 - `VAPI_OUTBOUND_PHONE_NUMBER_ID` — Vapi phone number ID reserved for client blast campaigns
+- `RAILWAY_WORKER_BASE_URL` — public Railway base URL used for health checks / operational visibility
 - `VAPI_DEFAULT_MODEL_NAME` — default low-latency voice model for new assistants
 - `VAPI_DEFAULT_VOICE_ID` — primary realistic demo voice
 - `VAPI_FALLBACK_VOICE_ID` — fallback voice for resilience
 - `GEMINI_API_KEY` — Google AI Studio key for generating demo templates from raw business inputs
+
+Worker-specific:
+- `WORKER_BATCH_SIZE`
+- `WORKER_POLL_INTERVAL_MS`
+- `WORKER_SHARED_SECRET`
+- `VAPI_WEBHOOK_SECRET`
 
 ## CI/CD suggestions
 

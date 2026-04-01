@@ -3,9 +3,13 @@
 import type { Route } from 'next';
 import { redirect } from 'next/navigation';
 
-import { createSupabaseServerClient } from '@/lib/supabase/server';
+import { createSupabaseServerClient, isSupabaseServerConfigured } from '@/lib/supabase/server';
 
 export async function loginAction(formData: FormData) {
+  if (!isSupabaseServerConfigured()) {
+    redirect('/?error=Platform%20auth%20is%20not%20configured.%20Add%20the%20Supabase%20environment%20variables%20before%20signing%20in.' as Route);
+  }
+
   const email = String(formData.get('email') ?? '').trim();
   const password = String(formData.get('password') ?? '');
 

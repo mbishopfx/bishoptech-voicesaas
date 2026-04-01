@@ -5,7 +5,7 @@ import { canManageOrganization, getViewerContext } from '@/lib/auth';
 import { appConfig } from '@/lib/app-config';
 import { parseBlastCsv } from '@/lib/csv';
 import { getSupabaseAdminClient } from '@/lib/supabase-admin';
-import { createAssistant, createCampaign } from '@/lib/vapi';
+import { enqueueWorkerJob } from '@/lib/worker-queue';
 
 export const runtime = 'nodejs';
 
@@ -63,59 +63,6 @@ export async function POST(request: Request) {
 
     const outboundAgent = agentResult.data;
     const resolvedPhoneNumberId = payload.phoneNumberId ?? appConfig.vapi.outboundPhoneNumberId;
-    const sourceAssistantId = outboundAgent.vapi_assistant_id ?? '';
-    const sourceVoice = String(outboundAgent.config?.voiceId ?? appConfig.vapi.defaults.voiceId);
-
-    const campaignAssistant = await createAssistant(
-      {
-        name: `${payload.campaignName} Broadcast Agent`,
-        firstMessage: payload.script,
-        model: {
-          provider: appConfig.vapi.defaults.modelProvider,
-          model: appConfig.vapi.defaults.modelName,
-          messages: [
-            {
-              role: 'system',
-              content: [
-                'You are a dedicated outbound broadcast agent.',
-                'Introduce the business immediately, explain the reason for the outreach, and respect opt-out signals.',
-                `Campaign script: ${payload.script}`,
-                `Source organization agent: ${outboundAgent.name}`,
-                sourceAssistantId ? `Source Vapi assistant: ${sourceAssistantId}` : null,
-              ]
-                .filter(Boolean)
-                .join('\n'),
-            },
-          ],
-        },
-        voice: {
-          provider: appConfig.vapi.defaults.voiceProvider,
-          voiceId: payload.voiceLabel || sourceVoice,
-          fallbackPlan: {
-            voices: [
-              {
-                provider: appConfig.vapi.defaults.fallbackVoiceProvider,
-                voiceId: appConfig.vapi.defaults.fallbackVoiceId,
-              },
-            ],
-          },
-        },
-      },
-      `campaign-assistant-${payload.organizationId}-${payload.campaignName}`,
-    );
-
-    const campaign = await createCampaign(
-      {
-        name: payload.campaignName,
-        assistantId: campaignAssistant.id,
-        phoneNumberId: resolvedPhoneNumberId,
-        customers: preview.validRecipients.map((recipient) => ({
-          number: recipient.phoneNumber,
-          name: recipient.name,
-        })),
-      },
-      `campaign-${payload.organizationId}-${payload.campaignName}`,
-    );
 
     const campaignInsert = await supabase
       .from('campaigns')
@@ -123,16 +70,15 @@ export async function POST(request: Request) {
         organization_id: payload.organizationId,
         agent_id: payload.assistantId,
         name: payload.campaignName,
-        status: 'active',
+        status: 'queued',
         target_filter: {
           acceptedRecipients: preview.validRecipients.length,
           rejectedRecipients: preview.rejectedRows.length,
-          vapiCampaignId: campaign.id,
         },
         schedule: {
-          launchedAt: new Date().toISOString(),
+          queuedAt: new Date().toISOString(),
           phoneNumberId: resolvedPhoneNumberId,
-          generatedAssistantId: campaignAssistant.id,
+          queue: 'campaign-dispatch',
         },
       })
       .select('id')
@@ -156,14 +102,33 @@ export async function POST(request: Request) {
       throw new Error(recipientInsert.error.message);
     }
 
+    await enqueueWorkerJob({
+      queueName: 'campaign-dispatch',
+      jobType: 'campaign.launch',
+      organizationId: payload.organizationId,
+      idempotencyKey: `campaign-launch-${campaignInsert.data.id}`,
+      payload: {
+        campaignRecordId: campaignInsert.data.id,
+        organizationId: payload.organizationId,
+        campaignName: payload.campaignName,
+        sourceAgentId: payload.assistantId,
+        sourceAgentName: outboundAgent.name,
+        sourceVapiAssistantId: outboundAgent.vapi_assistant_id ?? null,
+        script: payload.script,
+        phoneNumberId: resolvedPhoneNumberId,
+        voiceLabel: payload.voiceLabel ?? null,
+        recipientsAccepted: preview.validRecipients.length,
+        recipientsRejected: preview.rejectedRows.length,
+      },
+    });
+
     return NextResponse.json({
-      mode: 'live',
-      campaignId: campaign.id,
-      assistantId: campaignAssistant.id,
+      mode: 'queued',
+      campaignId: campaignInsert.data.id,
       campaignName: payload.campaignName,
       recipientsAccepted: preview.validRecipients.length,
       recipientsRejected: preview.rejectedRows.length,
-      warnings: [],
+      warnings: ['Campaign accepted and queued for Railway worker dispatch.'],
     });
   } catch (error) {
     return NextResponse.json(

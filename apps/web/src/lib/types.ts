@@ -244,9 +244,9 @@ export type BlastCampaignRequest = {
 };
 
 export type BlastCampaignResult = {
-  mode: 'live' | 'mock';
+  mode: 'live' | 'mock' | 'queued';
   campaignId: string;
-  assistantId: string;
+  assistantId?: string;
   campaignName: string;
   recipientsAccepted: number;
   recipientsRejected: number;

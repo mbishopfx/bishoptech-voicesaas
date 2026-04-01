@@ -26,9 +26,9 @@ export function BlastCampaignStudio({ organizationId, agents }: BlastCampaignStu
       <div className="section-header">
         <div>
           <span className="eyebrow-text">Blast campaigns</span>
-          <h3>Normalize a CSV list and launch outreach from the outbound agent.</h3>
+          <h3>Normalize a CSV list and queue outreach through the outbound worker.</h3>
         </div>
-        <p>The campaign creates a separate Vapi assistant so broadcast traffic never muddies the inbound workflow.</p>
+        <p>The campaign is queued for Railway so outbound traffic stays off the request thread and can scale across client workspaces safely.</p>
       </div>
 
       <div className="workspace-grid workspace-grid-wide">
@@ -127,7 +127,7 @@ export function BlastCampaignStudio({ organizationId, agents }: BlastCampaignStu
                 });
               }}
             >
-              {isPending ? 'Launching campaign...' : 'Launch blast campaign'}
+              {isPending ? 'Queueing campaign...' : 'Queue blast campaign'}
             </button>
           </div>
 
@@ -136,7 +136,7 @@ export function BlastCampaignStudio({ organizationId, agents }: BlastCampaignStu
             <div className="notice success-notice">
               <strong>{result.campaignName}</strong>
               <p>
-                Accepted {result.recipientsAccepted} recipients and rejected {result.recipientsRejected}.
+                Accepted {result.recipientsAccepted} recipients and rejected {result.recipientsRejected}. The Railway worker will dispatch it in the background.
               </p>
             </div>
           ) : null}

@@ -25,6 +25,7 @@ const envSchema = z.object({
   GEMINI_MODEL: z.string().default('gemini-2.5-flash'),
   XAI_API_KEY: z.string().optional(),
   XAI_MODEL: z.string().default('grok-4-latest'),
+  RAILWAY_WORKER_BASE_URL: z.string().url().optional(),
 });
 
 const parsedEnv = envSchema.parse({
@@ -50,6 +51,7 @@ const parsedEnv = envSchema.parse({
   GEMINI_MODEL: process.env.GEMINI_MODEL ?? 'gemini-2.5-flash',
   XAI_API_KEY: process.env.XAI_API_KEY || undefined,
   XAI_MODEL: process.env.XAI_MODEL ?? 'grok-4-latest',
+  RAILWAY_WORKER_BASE_URL: process.env.RAILWAY_WORKER_BASE_URL || undefined,
 });
 
 export const appConfig = {
@@ -86,6 +88,9 @@ export const appConfig = {
     apiKey: parsedEnv.XAI_API_KEY,
     model: parsedEnv.XAI_MODEL,
   },
+  worker: {
+    baseUrl: parsedEnv.RAILWAY_WORKER_BASE_URL,
+  },
 } as const;
 
 export function getIntegrationAvailability(): IntegrationAvailability[] {
@@ -110,6 +115,13 @@ export function getIntegrationAvailability(): IntegrationAvailability[] {
       detail: appConfig.supabase.url && appConfig.supabase.anonKey && appConfig.supabase.hasServiceRole
         ? 'Auth, RLS, and server-side persistence are configured for the live project.'
         : 'Supabase keys are incomplete, so authenticated organization access cannot be enforced.',
+    },
+    {
+      label: 'Railway background worker',
+      ready: Boolean(appConfig.worker.baseUrl && appConfig.supabase.url && appConfig.supabase.hasServiceRole),
+      detail: appConfig.worker.baseUrl && appConfig.supabase.url && appConfig.supabase.hasServiceRole
+        ? `Railway worker is expected at ${appConfig.worker.baseUrl}.`
+        : 'Set RAILWAY_WORKER_BASE_URL and the shared Supabase service role so queue-backed jobs can drain on Railway.',
     },
     {
       label: 'Outbound blast routing',
