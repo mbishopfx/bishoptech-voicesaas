@@ -1,0 +1,411 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>BishopTech Voice | Command Center</title>
+  <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;700&family=Manrope:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet" />
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          colors: {
+            bg: '#030406',
+            panel: 'rgba(11, 14, 18, 0.72)',
+            cyan: '#63f5ff',
+            mint: '#7affc8',
+            violet: '#8e7cff',
+            amber: '#ffbd6b',
+            text: '#e8edf2',
+            muted: '#95a1ad',
+            line: 'rgba(99,245,255,0.12)'
+          },
+          fontFamily: {
+            display: ['Space Grotesk', 'sans-serif'],
+            body: ['Manrope', 'sans-serif'],
+            mono: ['JetBrains Mono', 'monospace']
+          },
+          boxShadow: {
+            glow: '0 0 30px rgba(99,245,255,0.18), 0 0 110px rgba(142,124,255,0.08)'
+          },
+          borderRadius: {
+            '2xl': '1.25rem',
+            '3xl': '1.75rem'
+          }
+        }
+      }
+    }
+  </script>
+  <style>
+    html, body { height: 100%; }
+    body {
+      margin: 0;
+      background:
+        radial-gradient(circle at top left, rgba(99,245,255,0.08), transparent 24%),
+        radial-gradient(circle at 90% 12%, rgba(142,124,255,0.10), transparent 20%),
+        linear-gradient(180deg, #030406 0%, #05070a 100%);
+      color: #e8edf2;
+      font-family: 'Manrope', sans-serif;
+      overflow: hidden;
+    }
+    .noise {
+      position: fixed; inset: 0; pointer-events: none; opacity: .035; z-index: 60;
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.62' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+    }
+    .glass {
+      background: rgba(9, 12, 16, 0.66);
+      backdrop-filter: blur(22px) saturate(1.2);
+      border: 1px solid rgba(99,245,255,0.12);
+      box-shadow: inset 0 1px 0 rgba(255,255,255,0.04), 0 10px 50px rgba(0,0,0,.34);
+    }
+    .glass-strong {
+      background: rgba(10, 13, 18, 0.82);
+      backdrop-filter: blur(28px) saturate(1.35);
+      border: 1px solid rgba(99,245,255,0.16);
+    }
+    .muted-border { border-color: rgba(148,163,184,0.10); }
+    .glass-hover { transition: transform .25s ease, border-color .25s ease, background .25s ease; }
+    .glass-hover:hover { transform: translateY(-2px); border-color: rgba(99,245,255,0.25); }
+    .title-glow { text-shadow: 0 0 18px rgba(99,245,255,.25); }
+    .scanline::before {
+      content: '';
+      position: absolute; inset: 0;
+      background: linear-gradient(180deg, transparent, rgba(255,255,255,.05), transparent);
+      animation: sweep 10s linear infinite;
+      pointer-events: none;
+    }
+    @keyframes sweep { from { transform: translateY(-60%); } to { transform: translateY(60%); } }
+    .bars span { display: inline-block; width: 3px; border-radius: 999px; }
+    .ascii {
+      font-family: 'JetBrains Mono', monospace;
+      white-space: pre-wrap;
+      line-height: 1.05;
+    }
+  </style>
+</head>
+<body class="text-text bg-bg selection:bg-cyan selection:text-black">
+  <div class="noise"></div>
+  <div class="flex h-screen">
+    <aside class="hidden lg:flex w-80 flex-col border-r border-white/5 bg-black/30 backdrop-blur-2xl p-5 gap-5">
+      <div class="glass-strong rounded-[1.5rem] p-5">
+        <div class="flex items-center gap-4">
+          <div class="w-12 h-12 rounded-2xl bg-cyan/10 border border-cyan/20 flex items-center justify-center shadow-glow">
+            <span class="material-symbols-outlined text-cyan">graphic_eq</span>
+          </div>
+          <div>
+            <div class="font-display font-bold tracking-[0.25em] uppercase text-cyan text-xs">BishopTech Voice</div>
+            <div class="text-[11px] font-mono text-muted">Command Center</div>
+          </div>
+        </div>
+        <div class="mt-4 flex items-center gap-2 text-[11px] font-mono text-mint">
+          <span class="w-2 h-2 rounded-full bg-mint"></span> production online
+        </div>
+      </div>
+
+      <nav class="flex-1 space-y-2">
+        <a class="flex items-center gap-3 px-4 py-3 rounded-2xl bg-cyan/10 border border-cyan/15 text-cyan font-semibold" href="#"><span class="material-symbols-outlined">dashboard</span> Overview</a>
+        <a class="flex items-center gap-3 px-4 py-3 rounded-2xl glass-hover text-muted hover:text-text" href="#"><span class="material-symbols-outlined">call</span> Live calls</a>
+        <a class="flex items-center gap-3 px-4 py-3 rounded-2xl glass-hover text-muted hover:text-text" href="#"><span class="material-symbols-outlined">route</span> Routing</a>
+        <a class="flex items-center gap-3 px-4 py-3 rounded-2xl glass-hover text-muted hover:text-text" href="#"><span class="material-symbols-outlined">edit_note</span> Prompt studio</a>
+        <a class="flex items-center gap-3 px-4 py-3 rounded-2xl glass-hover text-muted hover:text-text" href="#"><span class="material-symbols-outlined">database</span> Knowledge base</a>
+        <a class="flex items-center gap-3 px-4 py-3 rounded-2xl glass-hover text-muted hover:text-text" href="#"><span class="material-symbols-outlined">insights</span> Analytics</a>
+        <a class="flex items-center gap-3 px-4 py-3 rounded-2xl glass-hover text-muted hover:text-text" href="#"><span class="material-symbols-outlined">shield</span> Security</a>
+      </nav>
+
+      <div class="glass rounded-[1.5rem] p-4">
+        <div class="text-[10px] uppercase tracking-[0.3em] text-muted font-mono">System health</div>
+        <div class="mt-3 grid grid-cols-2 gap-3">
+          <div class="rounded-2xl bg-black/35 border border-white/5 p-3">
+            <div class="text-[10px] text-muted font-mono uppercase">Uptime</div>
+            <div class="text-xl font-display font-bold text-mint mt-1">99.99%</div>
+          </div>
+          <div class="rounded-2xl bg-black/35 border border-white/5 p-3">
+            <div class="text-[10px] text-muted font-mono uppercase">Latency</div>
+            <div class="text-xl font-display font-bold text-cyan mt-1">120ms</div>
+          </div>
+        </div>
+      </div>
+    </aside>
+
+    <div class="flex-1 flex flex-col min-w-0">
+      <header class="h-20 border-b border-white/5 bg-black/35 backdrop-blur-2xl px-5 lg:px-7 flex items-center justify-between gap-4">
+        <div class="flex items-center gap-4 min-w-0">
+          <button class="lg:hidden w-11 h-11 rounded-2xl glass flex items-center justify-center"><span class="material-symbols-outlined">menu</span></button>
+          <div>
+            <div class="text-[11px] uppercase tracking-[0.3em] text-cyan font-mono">Dashboard / BishopTech Voice</div>
+            <div class="font-display font-bold text-2xl title-glow">Live operations and agent control</div>
+          </div>
+        </div>
+        <div class="hidden xl:flex items-center flex-1 max-w-2xl mx-4">
+          <div class="relative w-full">
+            <span class="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-muted text-sm">search</span>
+            <input class="w-full h-12 rounded-2xl glass pl-11 pr-4 outline-none border border-white/5 focus:border-cyan/25 placeholder:text-slate-500 text-sm" placeholder="Search agents, calls, prompts, campaigns..." />
+          </div>
+        </div>
+        <div class="flex items-center gap-3">
+          <div class="hidden md:flex items-center gap-2 px-3 py-2 rounded-2xl glass text-sm text-muted">
+            <span class="w-2 h-2 rounded-full bg-mint"></span> prod env
+          </div>
+          <button class="px-4 py-2 rounded-2xl glass hover:border-cyan/20 transition-colors text-sm font-semibold">Create agent</button>
+          <button class="px-4 py-2 rounded-2xl bg-cyan text-black font-bold text-sm shadow-glow">Deploy</button>
+        </div>
+      </header>
+
+      <main class="flex-1 overflow-y-auto p-5 lg:p-6 space-y-5">
+        <section class="grid xl:grid-cols-[1.35fr_.95fr] gap-5">
+          <div class="glass-strong rounded-[1.75rem] p-5 lg:p-6 scanline overflow-hidden">
+            <div class="flex items-start justify-between gap-4">
+              <div>
+                <div class="text-[10px] uppercase tracking-[0.3em] text-muted font-mono">Active voice session</div>
+                <h2 class="mt-2 font-display font-bold text-3xl">Inbound call • priority lead • live</h2>
+                <p class="mt-2 text-muted max-w-2xl">BishopTech Voice is listening, classifying intent, querying knowledge, and preparing the next best action without breaking flow.</p>
+              </div>
+              <div class="flex flex-col items-end gap-2">
+                <span class="px-3 py-1 rounded-full bg-mint/10 border border-mint/20 text-mint text-[11px] font-mono">connected</span>
+                <div class="text-right">
+                  <div class="text-xs text-muted uppercase tracking-[0.25em] font-mono">Session</div>
+                  <div class="font-mono text-cyan text-sm">BV-82A-19FX</div>
+                </div>
+              </div>
+            </div>
+
+            <div class="grid lg:grid-cols-[1fr_.95fr] gap-4 mt-5">
+              <div class="rounded-[1.5rem] bg-black/35 border border-white/5 p-5 min-h-[330px] flex flex-col justify-between">
+                <div class="flex items-center justify-between">
+                  <div class="text-[10px] uppercase tracking-[0.3em] text-muted font-mono">Live audio canvas</div>
+                  <div class="text-[11px] font-mono text-cyan">signal 98.7%</div>
+                </div>
+                <div class="flex items-end gap-2 mt-6 h-40 px-1 bars">
+                  <span class="bg-cyan/30 h-[28%]"></span>
+                  <span class="bg-cyan/55 h-[48%]"></span>
+                  <span class="bg-cyan h-[86%] shadow-glow"></span>
+                  <span class="bg-violet h-[68%]"></span>
+                  <span class="bg-mint h-[94%]"></span>
+                  <span class="bg-cyan/65 h-[42%]"></span>
+                  <span class="bg-cyan/35 h-[24%]"></span>
+                  <span class="bg-violet/75 h-[78%]"></span>
+                  <span class="bg-mint/80 h-[52%]"></span>
+                  <span class="bg-cyan h-[34%]"></span>
+                </div>
+                <div class="mt-4 grid grid-cols-3 gap-3 text-sm">
+                  <div class="rounded-2xl bg-white/5 p-3 border border-white/5">
+                    <div class="text-[10px] uppercase tracking-[0.25em] text-muted font-mono">Tone</div>
+                    <div class="mt-1 font-semibold text-mint">empathetic</div>
+                  </div>
+                  <div class="rounded-2xl bg-white/5 p-3 border border-white/5">
+                    <div class="text-[10px] uppercase tracking-[0.25em] text-muted font-mono">Intent</div>
+                    <div class="mt-1 font-semibold text-cyan">billing</div>
+                  </div>
+                  <div class="rounded-2xl bg-white/5 p-3 border border-white/5">
+                    <div class="text-[10px] uppercase tracking-[0.25em] text-muted font-mono">Risk</div>
+                    <div class="mt-1 font-semibold text-amber">medium</div>
+                  </div>
+                </div>
+              </div>
+
+              <div class="space-y-4">
+                <div class="rounded-[1.5rem] glass p-5 glass-hover">
+                  <div class="flex items-center justify-between gap-3">
+                    <div>
+                      <div class="text-[10px] uppercase tracking-[0.3em] text-muted font-mono">Transcript</div>
+                      <div class="font-semibold mt-1">Conversation intelligence</div>
+                    </div>
+                    <span class="material-symbols-outlined text-cyan">subtitles</span>
+                  </div>
+                  <div class="mt-4 space-y-3 font-mono text-[12px] leading-6 text-text/90">
+                    <div><span class="text-muted">[caller]</span> I need to know why my appointment was rescheduled.</div>
+                    <div><span class="text-cyan">[agent]</span> I’m checking the event history and the reason code now.</div>
+                    <div><span class="text-violet">[system]</span> Context found: calendar conflict / auto-reschedule / customer frustration rising.</div>
+                    <div><span class="text-mint">[agent]</span> I can confirm the change and offer the earliest available alternative.</div>
+                  </div>
+                </div>
+
+                <div class="rounded-[1.5rem] glass p-5 glass-hover">
+                  <div class="text-[10px] uppercase tracking-[0.3em] text-muted font-mono">Routing logic</div>
+                  <div class="mt-3 space-y-3">
+                    <div class="flex items-center justify-between rounded-2xl bg-black/30 border border-white/5 px-4 py-3">
+                      <span>Detect sentiment</span><span class="text-cyan font-mono text-sm">98%</span>
+                    </div>
+                    <div class="flex items-center justify-between rounded-2xl bg-black/30 border border-white/5 px-4 py-3">
+                      <span>Pull CRM context</span><span class="text-violet font-mono text-sm">done</span>
+                    </div>
+                    <div class="flex items-center justify-between rounded-2xl bg-black/30 border border-white/5 px-4 py-3">
+                      <span>Prepare escalation path</span><span class="text-mint font-mono text-sm">armed</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="grid gap-5">
+            <div class="glass rounded-[1.75rem] p-5">
+              <div class="flex items-center justify-between">
+                <div>
+                  <div class="text-[10px] uppercase tracking-[0.3em] text-muted font-mono">Control tower</div>
+                  <div class="font-display font-bold text-2xl mt-1">System at a glance</div>
+                </div>
+                <span class="material-symbols-outlined text-violet">dashboard_customize</span>
+              </div>
+              <div class="grid grid-cols-2 gap-3 mt-5">
+                <div class="rounded-2xl bg-black/35 border border-white/5 p-4">
+                  <div class="text-[10px] uppercase tracking-[0.25em] text-muted font-mono">Active calls</div>
+                  <div class="mt-2 text-3xl font-display font-bold text-cyan">126</div>
+                </div>
+                <div class="rounded-2xl bg-black/35 border border-white/5 p-4">
+                  <div class="text-[10px] uppercase tracking-[0.25em] text-muted font-mono">Resolution</div>
+                  <div class="mt-2 text-3xl font-display font-bold text-mint">91%</div>
+                </div>
+                <div class="rounded-2xl bg-black/35 border border-white/5 p-4">
+                  <div class="text-[10px] uppercase tracking-[0.25em] text-muted font-mono">Handoffs</div>
+                  <div class="mt-2 text-3xl font-display font-bold text-violet">14</div>
+                </div>
+                <div class="rounded-2xl bg-black/35 border border-white/5 p-4">
+                  <div class="text-[10px] uppercase tracking-[0.25em] text-muted font-mono">Alerts</div>
+                  <div class="mt-2 text-3xl font-display font-bold text-amber">3</div>
+                </div>
+              </div>
+            </div>
+
+            <div class="glass rounded-[1.75rem] p-5">
+              <div class="flex items-center justify-between">
+                <div>
+                  <div class="text-[10px] uppercase tracking-[0.3em] text-muted font-mono">Prompt studio</div>
+                  <div class="font-display font-bold text-xl mt-1">Agent behavior editor</div>
+                </div>
+                <span class="material-symbols-outlined text-cyan">edit_note</span>
+              </div>
+              <div class="mt-4 rounded-2xl bg-black/35 border border-white/5 p-4 font-mono text-[12px] leading-6">
+                <div class="text-cyan">SYSTEM:</div>
+                <div class="text-text/90">You are the BishopTech Voice assistant. Be concise, calm, and helpful. Escalate when frustration is detected. Always confirm critical details.</div>
+                <div class="mt-3 text-violet">TOOLS:</div>
+                <div class="text-text/90">CRM lookup • calendar check • knowledge retrieval • SMS follow-up</div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <section class="grid xl:grid-cols-[1.1fr_.9fr] gap-5">
+          <div class="glass rounded-[1.75rem] p-5 lg:p-6">
+            <div class="flex items-center justify-between">
+              <div>
+                <div class="text-[10px] uppercase tracking-[0.3em] text-muted font-mono">Operational feed</div>
+                <div class="font-display font-bold text-2xl mt-1">What the system is doing right now</div>
+              </div>
+              <span class="material-symbols-outlined text-cyan">stream</span>
+            </div>
+            <div class="mt-5 space-y-4">
+              <div class="flex gap-4 items-start rounded-2xl bg-black/30 border border-white/5 p-4">
+                <div class="w-2.5 h-2.5 rounded-full bg-cyan mt-2"></div>
+                <div class="flex-1">
+                  <div class="flex items-center justify-between gap-3">
+                    <div class="font-semibold">Agent-Alpha started inbound session</div>
+                    <div class="text-[11px] text-muted font-mono">08:44:12 UTC</div>
+                  </div>
+                  <p class="text-muted mt-1 text-sm">Phone number routed to skill set: support / billing / retention.</p>
+                </div>
+              </div>
+              <div class="flex gap-4 items-start rounded-2xl bg-black/30 border border-white/5 p-4">
+                <div class="w-2.5 h-2.5 rounded-full bg-mint mt-2"></div>
+                <div class="flex-1">
+                  <div class="flex items-center justify-between gap-3">
+                    <div class="font-semibold">Intent classified and knowledge searched</div>
+                    <div class="text-[11px] text-muted font-mono">08:44:19 UTC</div>
+                  </div>
+                  <p class="text-muted mt-1 text-sm">Semantic match found for appointment change policy and refund eligibility.</p>
+                </div>
+              </div>
+              <div class="flex gap-4 items-start rounded-2xl bg-black/30 border border-white/5 p-4">
+                <div class="w-2.5 h-2.5 rounded-full bg-violet mt-2"></div>
+                <div class="flex-1">
+                  <div class="flex items-center justify-between gap-3">
+                    <div class="font-semibold">Escalation path pre-warmed</div>
+                    <div class="text-[11px] text-muted font-mono">08:44:31 UTC</div>
+                  </div>
+                  <p class="text-muted mt-1 text-sm">Live transfer fallback enabled if frustration score crosses threshold.</p>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="grid gap-5">
+            <div class="glass rounded-[1.75rem] p-5">
+              <div class="text-[10px] uppercase tracking-[0.3em] text-muted font-mono">Analytics</div>
+              <div class="mt-2 flex items-end justify-between gap-4">
+                <div>
+                  <div class="text-4xl font-display font-bold text-cyan">8.9</div>
+                  <div class="text-sm text-muted">Sentiment index</div>
+                </div>
+                <div class="text-right">
+                  <div class="text-[10px] uppercase tracking-[0.25em] text-muted font-mono">Avg. handle time</div>
+                  <div class="text-xl font-semibold">2m 44s</div>
+                </div>
+              </div>
+              <div class="mt-4 h-24 flex items-end gap-2">
+                <div class="flex-1 bg-cyan/15 h-[36%] rounded-t-lg"></div>
+                <div class="flex-1 bg-cyan/20 h-[48%] rounded-t-lg"></div>
+                <div class="flex-1 bg-cyan/25 h-[42%] rounded-t-lg"></div>
+                <div class="flex-1 bg-cyan/35 h-[66%] rounded-t-lg"></div>
+                <div class="flex-1 bg-cyan/45 h-[72%] rounded-t-lg"></div>
+                <div class="flex-1 bg-cyan/60 h-[88%] rounded-t-lg"></div>
+              </div>
+            </div>
+
+            <div class="glass rounded-[1.75rem] p-5">
+              <div class="text-[10px] uppercase tracking-[0.3em] text-muted font-mono">Knowledge base</div>
+              <div class="mt-3 space-y-3 text-sm">
+                <div class="rounded-2xl bg-black/30 border border-white/5 p-3 flex items-center justify-between"><span>Policy docs synced</span><span class="text-mint font-mono">248</span></div>
+                <div class="rounded-2xl bg-black/30 border border-white/5 p-3 flex items-center justify-between"><span>FAQ entries</span><span class="text-cyan font-mono">1,032</span></div>
+                <div class="rounded-2xl bg-black/30 border border-white/5 p-3 flex items-center justify-between"><span>Workflow snippets</span><span class="text-violet font-mono">76</span></div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <section class="grid lg:grid-cols-3 gap-5">
+          <div class="glass rounded-[1.5rem] p-5 glass-hover">
+            <div class="flex items-center justify-between">
+              <div class="font-display font-bold text-xl">Call queue</div>
+              <span class="material-symbols-outlined text-cyan">queue</span>
+            </div>
+            <div class="mt-4 space-y-3 text-sm">
+              <div class="rounded-2xl bg-black/30 border border-white/5 p-3 flex items-center justify-between"><span>Lead qualification</span><span class="text-cyan font-mono">18</span></div>
+              <div class="rounded-2xl bg-black/30 border border-white/5 p-3 flex items-center justify-between"><span>Support overflow</span><span class="text-amber font-mono">9</span></div>
+              <div class="rounded-2xl bg-black/30 border border-white/5 p-3 flex items-center justify-between"><span>Outbound reminders</span><span class="text-mint font-mono">31</span></div>
+            </div>
+          </div>
+
+          <div class="glass rounded-[1.5rem] p-5 glass-hover">
+            <div class="flex items-center justify-between">
+              <div class="font-display font-bold text-xl">Release controls</div>
+              <span class="material-symbols-outlined text-violet">tune</span>
+            </div>
+            <div class="mt-4 space-y-3">
+              <button class="w-full rounded-2xl bg-white/5 border border-white/5 px-4 py-3 text-left hover:border-cyan/20 transition-colors">Edit system prompt</button>
+              <button class="w-full rounded-2xl bg-white/5 border border-white/5 px-4 py-3 text-left hover:border-cyan/20 transition-colors">Test new flow</button>
+              <button class="w-full rounded-2xl bg-white/5 border border-white/5 px-4 py-3 text-left hover:border-cyan/20 transition-colors">Promote to prod</button>
+            </div>
+          </div>
+
+          <div class="glass rounded-[1.5rem] p-5 glass-hover">
+            <div class="flex items-center justify-between">
+              <div class="font-display font-bold text-xl">Alert surface</div>
+              <span class="material-symbols-outlined text-amber">warning</span>
+            </div>
+            <div class="mt-4 space-y-3 text-sm">
+              <div class="rounded-2xl bg-amber/10 border border-amber/20 p-3">2 calls need human escalation.</div>
+              <div class="rounded-2xl bg-cyan/10 border border-cyan/20 p-3">1 prompt update waiting review.</div>
+              <div class="rounded-2xl bg-mint/10 border border-mint/20 p-3">All core services healthy.</div>
+            </div>
+          </div>
+        </section>
+      </main>
+    </div>
+  </div>
+</body>
+</html>

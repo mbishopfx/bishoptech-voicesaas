@@ -1,0 +1,417 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>BishopTech Voice | AI Voice Agent Platform</title>
+  <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;700&family=Manrope:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet" />
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          colors: {
+            bg: '#040507',
+            panel: 'rgba(11, 14, 18, 0.72)',
+            line: 'rgba(132, 255, 245, 0.14)',
+            cyan: '#63f5ff',
+            mint: '#7affc8',
+            violet: '#8e7cff',
+            amber: '#ffbd6b',
+            text: '#e8edf2',
+            muted: '#9aa6b2'
+          },
+          fontFamily: {
+            display: ['Space Grotesk', 'sans-serif'],
+            body: ['Manrope', 'sans-serif'],
+            mono: ['JetBrains Mono', 'monospace']
+          },
+          boxShadow: {
+            glow: '0 0 35px rgba(99,245,255,0.18), 0 0 120px rgba(142,124,255,0.08)'
+          },
+          backgroundImage: {
+            grid: 'linear-gradient(rgba(255,255,255,0.05) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.05) 1px, transparent 1px)',
+            aurora: 'radial-gradient(circle at 20% 20%, rgba(99,245,255,0.14), transparent 28%), radial-gradient(circle at 80% 10%, rgba(142,124,255,0.14), transparent 24%), radial-gradient(circle at 50% 80%, rgba(122,255,200,0.10), transparent 28%)'
+          },
+          borderRadius: {
+            '2xl': '1.25rem',
+            '3xl': '1.75rem'
+          }
+        }
+      }
+    }
+  </script>
+  <style>
+    html { scroll-behavior: smooth; }
+    body {
+      margin: 0;
+      background:
+        radial-gradient(circle at top, rgba(99,245,255,0.08), transparent 28%),
+        radial-gradient(circle at 80% 0%, rgba(142,124,255,0.12), transparent 20%),
+        linear-gradient(180deg, #040507 0%, #05070a 48%, #030405 100%);
+      color: #e8edf2;
+      font-family: 'Manrope', sans-serif;
+      overflow-x: hidden;
+    }
+    .noise {
+      position: fixed; inset: 0; pointer-events: none; z-index: 50; opacity: .035;
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.62' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+    }
+    .gridbg {
+      background-image:
+        linear-gradient(rgba(255,255,255,0.025) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255,255,255,0.025) 1px, transparent 1px);
+      background-size: 44px 44px;
+    }
+    .glass {
+      background: rgba(9, 12, 16, 0.62);
+      border: 1px solid rgba(99,245,255,0.12);
+      backdrop-filter: blur(22px) saturate(1.25);
+      box-shadow: inset 0 1px 0 rgba(255,255,255,0.05), 0 12px 60px rgba(0,0,0,.35);
+    }
+    .glass-strong {
+      background: rgba(12, 16, 22, 0.82);
+      border: 1px solid rgba(99,245,255,0.16);
+      backdrop-filter: blur(28px) saturate(1.35);
+    }
+    .glass-hover:hover { transform: translateY(-2px); border-color: rgba(99,245,255,0.24); }
+    .glass-hover { transition: all .28s ease; }
+    .glow { text-shadow: 0 0 20px rgba(99,245,255,.32); }
+    .hero-orb {
+      background: radial-gradient(circle, rgba(99,245,255,.18) 0%, rgba(142,124,255,.10) 28%, transparent 70%);
+      filter: blur(10px);
+    }
+    .scanline::before {
+      content: '';
+      position: absolute; inset: 0;
+      background: linear-gradient(180deg, transparent, rgba(255,255,255,.05), transparent);
+      transform: translateY(-80%);
+      animation: sweep 8s linear infinite;
+      pointer-events: none;
+    }
+    @keyframes sweep { to { transform: translateY(80%); } }
+    .floaty { animation: floaty 8s ease-in-out infinite; }
+    @keyframes floaty { 0%,100% { transform: translateY(0) } 50% { transform: translateY(-8px) } }
+    .pulse { animation: pulse 2.4s ease-in-out infinite; }
+    @keyframes pulse { 0%,100% { opacity: .55 } 50% { opacity: 1 } }
+    .ascii {
+      font-family: 'JetBrains Mono', monospace;
+      white-space: pre-wrap;
+      line-height: 1.05;
+      letter-spacing: .02em;
+    }
+  </style>
+</head>
+<body class="bg-bg text-text selection:bg-cyan selection:text-black">
+  <div class="noise"></div>
+  <div class="fixed inset-0 gridbg pointer-events-none opacity-[0.18]"></div>
+
+  <header class="relative z-20 sticky top-0 border-b border-white/5 bg-black/35 backdrop-blur-2xl">
+    <div class="max-w-7xl mx-auto px-6 lg:px-10 h-20 flex items-center justify-between">
+      <div class="flex items-center gap-4">
+        <div class="w-10 h-10 rounded-2xl glass flex items-center justify-center shadow-glow">
+          <span class="material-symbols-outlined text-cyan">graphic_eq</span>
+        </div>
+        <div>
+          <div class="font-display font-bold tracking-[0.24em] text-xs uppercase text-cyan">BishopTech Voice</div>
+          <div class="text-[11px] text-muted font-mono">Live voice intelligence platform</div>
+        </div>
+      </div>
+      <nav class="hidden lg:flex items-center gap-8 text-sm text-muted font-medium">
+        <a href="#platform" class="hover:text-cyan transition-colors">Platform</a>
+        <a href="#capabilities" class="hover:text-cyan transition-colors">Capabilities</a>
+        <a href="#workflow" class="hover:text-cyan transition-colors">Workflow</a>
+        <a href="#security" class="hover:text-cyan transition-colors">Security</a>
+      </nav>
+      <div class="flex items-center gap-3">
+        <button class="hidden sm:inline-flex px-4 py-2 rounded-xl glass hover:bg-white/8 transition-colors text-sm font-semibold">Watch demo</button>
+        <button class="px-5 py-2.5 rounded-xl bg-cyan text-black font-bold text-sm shadow-glow hover:scale-[1.02] transition-transform">Request access</button>
+      </div>
+    </div>
+  </header>
+
+  <main class="relative z-10">
+    <section class="max-w-7xl mx-auto px-6 lg:px-10 pt-16 lg:pt-24 pb-20 lg:pb-28 grid lg:grid-cols-2 gap-14 items-center">
+      <div class="space-y-8">
+        <div class="inline-flex items-center gap-3 px-4 py-2 rounded-full glass border border-cyan/15 text-[11px] font-mono uppercase tracking-[0.3em] text-cyan">
+          <span class="w-2 h-2 rounded-full bg-mint pulse"></span>
+          BishopTech Voice OS v1.0
+        </div>
+        <div class="space-y-5">
+          <h1 class="font-display font-bold text-5xl md:text-7xl leading-[0.92] tracking-[-0.05em]">
+            Build a voice agent platform that feels <span class="text-cyan glow">alive.</span>
+          </h1>
+          <p class="max-w-2xl text-lg md:text-xl text-muted leading-8">
+            BishopTech Voice combines real-time calling, orchestration, transcripts, analytics, and AI control in a dark liquid-glass interface with cinematic ASCII motion and enterprise-grade clarity.
+          </p>
+        </div>
+        <div class="flex flex-wrap gap-4">
+          <button class="px-6 py-3 rounded-2xl bg-cyan text-black font-bold shadow-glow hover:scale-[1.02] transition-transform">Launch platform</button>
+          <button class="px-6 py-3 rounded-2xl glass border border-white/10 hover:border-cyan/30 transition-colors font-semibold">Explore architecture</button>
+        </div>
+        <div class="grid sm:grid-cols-3 gap-4 pt-2">
+          <div class="glass glass-hover rounded-2xl p-4">
+            <div class="text-xs uppercase tracking-[0.28em] text-muted font-mono">Latency</div>
+            <div class="mt-2 text-2xl font-display font-bold text-cyan">120ms</div>
+            <div class="text-xs text-muted mt-1">voice routing response</div>
+          </div>
+          <div class="glass glass-hover rounded-2xl p-4">
+            <div class="text-xs uppercase tracking-[0.28em] text-muted font-mono">Uptime</div>
+            <div class="mt-2 text-2xl font-display font-bold text-mint">99.99%</div>
+            <div class="text-xs text-muted mt-1">resilient infra layer</div>
+          </div>
+          <div class="glass glass-hover rounded-2xl p-4">
+            <div class="text-xs uppercase tracking-[0.28em] text-muted font-mono">Channels</div>
+            <div class="mt-2 text-2xl font-display font-bold text-violet">Omni</div>
+            <div class="text-xs text-muted mt-1">inbound + outbound</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="relative">
+        <div class="absolute inset-[-10%] hero-orb rounded-full blur-3xl"></div>
+        <div class="relative glass-strong rounded-[2rem] p-5 lg:p-6 shadow-glow overflow-hidden scanline">
+          <div class="flex items-center justify-between pb-4 border-b border-white/5">
+            <div>
+              <div class="text-[11px] uppercase tracking-[0.3em] text-cyan font-mono">Live signal</div>
+              <div class="text-sm text-muted">BishopTech Voice command interface</div>
+            </div>
+            <div class="flex items-center gap-2 text-[11px] font-mono text-mint">
+              <span class="w-2 h-2 rounded-full bg-mint"></span> active
+            </div>
+          </div>
+
+          <div class="grid md:grid-cols-[1.05fr_.95fr] gap-5 mt-5 items-stretch">
+            <div class="glass rounded-[1.5rem] p-5 relative overflow-hidden min-h-[360px] flex flex-col justify-between">
+              <div class="flex items-start justify-between gap-4">
+                <div>
+                  <div class="text-[10px] uppercase tracking-[0.35em] text-muted font-mono">ASCII voice field</div>
+                  <div class="text-lg font-display font-bold mt-1">Signal sculpture</div>
+                </div>
+                <div class="text-[10px] font-mono text-cyan">NODE-7 / FRA-EDGE</div>
+              </div>
+              <pre class="ascii text-cyan/90 text-[11px] md:text-[12px] mt-6 overflow-hidden">⟨⟨⟨   ~ ~ ~   ✦  BishopTech Voice  ✦   ~ ~ ~   ⟩⟩⟩
+      ┌──────────────────────────────────────────┐
+      │  [::]  live transcript  →  intent parse  │
+      │  [//]  semantic routing → agent dispatch │
+      │  [==]  tone model       →  empathetic    │
+      └──────────────────────────────────────────┘
+   ░░░▐▐▐▐▐▐▐▐▐  ╱╲  ╱╲  ╱╲  ╱╲  ▐▐▐▐▐▐▐▐▐░░░
+     001101  voice stream  010011  response stream
+   ⟨⟨⟨   low-latency, glass, orchestration, control   ⟩⟩⟩</pre>
+              <div class="grid grid-cols-3 gap-3 mt-6">
+                <div class="rounded-2xl bg-black/30 border border-white/8 p-3">
+                  <div class="text-[10px] uppercase tracking-[0.25em] text-muted font-mono">Calls</div>
+                  <div class="text-xl font-display font-bold text-text mt-1">4.8k</div>
+                </div>
+                <div class="rounded-2xl bg-black/30 border border-white/8 p-3">
+                  <div class="text-[10px] uppercase tracking-[0.25em] text-muted font-mono">Agents</div>
+                  <div class="text-xl font-display font-bold text-mint mt-1">128</div>
+                </div>
+                <div class="rounded-2xl bg-black/30 border border-white/8 p-3">
+                  <div class="text-[10px] uppercase tracking-[0.25em] text-muted font-mono">Tasks</div>
+                  <div class="text-xl font-display font-bold text-violet mt-1">Auto</div>
+                </div>
+              </div>
+            </div>
+
+            <div class="space-y-4">
+              <div class="glass rounded-[1.5rem] p-4 lg:p-5 glass-hover">
+                <div class="flex items-center justify-between">
+                  <div>
+                    <div class="text-[10px] uppercase tracking-[0.3em] text-muted font-mono">Realtime status</div>
+                    <div class="font-display font-bold text-xl mt-1">Inbound flow online</div>
+                  </div>
+                  <span class="material-symbols-outlined text-cyan text-3xl">mic</span>
+                </div>
+                <div class="mt-5 h-28 rounded-2xl bg-black/35 border border-white/5 flex items-end gap-2 p-4 overflow-hidden">
+                  <div class="w-2 bg-cyan/40 h-[25%] rounded-full"></div>
+                  <div class="w-2 bg-cyan/60 h-[55%] rounded-full"></div>
+                  <div class="w-2 bg-cyan h-[86%] rounded-full shadow-glow"></div>
+                  <div class="w-2 bg-violet h-[74%] rounded-full"></div>
+                  <div class="w-2 bg-mint h-[92%] rounded-full"></div>
+                  <div class="w-2 bg-cyan/70 h-[66%] rounded-full"></div>
+                  <div class="w-2 bg-cyan/35 h-[42%] rounded-full"></div>
+                  <div class="w-2 bg-violet/70 h-[80%] rounded-full"></div>
+                  <div class="w-2 bg-cyan h-[38%] rounded-full"></div>
+                </div>
+                <div class="mt-4 flex items-center justify-between text-sm text-muted">
+                  <span>Call quality: optimal</span>
+                  <span class="font-mono text-cyan">QS-99.8</span>
+                </div>
+              </div>
+              <div class="glass rounded-[1.5rem] p-4 lg:p-5 glass-hover">
+                <div class="text-[10px] uppercase tracking-[0.3em] text-muted font-mono">AI console</div>
+                <div class="mt-2 space-y-3 font-mono text-[12px] leading-6 text-text/90">
+                  <div><span class="text-cyan">[agent]</span> Hello, this is BishopTech Voice. I can route, resolve, and summarize in real time.</div>
+                  <div><span class="text-violet">[system]</span> Intent detected: billing question / escalation risk / high priority.</div>
+                  <div><span class="text-mint">[assistant]</span> Applying policy, pulling CRM context, preparing next-best action.</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section id="platform" class="max-w-7xl mx-auto px-6 lg:px-10 pb-8">
+      <div class="grid md:grid-cols-4 gap-4">
+        <div class="glass rounded-2xl p-4">
+          <div class="text-xs text-muted font-mono uppercase tracking-[0.25em]">Trusted by operators</div>
+          <div class="mt-3 flex items-center gap-4 text-sm font-display font-bold text-white/80 opacity-80">
+            <span>Support</span><span>Sales</span><span>Ops</span><span>Inbound</span>
+          </div>
+        </div>
+        <div class="glass rounded-2xl p-4">
+          <div class="text-xs text-muted font-mono uppercase tracking-[0.25em]">Voice control</div>
+          <div class="mt-2 text-sm text-text/85">Routing, escalation, prompts, and outbound campaigns in one shell.</div>
+        </div>
+        <div class="glass rounded-2xl p-4">
+          <div class="text-xs text-muted font-mono uppercase tracking-[0.25em]">Enterprise ready</div>
+          <div class="mt-2 text-sm text-text/85">Observability, compliance flags, audit trails, and permissioning.</div>
+        </div>
+        <div class="glass rounded-2xl p-4">
+          <div class="text-xs text-muted font-mono uppercase tracking-[0.25em]">Fast iteration</div>
+          <div class="mt-2 text-sm text-text/85">Edit prompts, test flows, ship changes, and monitor results live.</div>
+        </div>
+      </div>
+    </section>
+
+    <section id="capabilities" class="max-w-7xl mx-auto px-6 lg:px-10 py-20">
+      <div class="flex items-end justify-between gap-6 mb-8">
+        <div>
+          <div class="text-[11px] uppercase tracking-[0.35em] text-cyan font-mono">Core capabilities</div>
+          <h2 class="mt-3 font-display font-bold text-3xl md:text-5xl tracking-[-0.04em]">A platform built for real voice operations.</h2>
+        </div>
+        <div class="hidden md:block max-w-md text-muted">Every surface is designed to explain what the system is doing, why it is doing it, and what happens next.</div>
+      </div>
+
+      <div class="grid lg:grid-cols-3 gap-5">
+        <article class="glass glass-hover rounded-[1.5rem] p-6">
+          <div class="flex items-center justify-between">
+            <span class="material-symbols-outlined text-cyan">call</span>
+            <span class="text-[10px] font-mono text-muted uppercase tracking-[0.28em]">Inbound</span>
+          </div>
+          <h3 class="mt-4 font-display font-bold text-2xl">Call handling at speed</h3>
+          <p class="mt-3 text-muted leading-7">Answer, qualify, route, and resolve calls using contextual logic, tone adaptation, and live handoff patterns.</p>
+        </article>
+        <article class="glass glass-hover rounded-[1.5rem] p-6">
+          <div class="flex items-center justify-between">
+            <span class="material-symbols-outlined text-violet">autorenew</span>
+            <span class="text-[10px] font-mono text-muted uppercase tracking-[0.28em]">Orchestration</span>
+          </div>
+          <h3 class="mt-4 font-display font-bold text-2xl">Agent routing and workflows</h3>
+          <p class="mt-3 text-muted leading-7">Dispatch the right agent, trigger the right action, and chain logic across CRM, ticketing, and follow-up tasks.</p>
+        </article>
+        <article class="glass glass-hover rounded-[1.5rem] p-6">
+          <div class="flex items-center justify-between">
+            <span class="material-symbols-outlined text-mint">summarize</span>
+            <span class="text-[10px] font-mono text-muted uppercase tracking-[0.28em]">Insight</span>
+          </div>
+          <h3 class="mt-4 font-display font-bold text-2xl">Transcripts + analytics</h3>
+          <p class="mt-3 text-muted leading-7">See exact transcripts, intent shifts, sentiment, outcomes, and performance trends across every call.</p>
+        </article>
+      </div>
+    </section>
+
+    <section id="workflow" class="max-w-7xl mx-auto px-6 lg:px-10 py-20">
+      <div class="grid lg:grid-cols-2 gap-6 items-stretch">
+        <div class="glass rounded-[1.75rem] p-6 lg:p-8">
+          <div class="text-[11px] uppercase tracking-[0.35em] text-muted font-mono">How it works</div>
+          <h2 class="mt-3 font-display font-bold text-3xl md:text-4xl">From prompt to live call in a controlled pipeline.</h2>
+          <div class="mt-8 space-y-5">
+            <div class="flex gap-4 items-start">
+              <div class="w-10 h-10 rounded-2xl bg-cyan/10 border border-cyan/20 flex items-center justify-center text-cyan font-display font-bold">01</div>
+              <div>
+                <h3 class="font-semibold text-lg">Design the agent</h3>
+                <p class="text-muted mt-1">Define tone, rules, knowledge, tools, and escalation boundaries.</p>
+              </div>
+            </div>
+            <div class="flex gap-4 items-start">
+              <div class="w-10 h-10 rounded-2xl bg-violet/10 border border-violet/20 flex items-center justify-center text-violet font-display font-bold">02</div>
+              <div>
+                <h3 class="font-semibold text-lg">Connect systems</h3>
+                <p class="text-muted mt-1">Link SIP, CRM, ticketing, calendars, and outbound workflows.</p>
+              </div>
+            </div>
+            <div class="flex gap-4 items-start">
+              <div class="w-10 h-10 rounded-2xl bg-mint/10 border border-mint/20 flex items-center justify-center text-mint font-display font-bold">03</div>
+              <div>
+                <h3 class="font-semibold text-lg">Monitor outcomes</h3>
+                <p class="text-muted mt-1">Track resolution, conversion, sentiment, and call quality in one view.</p>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="glass rounded-[1.75rem] p-6 lg:p-8 overflow-hidden relative">
+          <div class="absolute inset-0 bg-aurora opacity-80"></div>
+          <div class="relative">
+            <div class="text-[11px] uppercase tracking-[0.35em] text-muted font-mono">Platform layers</div>
+            <div class="mt-4 grid gap-3">
+              <div class="rounded-2xl bg-black/35 border border-white/5 p-4 flex items-center justify-between">
+                <span class="font-semibold">Voice agent runtime</span><span class="text-cyan font-mono text-sm">live</span>
+              </div>
+              <div class="rounded-2xl bg-black/35 border border-white/5 p-4 flex items-center justify-between">
+                <span class="font-semibold">Prompt + knowledge editor</span><span class="text-violet font-mono text-sm">sync</span>
+              </div>
+              <div class="rounded-2xl bg-black/35 border border-white/5 p-4 flex items-center justify-between">
+                <span class="font-semibold">Dashboard + telemetry</span><span class="text-mint font-mono text-sm">watch</span>
+              </div>
+              <div class="rounded-2xl bg-black/35 border border-white/5 p-4 flex items-center justify-between">
+                <span class="font-semibold">Security + compliance</span><span class="text-amber font-mono text-sm">guarded</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section id="security" class="max-w-7xl mx-auto px-6 lg:px-10 py-20">
+      <div class="glass rounded-[2rem] p-6 lg:p-10 overflow-hidden relative">
+        <div class="absolute inset-0 opacity-50 bg-grid"></div>
+        <div class="relative grid lg:grid-cols-[1.2fr_.8fr] gap-8 items-center">
+          <div>
+            <div class="text-[11px] uppercase tracking-[0.35em] text-cyan font-mono">Security / reliability</div>
+            <h2 class="mt-3 font-display font-bold text-3xl md:text-5xl tracking-[-0.04em]">Enterprise confidence, without the boring enterprise UI.</h2>
+            <p class="mt-4 text-muted leading-7 max-w-2xl">Built to support auditability, access control, environment separation, uptime monitoring, and clear operator visibility into every action taken by the system.</p>
+          </div>
+          <div class="grid gap-3">
+            <div class="rounded-2xl bg-black/35 border border-white/5 p-4 flex items-center gap-3"><span class="material-symbols-outlined text-mint">verified</span><span>Audit trails and session history</span></div>
+            <div class="rounded-2xl bg-black/35 border border-white/5 p-4 flex items-center gap-3"><span class="material-symbols-outlined text-cyan">lock</span><span>Role-based access and environment gating</span></div>
+            <div class="rounded-2xl bg-black/35 border border-white/5 p-4 flex items-center gap-3"><span class="material-symbols-outlined text-violet">monitor_heart</span><span>Health checks, alerts, and incident visibility</span></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="max-w-7xl mx-auto px-6 lg:px-10 py-20">
+      <div class="glass-strong rounded-[2rem] p-8 lg:p-12 text-center overflow-hidden relative">
+        <div class="absolute inset-0 bg-aurora opacity-60"></div>
+        <div class="relative">
+          <div class="text-[11px] uppercase tracking-[0.35em] text-muted font-mono">Ready to ship</div>
+          <h2 class="mt-4 font-display font-bold text-4xl md:text-6xl tracking-[-0.05em]">Give BishopTech Voice a face.</h2>
+          <p class="mt-4 text-muted max-w-2xl mx-auto">Design the product around clarity, confidence, and motion — with enough dark-tech character to make the platform unforgettable.</p>
+          <div class="mt-8 flex justify-center gap-4 flex-wrap">
+            <button class="px-7 py-3 rounded-2xl bg-cyan text-black font-bold shadow-glow">Start redesign</button>
+            <button class="px-7 py-3 rounded-2xl glass border border-white/10 font-semibold">Open dashboard concept</button>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer class="border-t border-white/5 py-10 mt-10">
+    <div class="max-w-7xl mx-auto px-6 lg:px-10 flex flex-col md:flex-row items-start md:items-center justify-between gap-4 text-sm text-muted">
+      <div>
+        <div class="font-display font-bold tracking-[0.24em] text-xs uppercase text-cyan">BishopTech Voice</div>
+        <div class="mt-1 text-[11px] font-mono">Dark liquid-glass voice platform concept</div>
+      </div>
+      <div class="font-mono text-[11px] uppercase tracking-[0.24em]">COMMAND // CONVERSATION // CONVERSION</div>
+    </div>
+  </footer>
+</body>
+</html>
