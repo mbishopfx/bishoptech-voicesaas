@@ -3,6 +3,8 @@ import { ClientLeadsSection } from '@/components/client-dashboard-sections';
 import { requireViewer } from '@/lib/auth';
 import { getClientDashboardData } from '@/lib/dashboard-data';
 
+export const dynamic = 'force-dynamic';
+
 export default async function ClientLeadsPage() {
   const viewer = await requireViewer();
   const data = await getClientDashboardData(viewer);

@@ -4,6 +4,8 @@ import { AppShell } from '@/components/app-shell';
 import { OnboardingStudio } from '@/components/onboarding-studio';
 import { requirePlatformAdmin } from '@/lib/auth';
 
+export const dynamic = 'force-dynamic';
+
 export default async function AdminOnboardingPage() {
   const viewer = await requirePlatformAdmin();
 

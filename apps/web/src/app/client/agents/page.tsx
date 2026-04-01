@@ -3,6 +3,8 @@ import { ClientAgentsSection, ClientWorkspaceSummarySection } from '@/components
 import { requireViewer } from '@/lib/auth';
 import { getClientDashboardData } from '@/lib/dashboard-data';
 
+export const dynamic = 'force-dynamic';
+
 export default async function ClientAgentsPage() {
   const viewer = await requireViewer();
   const data = await getClientDashboardData(viewer);

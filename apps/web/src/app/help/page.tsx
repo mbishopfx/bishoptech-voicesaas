@@ -1,6 +1,8 @@
 import { AppShell } from '@/components/app-shell';
 import { requireViewer } from '@/lib/auth';
 
+export const dynamic = 'force-dynamic';
+
 const promptStarters = [
   'How should I configure after-hours missed-call recovery for this organization?',
   'Which client-safe settings can be exposed without risking agent drift?',

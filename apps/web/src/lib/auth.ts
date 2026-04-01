@@ -1,7 +1,7 @@
 import { redirect } from 'next/navigation';
 
 import type { OrganizationRole, ViewerContext, ViewerMembership } from '@/lib/types';
-import { createSupabaseServerClient } from '@/lib/supabase/server';
+import { createSupabaseServerClient, isSupabaseServerConfigured } from '@/lib/supabase/server';
 
 const manageableRoles = new Set<OrganizationRole>(['owner', 'admin', 'manager']);
 
@@ -38,6 +38,10 @@ export function getHomePath(viewer: ViewerContext) {
 }
 
 export async function getViewerContext(): Promise<ViewerContext | null> {
+  if (!isSupabaseServerConfigured()) {
+    return null;
+  }
+
   const supabase = await createSupabaseServerClient();
   const {
     data: { user },

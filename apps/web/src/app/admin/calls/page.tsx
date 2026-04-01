@@ -3,6 +3,8 @@ import { AdminRecentCallsSection, OrganizationLoadSection } from '@/components/a
 import { requirePlatformAdmin } from '@/lib/auth';
 import { getAdminDashboardData } from '@/lib/dashboard-data';
 
+export const dynamic = 'force-dynamic';
+
 export default async function AdminCallsPage() {
   const viewer = await requirePlatformAdmin();
   const data = await getAdminDashboardData(viewer);

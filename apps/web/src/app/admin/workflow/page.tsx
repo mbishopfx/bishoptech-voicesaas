@@ -3,6 +3,8 @@ import { WorkflowCanvas } from '@/components/workflow-canvas';
 import { requirePlatformAdmin } from '@/lib/auth';
 import { getAdminDashboardData } from '@/lib/dashboard-data';
 
+export const dynamic = 'force-dynamic';
+
 export default async function AdminWorkflowPage() {
   const viewer = await requirePlatformAdmin();
   const data = await getAdminDashboardData(viewer);
