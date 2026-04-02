@@ -6786,7 +6786,7 @@ body::before {
 }
 
 .command-page-head.is-compact .command-page-copy h1 {
-  font-size: clamp(1.5rem, 1.2rem + 0.8vw, 2.2rem);
+  font-size: clamp(1.2rem, 1.02rem + 0.55vw, 1.65rem);
   line-height: 1.02;
   letter-spacing: -0.03em;
 }
@@ -6945,13 +6945,13 @@ body::before {
 
 .dashboard-panel-title {
   margin-top: 8px;
-  font-size: clamp(1.35rem, 1.12rem + 0.8vw, 2rem);
+  font-size: clamp(1.08rem, 0.98rem + 0.42vw, 1.38rem);
   line-height: 1;
 }
 
 .dashboard-side-title {
   margin-top: 8px;
-  font-size: 1rem;
+  font-size: 0.92rem;
   line-height: 1.1;
 }
 
@@ -7016,7 +7016,7 @@ body::before {
 .dashboard-kpi-box strong,
 .dashboard-stat-value {
   color: var(--text);
-  font-size: 1.3rem;
+  font-size: 1.08rem;
   letter-spacing: -0.03em;
 }
 
@@ -7087,7 +7087,7 @@ body::before {
 }
 
 .dashboard-stat-value {
-  font-size: clamp(2.2rem, 2rem + 0.9vw, 3rem);
+  font-size: clamp(1.9rem, 1.72rem + 0.72vw, 2.45rem);
   line-height: 0.94;
 }
 
@@ -7140,5 +7140,66 @@ body::before {
 
   .app-table-wrap {
     overflow-x: auto;
+  }
+}
+
+.workflow-share-shell {
+  min-height: 100vh;
+  padding: 32px;
+  background:
+    radial-gradient(circle at top left, rgba(98, 216, 255, 0.08), transparent 26%),
+    radial-gradient(circle at bottom right, rgba(143, 125, 255, 0.08), transparent 28%),
+    linear-gradient(180deg, #071018, #05090f 54%, #04070d);
+}
+
+.workflow-share-stage {
+  width: min(1320px, 100%);
+  margin: 0 auto;
+  padding: 28px;
+  border: 1px solid rgba(82, 124, 154, 0.16);
+  border-radius: 28px;
+  background: rgba(8, 12, 18, 0.94);
+  box-shadow: 0 30px 80px rgba(0, 0, 0, 0.34);
+}
+
+.workflow-share-head {
+  display: grid;
+  gap: 8px;
+  margin-bottom: 22px;
+}
+
+.workflow-share-head h1 {
+  margin: 0;
+  font-size: clamp(1.4rem, 1.15rem + 0.8vw, 2.1rem);
+  line-height: 1;
+  letter-spacing: -0.035em;
+}
+
+.workflow-share-head p {
+  margin: 0;
+  color: rgba(176, 190, 209, 0.72);
+}
+
+.workflow-share-map {
+  min-height: 72vh;
+  padding: 18px;
+  border: 1px solid rgba(82, 124, 154, 0.14);
+  border-radius: 24px;
+  background: rgba(8, 13, 19, 0.9);
+}
+
+@media (max-width: 760px) {
+  .workflow-share-shell {
+    padding: 16px;
+  }
+
+  .workflow-share-stage {
+    padding: 18px;
+    border-radius: 22px;
+  }
+
+  .workflow-share-map {
+    min-height: 60vh;
+    padding: 12px;
   }
 }

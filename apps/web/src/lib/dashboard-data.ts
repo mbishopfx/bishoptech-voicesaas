@@ -1,6 +1,7 @@
 import { buildFallbackDemoTemplate } from '@/lib/demo-template';
 import { formatDateTime, formatDuration, formatPhoneNumber, formatRelativeTime } from '@/lib/format';
 import { getDefaultOrganizationId } from '@/lib/auth';
+import { getSupabaseAdminClient } from '@/lib/supabase-admin';
 import { createSupabaseServerClient } from '@/lib/supabase/server';
 import type {
   AdminDashboardData,
@@ -522,6 +523,32 @@ export async function getWorkflowBoardForOrganization(organizationId?: string | 
     : await query.maybeSingle();
 
   return mapWorkflowBoard((result.data as WorkflowBoardRow | null) ?? null) ?? buildEmptyWorkflowBoard(organizationId);
+}
+
+export async function getPublicWorkflowBoard(boardId: string) {
+  const supabase = getSupabaseAdminClient();
+  const boardResult = await supabase
+    .from('workflow_boards')
+    .select('id, organization_id, title, description, nodes, edges, updated_at')
+    .eq('id', boardId)
+    .maybeSingle();
+
+  const board = mapWorkflowBoard((boardResult.data as WorkflowBoardRow | null) ?? null);
+
+  if (!board) {
+    return null;
+  }
+
+  const organizationResult = await supabase
+    .from('organizations')
+    .select('id, name, slug')
+    .eq('id', board.organizationId ?? '')
+    .maybeSingle();
+
+  return {
+    board,
+    organizationName: (organizationResult.data as { name?: string | null } | null)?.name ?? 'Voice Workflow',
+  };
 }
 
 export async function getAdminDashboardData(viewer: ViewerContext): Promise<AdminDashboardData> {

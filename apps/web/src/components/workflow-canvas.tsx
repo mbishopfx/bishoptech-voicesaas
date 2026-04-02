@@ -5,6 +5,7 @@ import { Copy, Link2, Plus, Save, Trash2 } from 'lucide-react';
 
 import { MermaidPreview } from '@/components/mermaid-preview';
 import type { WorkflowBoard, WorkflowEdge, WorkflowNode } from '@/lib/types';
+import { workflowBoardToMermaid } from '@/lib/workflow';
 
 type WorkflowCanvasProps = {
   organizationId?: string;
@@ -34,25 +35,6 @@ function buildBoardState(board: WorkflowBoard | null): WorkflowBoard {
   );
 }
 
-function toMermaid(nodes: WorkflowNode[], edges: WorkflowEdge[]) {
-  const lines = ['flowchart LR'];
-
-  for (const node of nodes) {
-    const safeTitle = `${node.title}: ${node.body}`.replace(/"/g, "'");
-    lines.push(`${node.id}["${safeTitle}"]`);
-  }
-
-  for (const edge of edges) {
-    if (edge.label?.trim()) {
-      lines.push(`${edge.from} -->|${edge.label.replace(/"/g, "'")}| ${edge.to}`);
-    } else {
-      lines.push(`${edge.from} --> ${edge.to}`);
-    }
-  }
-
-  return lines.join('\n');
-}
-
 function getNodeCenter(node: WorkflowNode) {
   return {
     x: node.x + 136,
@@ -74,7 +56,7 @@ export function WorkflowCanvas({ organizationId, initialBoard }: WorkflowCanvasP
   const [saveMessage, setSaveMessage] = useState('');
   const [isSaving, startSaving] = useTransition();
 
-  const mermaidChart = useMemo(() => toMermaid(nodes, edges), [edges, nodes]);
+  const mermaidChart = useMemo(() => workflowBoardToMermaid(nodes, edges), [edges, nodes]);
   const selectedNode = nodes.find((node) => node.id === selectedNodeId) ?? null;
 
   function addNode(tone: WorkflowNode['tone'] = 'metal') {
@@ -191,7 +173,7 @@ export function WorkflowCanvas({ organizationId, initialBoard }: WorkflowCanvasP
                 return;
               }
 
-              const shareUrl = `${window.location.origin}${window.location.pathname}?board=${boardId}`;
+              const shareUrl = `${window.location.origin}/workflow-share/${boardId}`;
               await navigator.clipboard.writeText(shareUrl);
               setSaveMessage('Share URL copied.');
             }}
