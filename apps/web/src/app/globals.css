@@ -3496,6 +3496,10 @@ body::before {
   min-height: 100vh;
   display: grid;
   grid-template-columns: 320px minmax(0, 1fr);
+  grid-template-areas:
+    'topbar topbar'
+    'sidebar main';
+  align-items: start;
 }
 
 .command-shell::before {
@@ -3509,9 +3513,13 @@ body::before {
 }
 
 .command-topbar {
+  grid-area: topbar;
   position: sticky;
   top: 0;
   z-index: 15;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
   justify-content: space-between;
   padding: 18px 28px;
   border-bottom: 1px solid rgba(120, 244, 255, 0.08);
@@ -3618,13 +3626,14 @@ body::before {
 }
 
 .command-sidebar {
+  grid-area: sidebar;
   position: sticky;
-  top: 0;
+  top: 86px;
   z-index: 10;
   display: grid;
   align-content: start;
   gap: 20px;
-  min-height: 100vh;
+  min-height: calc(100vh - 86px);
   padding: 24px 20px 24px 24px;
   border-right: 1px solid rgba(120, 244, 255, 0.08);
   background: rgba(3, 6, 9, 0.88);
@@ -3721,6 +3730,8 @@ body::before {
 }
 
 .command-main {
+  grid-area: main;
+  min-width: 0;
   display: grid;
   gap: 22px;
   padding: 24px 28px 40px;
@@ -3991,11 +4002,16 @@ body::before {
   }
 
   .command-shell {
-    display: block;
+    grid-template-columns: 1fr;
+    grid-template-areas:
+      'topbar'
+      'sidebar'
+      'main';
   }
 
   .command-sidebar {
     position: relative;
+    top: 0;
     min-height: auto;
     border-right: none;
     border-bottom: 1px solid rgba(120, 244, 255, 0.08);
@@ -4219,6 +4235,8 @@ body::before {
 .matrix-signal-section,
 .matrix-terminal-grid,
 .matrix-outcome-grid,
+.matrix-commercial-grid,
+.matrix-ownership-band,
 .matrix-cta-section {
   display: grid;
   gap: 22px;
@@ -4785,6 +4803,99 @@ body::before {
   padding-top: 20px;
 }
 
+.matrix-commercial-section {
+  padding-top: 18px;
+}
+
+.matrix-commercial-grid {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.matrix-commercial-card,
+.matrix-rate-card {
+  display: grid;
+  gap: 16px;
+  padding: 24px;
+  border: 1px solid rgba(53, 236, 255, 0.14);
+  border-radius: 14px;
+  background:
+    linear-gradient(180deg, rgba(15, 19, 25, 0.96), rgba(11, 14, 18, 0.98)),
+    radial-gradient(circle at top left, rgba(64, 232, 255, 0.08), transparent 32%);
+}
+
+.matrix-commercial-card span,
+.matrix-rate-card .matrix-kicker {
+  color: #40e8ff;
+}
+
+.matrix-commercial-card h3,
+.matrix-ownership-copy h2,
+.matrix-rate-card strong {
+  margin: 0;
+  color: #f1edf5;
+  font-family: var(--font-label), sans-serif;
+  letter-spacing: -0.06em;
+}
+
+.matrix-commercial-card h3 {
+  font-size: 1.8rem;
+}
+
+.matrix-ownership-band {
+  grid-template-columns: minmax(0, 1.2fr) minmax(320px, 0.8fr);
+  align-items: start;
+}
+
+.matrix-ownership-copy {
+  display: grid;
+  gap: 18px;
+}
+
+.matrix-ownership-copy h2 {
+  font-size: clamp(2.2rem, 4vw, 3.8rem);
+  line-height: 0.92;
+}
+
+.matrix-ownership-copy p,
+.matrix-commercial-card p,
+.matrix-rate-card p {
+  margin: 0;
+  color: rgba(210, 219, 229, 0.82);
+  line-height: 1.7;
+}
+
+.matrix-ownership-list {
+  display: grid;
+  gap: 10px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.matrix-ownership-list li {
+  position: relative;
+  padding-left: 18px;
+  color: rgba(233, 239, 244, 0.88);
+}
+
+.matrix-ownership-list li::before {
+  content: '•';
+  position: absolute;
+  left: 0;
+  color: #40e8ff;
+}
+
+.matrix-rate-card strong {
+  font-size: clamp(3.1rem, 7vw, 4.8rem);
+  line-height: 0.88;
+}
+
+.matrix-rate-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
 .matrix-cta-copy {
   display: grid;
   gap: 18px;
@@ -4853,6 +4964,8 @@ body::before {
   .matrix-hero,
   .matrix-signal-section,
   .matrix-terminal-grid,
+  .matrix-commercial-grid,
+  .matrix-ownership-band,
   .matrix-cta-section,
   .matrix-card-grid,
   .matrix-outcome-grid,

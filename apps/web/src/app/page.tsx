@@ -3,7 +3,6 @@ import {
   Bell,
   ChartNoAxesCombined,
   Headphones,
-  LockKeyhole,
   MessagesSquare,
   PhoneCall,
   Send,
@@ -14,7 +13,6 @@ import {
 } from 'lucide-react';
 import { redirect } from 'next/navigation';
 
-import { loginAction } from '@/app/auth/actions';
 import { CommandDeckPlayer, MatrixHeroPlayer, MatrixTerminalPlayer } from '@/components/animated-voice-surfaces';
 import { BookingCtaDrawer } from '@/components/booking-cta-drawer';
 import { HomepagePersonaLab } from '@/components/homepage-persona-lab';
@@ -23,12 +21,6 @@ import { appConfig } from '@/lib/app-config';
 import { homepagePersonas } from '@/lib/homepage-personas';
 
 export const dynamic = 'force-dynamic';
-
-type LoginPageProps = {
-  searchParams?: Promise<{
-    error?: string;
-  }>;
-};
 
 const statusPills = ['INBOUND + OUTBOUND', 'BRAND-TRAINED', 'BOOKING + FOLLOW-UP'];
 
@@ -126,16 +118,36 @@ const useCaseCards = [
   },
 ];
 
-export default async function LoginPage({ searchParams }: LoginPageProps) {
+const pricingCards = [
+  {
+    title: 'One-time launch',
+    value: 'Single setup fee',
+    body: 'We build the call flows, routing logic, prompt stack, transcript handling, and reporting layer once so you are not trapped in a heavy agency retainer.',
+  },
+  {
+    title: 'Low ongoing cost',
+    value: '$99 / month',
+    body: 'That monthly rate covers platform access, maintenance, tuning, optimization work, and the operating layer that keeps the voice system sharp.',
+  },
+  {
+    title: 'Compounding upside',
+    value: 'Weekly improvements',
+    body: 'Live workshops, weekly newsletters, and constant iteration keep your voice operation improving while most teams are still paying premium prices for static setups.',
+  },
+];
+
+const ownershipPoints = [
+  'Lock in a low operating rate before voice becomes standard in every local market.',
+  'Own the tone, transcript data, and call outcomes tied to your business instead of renting a generic assistant.',
+  'Use BishopTech.dev for your other agentic systems so the voice layer plugs into a broader automation stack.',
+];
+
+export default async function LoginPage() {
   const viewer = await getViewerContext();
-  const authConfigured = Boolean(appConfig.supabase.url && appConfig.supabase.anonKey);
 
   if (viewer) {
     redirect('/launch');
   }
-
-  const params = await searchParams;
-  const errorMessage = params?.error ? decodeURIComponent(params.error) : '';
 
   return (
     <main className="matrix-landing-shell">
@@ -156,14 +168,17 @@ export default async function LoginPage({ searchParams }: LoginPageProps) {
           </nav>
 
           <div className="matrix-topbar-tools">
+            <a className="matrix-secondary-button" href="/login">
+              Login
+            </a>
             <button className="matrix-icon-button" type="button" aria-label="Platform settings">
               <Settings2 size={16} />
             </button>
             <button className="matrix-icon-button" type="button" aria-label="Notifications">
               <Bell size={16} />
             </button>
-            <a className="matrix-primary-button" href="#sign-in">
-              Deploy Agent
+            <a className="matrix-primary-button" href="https://bishoptech.dev" rel="noreferrer" target="_blank">
+              BishopTech.dev
             </a>
           </div>
         </header>
@@ -185,8 +200,8 @@ export default async function LoginPage({ searchParams }: LoginPageProps) {
                 Hear live agents
                 <ArrowRight size={16} />
               </a>
-              <a className="matrix-secondary-button" href="#sign-in">
-                Enter platform
+              <a className="matrix-secondary-button" href="https://bishoptech.dev" rel="noreferrer" target="_blank">
+                Explore BishopTech.dev
               </a>
             </div>
 
@@ -398,45 +413,63 @@ export default async function LoginPage({ searchParams }: LoginPageProps) {
           <HomepagePersonaLab publicKey={appConfig.vapi.publicKey} personas={homepagePersonas} />
         </section>
 
-        <section className="matrix-cta-section" id="sign-in">
-          <div className="matrix-cta-copy">
-            <span className="matrix-kicker">Start the conversation</span>
-            <h2>Launch a Bishop Tech voice workspace built around your team.</h2>
-            <p>
-              Sign in if you already have access, or use the live demo experience to scope the right call flows,
-              follow-up logic, and reporting setup for your business.
-            </p>
-            <div className="matrix-inline-badges">
-              <span>Inbound + outbound orchestration</span>
-              <span>Booking and routing logic</span>
-              <span>Transcripts and call analytics</span>
+        <section className="matrix-section matrix-commercial-section">
+          <div className="matrix-section-head is-stack">
+            <div>
+              <h2>
+                Stop paying agency prices <span>for basic voice ops.</span>
+              </h2>
+              <p>
+                Most businesses do not need to burn thousands every month just to keep a voice agent online. The
+                Bishop Tech model is straightforward: pay once to launch it correctly, then keep the stack improving for
+                a low monthly operating fee.
+              </p>
             </div>
           </div>
 
-          <form className="matrix-login-card" action={loginAction}>
-            <div className="matrix-login-head">
-              <span className="matrix-kicker">Workspace access</span>
-              <LockKeyhole size={18} />
-            </div>
-            <label className="field">
-              <span>Email</span>
-              <input name="email" type="email" placeholder="you@company.com" required disabled={!authConfigured} />
-            </label>
-            <label className="field">
-              <span>Password</span>
-              <input name="password" type="password" placeholder="Enter your password" required disabled={!authConfigured} />
-            </label>
-            <button className="matrix-primary-button matrix-button-full" type="submit" disabled={!authConfigured}>
-              {authConfigured ? 'Enter platform' : 'Auth not configured'}
-            </button>
+          <div className="matrix-commercial-grid">
+            {pricingCards.map((item) => (
+              <article key={item.title} className="matrix-commercial-card">
+                <span>{item.value}</span>
+                <h3>{item.title}</h3>
+                <p>{item.body}</p>
+              </article>
+            ))}
+          </div>
+        </section>
 
-            {!authConfigured ? (
-              <p className="notice">
-                Sign-in is disabled until the Supabase environment variables are added to Vercel for this project.
+        <section className="matrix-section matrix-ownership-section">
+          <div className="matrix-ownership-band">
+            <div className="matrix-ownership-copy">
+              <span className="matrix-kicker">Own your voice market</span>
+              <h2>Get locked in early while the economics are still cheap.</h2>
+              <p>
+                Voice agents are going to become standard. The better move is to own your business&apos;s voice now,
+                keep the monthly cost low, and let the model stack improve with your market instead of chasing the
+                category after everyone else catches up.
               </p>
-            ) : null}
-            {errorMessage ? <p className="notice error-notice">{errorMessage}</p> : null}
-          </form>
+              <ul className="matrix-ownership-list">
+                {ownershipPoints.map((point) => (
+                  <li key={point}>{point}</li>
+                ))}
+              </ul>
+            </div>
+
+            <div className="matrix-rate-card">
+              <span className="matrix-kicker">Bishop Tech operating model</span>
+              <strong>$99/mo</strong>
+              <p>Maintenance, platform fee, optimization work, weekly workshops, and ongoing improvement notes included.</p>
+              <div className="matrix-rate-actions">
+                <a className="matrix-primary-button" href="https://bishoptech.dev" rel="noreferrer" target="_blank">
+                  Visit BishopTech.dev
+                  <ArrowRight size={16} />
+                </a>
+                <a className="matrix-secondary-button" href="/login">
+                  Login to platform
+                </a>
+              </div>
+            </div>
+          </div>
         </section>
       </div>
       <BookingCtaDrawer />
