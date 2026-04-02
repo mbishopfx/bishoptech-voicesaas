@@ -18,8 +18,7 @@ export default async function AdminOrganizationsPage() {
       activeNav="organizations"
       headerMode="compact"
       eyebrow="Organizations"
-      title="Account roster"
-      description="Review every live workspace, assigned number, staffing count, and active assistant stack."
+      title="Organizations"
       actions={
         <Link className="voice-primary-button" href="/admin/onboarding">
           Onboard client

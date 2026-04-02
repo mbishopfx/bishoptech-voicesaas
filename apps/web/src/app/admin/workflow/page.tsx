@@ -1,13 +1,21 @@
 import { AppShell } from '@/components/app-shell';
 import { WorkflowCanvas } from '@/components/workflow-canvas';
 import { requirePlatformAdmin } from '@/lib/auth';
-import { getAdminDashboardData } from '@/lib/dashboard-data';
+import { getAdminDashboardData, getWorkflowBoardForOrganization } from '@/lib/dashboard-data';
 
 export const dynamic = 'force-dynamic';
 
-export default async function AdminWorkflowPage() {
+type AdminWorkflowPageProps = {
+  searchParams?: Promise<{
+    board?: string;
+  }>;
+};
+
+export default async function AdminWorkflowPage({ searchParams }: AdminWorkflowPageProps) {
   const viewer = await requirePlatformAdmin();
   const data = await getAdminDashboardData(viewer);
+  const params = await searchParams;
+  const board = await getWorkflowBoardForOrganization(data.activeOrganizationId, params?.board);
 
   return (
     <AppShell
@@ -16,10 +24,9 @@ export default async function AdminWorkflowPage() {
       activeNav="workflow"
       headerMode="compact"
       eyebrow="Workflow"
-      title="Visual routing canvas"
-      description="Map the handoffs, objections, and routing logic before you present or deploy the workflow."
+      title="Workflow"
     >
-      <WorkflowCanvas organizationId={data.activeOrganizationId} initialBoard={data.latestWorkflowBoard} />
+      <WorkflowCanvas organizationId={data.activeOrganizationId} initialBoard={board} />
     </AppShell>
   );
 }

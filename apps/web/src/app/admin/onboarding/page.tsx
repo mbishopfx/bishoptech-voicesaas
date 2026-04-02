@@ -16,8 +16,7 @@ export default async function AdminOnboardingPage() {
       activeNav="onboarding"
       headerMode="compact"
       eyebrow="Onboarding"
-      title="Provision a new workspace"
-      description="Create the login, attach the organization, and generate the managed assistant stack after the kickoff call."
+      title="Onboard workspace"
       actions={
         <Link className="voice-secondary-button" href="/admin/organizations">
           View organizations

@@ -32,9 +32,8 @@ export function OnboardingStudio() {
       <div className="section-header">
         <div>
           <span className="eyebrow-text">Onboarding</span>
-          <h3>Provision the login, workspace, and assistant stack after the kickoff call.</h3>
+          <h3>Provision workspace</h3>
         </div>
-        <p>Every new account is created after the strategy call. There is no self-serve signup flow.</p>
       </div>
 
       <div className="workspace-grid workspace-grid-wide">

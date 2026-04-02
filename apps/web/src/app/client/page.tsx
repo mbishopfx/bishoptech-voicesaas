@@ -24,8 +24,7 @@ export default async function ClientPage() {
       activeNav="dashboard"
       headerMode="compact"
       eyebrow="Workspace"
-      title={`${data.organizationName} overview`}
-      description="Your live voice operation at a glance."
+      title={data.organizationName}
       actions={null}
     >
       <ClientControlDeckSection data={data} />

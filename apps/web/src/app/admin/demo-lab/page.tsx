@@ -17,8 +17,7 @@ export default async function AdminDemoLabPage() {
       activeNav="demo-lab"
       headerMode="compact"
       eyebrow="Demo lab"
-      title="Build and launch live demos"
-      description="Turn a website and GBP paste into a demo blueprint, then queue the test call from the same page."
+      title="Demo lab"
     >
       <DemoStudio organizationId={data.activeOrganizationId} recentBlueprints={data.recentBlueprints} />
       <AdminBlueprintHistorySection recentBlueprints={data.recentBlueprints} />

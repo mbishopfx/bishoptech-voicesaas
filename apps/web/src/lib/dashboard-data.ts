@@ -107,6 +107,213 @@ function parseString(value: unknown, fallback = '') {
   return typeof value === 'string' ? value : fallback;
 }
 
+function parseNumber(value: unknown): number | null {
+  if (typeof value === 'number' && Number.isFinite(value)) {
+    return value;
+  }
+
+  if (typeof value === 'string') {
+    const parsed = Number(value);
+    return Number.isFinite(parsed) ? parsed : null;
+  }
+
+  return null;
+}
+
+function parseObject(value: unknown): Record<string, unknown> | null {
+  return value && typeof value === 'object' && !Array.isArray(value) ? (value as Record<string, unknown>) : null;
+}
+
+function getNestedValue(source: Record<string, unknown> | null | undefined, path: string[]): unknown {
+  let current: unknown = source;
+
+  for (const segment of path) {
+    const object = parseObject(current);
+
+    if (!object || !(segment in object)) {
+      return undefined;
+    }
+
+    current = object[segment];
+  }
+
+  return current;
+}
+
+function formatCost(value: unknown) {
+  const amount = parseNumber(value);
+  return amount === null ? '' : `$${amount.toFixed(4)}`;
+}
+
+function formatLatency(value: unknown) {
+  const latency = parseNumber(value);
+  return latency === null ? '' : `${Math.round(latency)} ms`;
+}
+
+function normalizeTags(value: unknown): string[] {
+  if (Array.isArray(value)) {
+    return value
+      .map((item) => parseString(item).trim())
+      .filter(Boolean)
+      .slice(0, 6);
+  }
+
+  if (typeof value === 'string') {
+    return value
+      .split(/[|,]/)
+      .map((item) => item.trim())
+      .filter(Boolean)
+      .slice(0, 6);
+  }
+
+  return [];
+}
+
+function extractTranscript(
+  metadata: Record<string, unknown> | null,
+  summary: string | null,
+): RecentCall['transcript'] {
+  const transcriptCandidates = [
+    metadata?.transcript,
+    metadata?.messages,
+    metadata?.conversation,
+    metadata?.utterances,
+    metadata?.dialogue,
+    getNestedValue(metadata, ['vapi', 'transcript']),
+    getNestedValue(metadata, ['analysis', 'transcript']),
+  ];
+
+  for (const candidate of transcriptCandidates) {
+    if (!Array.isArray(candidate)) {
+      continue;
+    }
+
+    const transcript = candidate
+      .map((entry, index) => {
+        const item = parseObject(entry);
+        if (!item) {
+          return null;
+        }
+
+        const rawText =
+          parseString(item.text) ||
+          parseString(item.message) ||
+          parseString(item.content) ||
+          parseString(item.transcript) ||
+          parseString(item.value);
+
+        if (!rawText) {
+          return null;
+        }
+
+        const rawRole =
+          parseString(item.role) ||
+          parseString(item.speaker) ||
+          parseString(item.participant) ||
+          parseString(item.type);
+
+        const speaker: RecentCall['transcript'][number]['speaker'] =
+          rawRole === 'assistant' || rawRole === 'bot'
+            ? 'assistant'
+            : rawRole === 'user' || rawRole === 'caller' || rawRole === 'customer'
+              ? 'caller'
+              : 'system';
+
+        return {
+          id: `${speaker}-${index + 1}`,
+          speaker,
+          label: speaker === 'assistant' ? 'Assistant' : speaker === 'caller' ? 'Caller' : 'System',
+          text: rawText,
+          timestamp: parseString(item.timestamp) || parseString(item.time),
+        };
+      })
+      .filter(Boolean) as RecentCall['transcript'];
+
+    if (transcript.length) {
+      return transcript;
+    }
+  }
+
+  if (summary) {
+    return [
+      {
+        id: 'summary',
+        speaker: 'system',
+        label: 'Summary',
+        text: summary,
+      },
+    ];
+  }
+
+  return [];
+}
+
+function buildLogItems(row: CallRow): RecentCall['logItems'] {
+  const metadata = row.metadata ?? {};
+  const assistantName =
+    parseString(metadata.assistantName) ||
+    parseString(getNestedValue(metadata, ['assistant', 'name'])) ||
+    parseString(getNestedValue(metadata, ['vapi', 'assistantName']));
+  const modelName =
+    parseString(metadata.modelName) ||
+    parseString(getNestedValue(metadata, ['model', 'name'])) ||
+    parseString(getNestedValue(metadata, ['vapi', 'model']));
+  const callId =
+    parseString(metadata.vapiCallId) ||
+    parseString(metadata.callId) ||
+    parseString(getNestedValue(metadata, ['vapi', 'callId']));
+  const latencyLabel =
+    formatLatency(metadata.latencyMs) ||
+    formatLatency(metadata.latency) ||
+    formatLatency(getNestedValue(metadata, ['analysis', 'latencyMs'])) ||
+    formatLatency(getNestedValue(metadata, ['metrics', 'latencyMs']));
+  const costLabel =
+    formatCost(metadata.costUsd) ||
+    formatCost(metadata.cost) ||
+    formatCost(getNestedValue(metadata, ['analysis', 'costUsd'])) ||
+    formatCost(getNestedValue(metadata, ['billing', 'costUsd']));
+  const startedAt =
+    parseString(metadata.startedAt) ||
+    parseString(getNestedValue(metadata, ['analysis', 'startedAt'])) ||
+    row.created_at;
+
+  return [
+    { label: 'Status', value: row.call_status.replace(/_/g, ' ') },
+    { label: 'Started', value: formatDateTime(startedAt) },
+    { label: 'From', value: formatPhoneNumber(row.from_number) },
+    { label: 'To', value: formatPhoneNumber(row.to_number) },
+    { label: 'Assistant', value: assistantName || 'Not synced' },
+    { label: 'Model', value: modelName || 'Not logged' },
+    { label: 'Latency', value: latencyLabel || 'N/A' },
+    { label: 'Cost', value: costLabel || 'N/A' },
+    { label: 'Call ID', value: callId || row.id },
+  ];
+}
+
+function buildExportText(call: Omit<RecentCall, 'exportText'>) {
+  const transcriptBlock = call.transcript.length
+    ? call.transcript.map((entry) => `${entry.label}: ${entry.text}`).join('\n')
+    : 'No transcript available.';
+  const logBlock = call.logItems.map((item) => `${item.label}: ${item.value}`).join('\n');
+
+  return [
+    `${call.organizationName} call review`,
+    `Caller: ${call.caller}`,
+    `Direction: ${call.direction}`,
+    `Outcome: ${call.outcome}`,
+    `Created: ${call.createdAt}`,
+    '',
+    'Log',
+    logBlock,
+    '',
+    'Summary',
+    call.summary,
+    '',
+    'Transcript',
+    transcriptBlock,
+  ].join('\n');
+}
+
 function parseAgentRole(agentType: string): DashboardAgent['role'] {
   if (agentType === 'outbound') {
     return 'outbound';
@@ -183,9 +390,17 @@ function extractRecording(row: CallRow, voicemailAssetsById: Map<string, Voicema
 }
 
 function mapRecentCall(row: CallRow, organizationName: string, voicemailAssetsById: Map<string, VoicemailAssetRow>): RecentCall {
+  const metadata = row.metadata ?? {};
   const recording = extractRecording(row, voicemailAssetsById);
+  const transcript = extractTranscript(metadata, row.summary);
+  const logItems = buildLogItems(row);
+  const tags = [
+    ...normalizeTags(metadata.tags),
+    ...normalizeTags(metadata.intents),
+    ...normalizeTags(getNestedValue(metadata, ['analysis', 'flags'])),
+  ].slice(0, 6);
 
-  return {
+  const call = {
     id: row.id,
     caller: formatPhoneNumber(row.from_number ?? row.to_number),
     organizationName,
@@ -196,6 +411,39 @@ function mapRecentCall(row: CallRow, organizationName: string, voicemailAssetsBy
     recordingUrl: recording.recordingUrl,
     recordingLabel: recording.recordingLabel,
     createdAt: formatRelativeTime(row.created_at),
+    fromNumber: formatPhoneNumber(row.from_number),
+    toNumber: formatPhoneNumber(row.to_number),
+    startedAt: formatDateTime(
+      parseString(metadata.startedAt) || parseString(getNestedValue(metadata, ['analysis', 'startedAt'])) || row.created_at,
+    ),
+    assistantName:
+      parseString(metadata.assistantName) ||
+      parseString(getNestedValue(metadata, ['assistant', 'name'])) ||
+      parseString(getNestedValue(metadata, ['vapi', 'assistantName'])) ||
+      undefined,
+    modelName:
+      parseString(metadata.modelName) ||
+      parseString(getNestedValue(metadata, ['model', 'name'])) ||
+      parseString(getNestedValue(metadata, ['vapi', 'model'])) ||
+      undefined,
+    latencyLabel:
+      formatLatency(metadata.latencyMs) ||
+      formatLatency(metadata.latency) ||
+      formatLatency(getNestedValue(metadata, ['analysis', 'latencyMs'])) ||
+      undefined,
+    costLabel:
+      formatCost(metadata.costUsd) ||
+      formatCost(metadata.cost) ||
+      formatCost(getNestedValue(metadata, ['analysis', 'costUsd'])) ||
+      undefined,
+    transcript,
+    logItems,
+    tags,
+  };
+
+  return {
+    ...call,
+    exportText: buildExportText(call),
   };
 }
 
@@ -249,6 +497,31 @@ export function buildEmptyWorkflowBoard(organizationId?: string | null): Workflo
     nodes: [],
     edges: [],
   };
+}
+
+export async function getWorkflowBoardForOrganization(organizationId?: string | null, boardId?: string | null) {
+  if (!organizationId) {
+    return buildEmptyWorkflowBoard();
+  }
+
+  const supabase = await createSupabaseServerClient();
+  const query = supabase
+    .from('workflow_boards')
+    .select('id, organization_id, title, description, nodes, edges, updated_at')
+    .eq('organization_id', organizationId)
+    .order('updated_at', { ascending: false })
+    .limit(1);
+
+  const result = boardId
+    ? await supabase
+        .from('workflow_boards')
+        .select('id, organization_id, title, description, nodes, edges, updated_at')
+        .eq('organization_id', organizationId)
+        .eq('id', boardId)
+        .maybeSingle()
+    : await query.maybeSingle();
+
+  return mapWorkflowBoard((result.data as WorkflowBoardRow | null) ?? null) ?? buildEmptyWorkflowBoard(organizationId);
 }
 
 export async function getAdminDashboardData(viewer: ViewerContext): Promise<AdminDashboardData> {

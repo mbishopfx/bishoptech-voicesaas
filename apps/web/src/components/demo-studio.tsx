@@ -42,9 +42,8 @@ export function DemoStudio({ organizationId, recentBlueprints = [] }: DemoStudio
       <div className="section-header">
         <div>
           <span className="eyebrow-text">Demo studio</span>
-          <h3>Turn live business context into a polished voice demo.</h3>
+          <h3>Generate demo</h3>
         </div>
-        <p>Paste a website, raw GBP text, and a target number. The platform drafts the assistant, builds the call positioning, and can launch a live demo on the spot.</p>
       </div>
 
       <div className="workspace-grid workspace-grid-wide">

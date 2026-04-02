@@ -17,8 +17,7 @@ export default async function ClientCampaignsPage() {
       activeNav="campaigns"
       headerMode="compact"
       eyebrow="Campaigns"
-      title="Outbound campaigns"
-      description="Launch CSV-driven blasts from the outbound assistant and monitor the campaigns already attached to the workspace."
+      title="Campaigns"
     >
       <ClientCampaignsSection campaigns={data.campaigns} />
       <BlastCampaignStudio organizationId={data.organizationId} agents={data.agents} />

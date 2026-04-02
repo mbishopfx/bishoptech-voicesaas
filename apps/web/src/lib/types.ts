@@ -74,6 +74,26 @@ export type RecentCall = {
   recordingUrl?: string;
   recordingLabel?: string;
   createdAt: string;
+  fromNumber?: string;
+  toNumber?: string;
+  startedAt?: string;
+  assistantName?: string;
+  modelName?: string;
+  latencyLabel?: string;
+  costLabel?: string;
+  transcript: Array<{
+    id: string;
+    speaker: 'assistant' | 'caller' | 'system';
+    label: string;
+    text: string;
+    timestamp?: string;
+  }>;
+  logItems: Array<{
+    label: string;
+    value: string;
+  }>;
+  tags: string[];
+  exportText: string;
 };
 
 export type LeadRecord = {

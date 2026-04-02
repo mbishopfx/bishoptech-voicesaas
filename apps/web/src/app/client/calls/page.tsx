@@ -1,9 +1,5 @@
 import { AppShell } from '@/components/app-shell';
-import {
-  ClientCallLogSection,
-  ClientOutcomeChartSection,
-  ClientRecentCallsSection,
-} from '@/components/client-dashboard-sections';
+import { CallCommandCenter } from '@/components/call-command-center';
 import { requireViewer } from '@/lib/auth';
 import { getClientDashboardData } from '@/lib/dashboard-data';
 
@@ -20,17 +16,9 @@ export default async function ClientCallsPage() {
       activeNav="calls"
       headerMode="compact"
       eyebrow="Calls"
-      title="Conversation history"
-      description="Review recent activity, downloadable recordings, and the outcomes across the latest call traffic."
+      title="Calls"
     >
-      <div className="command-content-grid">
-        <ClientCallLogSection recentCalls={data.recentCalls} />
-        <aside className="command-side-stack">
-          <ClientRecentCallsSection recentCalls={data.recentCalls} />
-        </aside>
-      </div>
-
-      <ClientOutcomeChartSection recentCalls={data.recentCalls} />
+      <CallCommandCenter recentCalls={data.recentCalls} mode="client" />
     </AppShell>
   );
 }

@@ -26,7 +26,7 @@ function SectionAction({ href, label }: ActionProps) {
 
 export function ClientMetricsGrid({ metrics }: { metrics: MetricCard[] }) {
   return (
-    <section className="metric-grid command-metric-grid">
+    <section className="metric-grid command-metric-grid ops-metric-grid">
       {metrics.map((metric, index) => {
         const Icon = metricIcons[index] ?? AudioLines;
 
@@ -54,57 +54,28 @@ export function ClientControlDeckSection({
 }) {
   const activeCall = data.recentCalls[0];
   const primaryAgent = data.agents[0];
-  const surfacedMetrics = data.metrics.slice(0, 4);
 
   return (
-    <section className="glass-card command-control-deck">
-      <div className="command-control-head">
-        <div>
-          <span className="eyebrow-text">Workspace control</span>
-          <h2>{data.organizationName} live voice overview</h2>
-          <p>
-            Keep active conversations, lead flow, and assistant performance in view without turning the workspace into a
-            developer console.
-          </p>
+    <section className="ops-overview-grid">
+      <article className="glass-card ops-hero-panel">
+        <div className="ops-panel-head">
+          <div>
+            <span className="eyebrow-text">Workspace pulse</span>
+            <h2>{data.organizationName}</h2>
+          </div>
+          <span className="command-status-pill is-live">{data.planName ?? 'Managed'}</span>
         </div>
-        <span className="command-status-pill is-live">{data.planName ?? 'Managed workspace'}</span>
-      </div>
 
-      <div className="command-session-grid">
-        <div className="command-session-panel">
-          <div className="command-panel-head">
-            <div>
-              <span className="eyebrow-text">Conversation pulse</span>
-              <h3>{activeCall ? `${activeCall.direction} conversation` : 'Workspace standing by'}</h3>
-            </div>
-            <AudioLines size={18} />
-          </div>
-
-          <div className="command-live-visual">
-            <CommandDeckPlayer className="command-deck-player" accent="violet" />
-            <div className="command-live-fabric" aria-hidden="true">
-              <span>attention / resolution / bookings / follow-up</span>
-              <span>░░ conversation energy moving through the workspace ░░</span>
-            </div>
-            <div className="command-live-overlay">
-              <span>{primaryAgent?.name ?? 'Voice workspace'}</span>
-              <strong>{activeCall?.outcome ?? 'Tracking attention, resolution, and call flow in real time'}</strong>
-            </div>
-          </div>
-
-          <p className="command-card-copy">
-            {activeCall?.summary ??
-              'Recent call summaries will surface here as soon as the workspace starts receiving or placing traffic.'}
-          </p>
-
-          <div className="command-stat-strip">
+        <div className="ops-hero-visual">
+          <CommandDeckPlayer className="command-deck-player" accent="violet" />
+          <div className="ops-hero-overlay">
             <div>
               <span>Lead assistant</span>
               <strong>{primaryAgent?.name ?? 'Pending'}</strong>
             </div>
             <div>
-              <span>Outcome</span>
-              <strong>{activeCall?.outcome ?? 'Idle'}</strong>
+              <span>Latest call</span>
+              <strong>{activeCall?.outcome ?? 'Standby'}</strong>
             </div>
             <div>
               <span>Campaigns</span>
@@ -113,64 +84,64 @@ export function ClientControlDeckSection({
           </div>
         </div>
 
-        <div className="command-console-stack">
-          <article className="command-transcript-panel">
-            <div className="command-panel-head">
-              <div>
-                <span className="eyebrow-text">Highlights</span>
-                <h3>Current workspace context</h3>
-              </div>
-            </div>
-
-            <div className="command-console-log">
-              <p>
-                <strong>Lead assistant</strong> {primaryAgent?.purpose ?? 'No assistant has been provisioned yet.'}
-              </p>
-              <p>
-                <strong>Phone coverage</strong> {data.phoneNumbers.length || 0} active numbers are currently available
-                inside the workspace.
-              </p>
-              <p>
-                <strong>Campaign activity</strong> {data.recentBlueprints.length} saved demo blueprints and{' '}
-                {data.campaigns.length} outbound campaigns are currently visible.
-              </p>
-            </div>
+        <div className="ops-kv-grid">
+          <article className="ops-log-card">
+            <span>Numbers</span>
+            <strong>{data.phoneNumbers.length}</strong>
           </article>
-
-          <article className="command-routing-panel">
-            <div className="command-panel-head">
-              <div>
-                <span className="eyebrow-text">Today at a glance</span>
-                <h3>Operational checkpoints</h3>
-              </div>
-            </div>
-
-            <div className="command-route-list">
-              <div>
-                <span>Agent sync state</span>
-                <strong>{primaryAgent?.lastSyncedAt ?? 'Pending sync'}</strong>
-              </div>
-              <div>
-                <span>Recent call load</span>
-                <strong>{data.recentCalls.length} calls</strong>
-              </div>
-              <div>
-                <span>Timezone</span>
-                <strong>{data.timezone}</strong>
-              </div>
-            </div>
+          <article className="ops-log-card">
+            <span>Agents</span>
+            <strong>{data.agents.length}</strong>
+          </article>
+          <article className="ops-log-card">
+            <span>Calls</span>
+            <strong>{data.recentCalls.length}</strong>
+          </article>
+          <article className="ops-log-card">
+            <span>Timezone</span>
+            <strong>{data.timezone}</strong>
           </article>
         </div>
+      </article>
 
-        <div className="command-mini-grid">
-          {surfacedMetrics.map((metric) => (
-            <article key={metric.label} className={`command-mini-card tone-${metric.tone ?? 'neutral'}`}>
-              <span>{metric.label}</span>
-              <strong>{metric.value}</strong>
-              <p>{metric.delta}</p>
-            </article>
-          ))}
-        </div>
+      <div className="ops-glance-grid">
+        <article className="glass-card ops-list-card">
+          <div className="ops-panel-head">
+            <div>
+              <span className="eyebrow-text">Assistant stack</span>
+              <strong>Live roles</strong>
+            </div>
+            <Bot size={16} />
+          </div>
+          <div className="ops-mini-feed">
+            {data.agents.slice(0, 4).map((agent) => (
+              <div key={agent.id} className="ops-mini-feed-row">
+                <strong>{agent.name}</strong>
+                <span>{agent.role}</span>
+              </div>
+            ))}
+            {!data.agents.length ? <div className="ops-empty-state">No agents assigned.</div> : null}
+          </div>
+        </article>
+
+        <article className="glass-card ops-list-card">
+          <div className="ops-panel-head">
+            <div>
+              <span className="eyebrow-text">Recent calls</span>
+              <strong>Queue</strong>
+            </div>
+            <AudioLines size={16} />
+          </div>
+          <div className="ops-mini-feed">
+            {data.recentCalls.slice(0, 4).map((call) => (
+              <div key={call.id} className="ops-mini-feed-row">
+                <strong>{call.caller}</strong>
+                <span>{call.outcome}</span>
+              </div>
+            ))}
+            {!data.recentCalls.length ? <div className="ops-empty-state">No calls logged.</div> : null}
+          </div>
+        </article>
       </div>
     </section>
   );
@@ -178,7 +149,6 @@ export function ClientControlDeckSection({
 
 export function ClientAgentsSection({
   agents,
-  organizationName,
   limit,
   actionHref,
   actionLabel,
@@ -192,48 +162,53 @@ export function ClientAgentsSection({
   const items = typeof limit === 'number' ? agents.slice(0, limit) : agents;
 
   return (
-    <section className="command-section-block">
+    <section className="command-section-block ops-section-panel">
       <div className="command-section-header">
         <div>
-          <span className="eyebrow-text">Assistant stack</span>
-          <h2>Live assistants</h2>
+          <span className="eyebrow-text">Agents</span>
+          <h2>Assistant stack</h2>
         </div>
         <SectionAction href={actionHref} label={actionLabel} />
       </div>
 
-      <p>{organizationName} is currently scoped across inbound, outbound, and specialist voice roles.</p>
-
-      <div className="command-agent-grid">
+      <div className="ops-roster-grid">
         {items.length ? (
           items.map((agent) => (
-            <article key={agent.id} className="glass-card command-agent-card">
-              <div className="command-agent-top">
-                <div className={`command-agent-dot ${agent.status === 'live' ? 'is-live' : 'is-idle'}`} />
+            <article key={agent.id} className="glass-card ops-roster-card">
+              <div className="ops-roster-head">
                 <div>
                   <h3>{agent.name}</h3>
                   <p>{agent.role}</p>
                 </div>
+                <span className={`command-status-pill ${agent.status === 'live' ? 'is-live' : 'is-muted'}`}>
+                  {agent.status}
+                </span>
               </div>
 
-              <div className="command-stat-strip">
-                <div>
+              <div className="ops-kv-grid">
+                <article className="ops-log-card">
                   <span>Voice</span>
                   <strong>{agent.voice}</strong>
-                </div>
-                <div>
+                </article>
+                <article className="ops-log-card">
                   <span>Model</span>
                   <strong>{agent.model}</strong>
-                </div>
+                </article>
               </div>
 
-              <p className="command-card-copy">{agent.purpose}</p>
-              <span className="command-inline-note">Last synced {agent.lastSyncedAt}</span>
+              <div className="ops-summary-card">
+                <p>{agent.purpose}</p>
+              </div>
+
+              <div className="ops-tag-row">
+                <span className="surface-pill">Synced {agent.lastSyncedAt}</span>
+                {agent.vapiAssistantId ? <span className="surface-pill">{agent.vapiAssistantId.slice(0, 8)}</span> : null}
+              </div>
             </article>
           ))
         ) : (
           <div className="glass-card empty-state">
-            <h4>No assistants have been assigned to this organization yet.</h4>
-            <p>The workspace will populate after the onboarding stack is provisioned.</p>
+            <h4>No agents assigned.</h4>
           </div>
         )}
       </div>
@@ -243,39 +218,35 @@ export function ClientAgentsSection({
 
 export function ClientWorkspaceSummarySection({ data }: { data: ClientDashboardData }) {
   return (
-    <section className="command-section-block">
+    <section className="command-section-block ops-section-panel">
       <div className="command-section-header">
         <div>
-          <span className="eyebrow-text">Workspace summary</span>
-          <h2>Account snapshot</h2>
+          <span className="eyebrow-text">Workspace</span>
+          <h2>Snapshot</h2>
         </div>
       </div>
 
-      <div className="glass-card command-summary-card">
-        <div className="command-summary-top">
-          <div>
-            <h3>{data.organizationName}</h3>
-            <p>{data.planName ?? 'Managed workspace'}</p>
-          </div>
-          <span className="surface-pill">{data.timezone}</span>
-        </div>
-
-        <div className="command-stat-strip">
-          <div>
+      <div className="glass-card ops-list-card">
+        <div className="ops-kv-grid">
+          <article className="ops-log-card">
+            <span>Plan</span>
+            <strong>{data.planName ?? 'Managed'}</strong>
+          </article>
+          <article className="ops-log-card">
             <span>Numbers</span>
             <strong>{data.phoneNumbers.length}</strong>
-          </div>
-          <div>
+          </article>
+          <article className="ops-log-card">
             <span>Campaigns</span>
             <strong>{data.campaigns.length}</strong>
-          </div>
-          <div>
+          </article>
+          <article className="ops-log-card">
             <span>Blueprints</span>
             <strong>{data.recentBlueprints.length}</strong>
-          </div>
+          </article>
         </div>
 
-        <div className="pill-row">
+        <div className="ops-tag-row">
           {data.phoneNumbers.length ? (
             data.phoneNumbers.map((phoneNumber) => (
               <span key={phoneNumber} className="surface-pill">
@@ -283,7 +254,7 @@ export function ClientWorkspaceSummarySection({ data }: { data: ClientDashboardD
               </span>
             ))
           ) : (
-            <span className="surface-pill">No active number stored</span>
+            <span className="surface-pill">No active number</span>
           )}
         </div>
       </div>
@@ -305,33 +276,33 @@ export function ClientRecentCallsSection({
   const items = typeof limit === 'number' ? recentCalls.slice(0, limit) : recentCalls;
 
   return (
-    <section className="command-section-block command-feed-panel">
+    <section className="command-section-block ops-section-panel">
       <div className="command-section-header">
         <div>
-          <span className="eyebrow-text">Recent activity</span>
-          <h2>Latest call events</h2>
+          <span className="eyebrow-text">Calls</span>
+          <h2>Recent</h2>
         </div>
         <SectionAction href={actionHref} label={actionLabel} />
       </div>
 
-      <div className="command-activity-feed">
+      <div className="ops-mini-feed">
         {items.length ? (
           items.map((call) => (
-            <article key={call.id} className="command-activity-item">
-              <div className="command-activity-meta">
+            <article key={call.id} className="ops-feed-card">
+              <div className="ops-feed-top">
                 <span>{call.direction}</span>
                 <span>{call.createdAt}</span>
               </div>
               <strong>{call.caller}</strong>
               <p>{call.summary}</p>
-              <div className="command-activity-footer">
+              <div className="ops-feed-top">
                 <span>{call.outcome}</span>
                 <span>{call.duration}</span>
               </div>
             </article>
           ))
         ) : (
-          <div className="empty-inline">No calls have been recorded yet.</div>
+          <div className="ops-empty-state">No calls logged.</div>
         )}
       </div>
     </section>
@@ -340,18 +311,18 @@ export function ClientRecentCallsSection({
 
 export function ClientLeadsSection({ leads }: { leads: LeadRecord[] }) {
   return (
-    <section className="section-block">
+    <section className="command-section-block ops-section-panel">
       <div className="command-section-header">
         <div>
-          <span className="eyebrow-text">Leads captured</span>
-          <h2>Recent contact activity</h2>
+          <span className="eyebrow-text">Leads</span>
+          <h2>Inbox</h2>
         </div>
       </div>
 
-      <div className="table-shell">
+      <div className="table-shell compact-table">
         <div className="table-header">
           <span>Lead</span>
-          <span>Service</span>
+          <span>Intent</span>
           <span>Urgency</span>
           <span>Updated</span>
         </div>
@@ -369,7 +340,7 @@ export function ClientLeadsSection({ leads }: { leads: LeadRecord[] }) {
             </div>
           ))
         ) : (
-          <div className="table-empty">No contact rows have been written yet.</div>
+          <div className="table-empty">No leads captured.</div>
         )}
       </div>
     </section>
@@ -378,15 +349,15 @@ export function ClientLeadsSection({ leads }: { leads: LeadRecord[] }) {
 
 export function ClientCallLogSection({ recentCalls }: { recentCalls: RecentCall[] }) {
   return (
-    <section className="section-block">
+    <section className="command-section-block ops-section-panel">
       <div className="command-section-header">
         <div>
-          <span className="eyebrow-text">Call log</span>
-          <h2>Calls and recordings</h2>
+          <span className="eyebrow-text">Log</span>
+          <h2>Calls</h2>
         </div>
       </div>
 
-      <div className="table-shell">
+      <div className="table-shell compact-table">
         <div className="table-header">
           <span>Caller</span>
           <span>Outcome</span>
@@ -406,16 +377,16 @@ export function ClientCallLogSection({ recentCalls }: { recentCalls: RecentCall[
               <div>
                 {call.recordingUrl ? (
                   <a className="text-link" href={call.recordingUrl} target="_blank" rel="noreferrer">
-                    {call.recordingLabel ?? 'Download audio'}
+                    {call.recordingLabel ?? 'Recording'}
                   </a>
                 ) : (
-                  call.recordingLabel ?? 'No downloadable asset linked yet'
+                  'No asset'
                 )}
               </div>
             </div>
           ))
         ) : (
-          <div className="table-empty">No calls have been recorded yet.</div>
+          <div className="table-empty">No calls recorded.</div>
         )}
       </div>
     </section>
@@ -434,13 +405,12 @@ export function ClientOutcomeChartSection({ recentCalls }: { recentCalls: Recent
   const maxOutcomeCount = Math.max(...outcomeGroups.map(([, count]) => count), 1);
 
   return (
-    <section className="glass-card command-chart-panel">
+    <section className="glass-card command-chart-panel ops-section-panel">
       <div className="command-section-header">
         <div>
-          <span className="eyebrow-text">Recent outcomes</span>
-          <h2>Call result distribution</h2>
+          <span className="eyebrow-text">Outcomes</span>
+          <h2>Distribution</h2>
         </div>
-        <p>These bars are computed from the recent call outcomes currently available in the workspace.</p>
       </div>
 
       {outcomeGroups.length ? (
@@ -452,7 +422,7 @@ export function ClientOutcomeChartSection({ recentCalls }: { recentCalls: Recent
               <div key={outcome} className="command-bar-row">
                 <div className="command-bar-label">
                   <strong>{outcome}</strong>
-                  <span>{count} calls</span>
+                  <span>{count}</span>
                 </div>
                 <div className="command-bar-track">
                   <div className="command-bar-fill" style={{ width: `${normalized}%` }} />
@@ -462,7 +432,7 @@ export function ClientOutcomeChartSection({ recentCalls }: { recentCalls: Recent
           })}
         </div>
       ) : (
-        <div className="empty-inline">No call outcomes are available for the recent traffic view yet.</div>
+        <div className="ops-empty-state">No outcomes yet.</div>
       )}
     </section>
   );
@@ -482,26 +452,26 @@ export function ClientCampaignsSection({
   const items = typeof limit === 'number' ? campaigns.slice(0, limit) : campaigns;
 
   return (
-    <section className="command-section-block">
+    <section className="command-section-block ops-section-panel">
       <div className="command-section-header">
         <div>
           <span className="eyebrow-text">Campaigns</span>
-          <h2>Outbound operations</h2>
+          <h2>Outbound</h2>
         </div>
         <SectionAction href={actionHref} label={actionLabel} />
       </div>
 
-      <div className="command-compact-list command-compact-list-campaigns">
+      <div className="ops-mini-feed">
         {items.length ? (
           items.map((campaign) => (
-            <article key={campaign.id} className="command-compact-item">
+            <article key={campaign.id} className="ops-feed-card">
               <strong>{campaign.name}</strong>
               <p>{campaign.createdAt}</p>
               <span>{campaign.status}</span>
             </article>
           ))
         ) : (
-          <div className="empty-inline">No campaigns have been launched from this workspace yet.</div>
+          <div className="ops-empty-state">No campaigns launched.</div>
         )}
       </div>
     </section>

@@ -1,5 +1,5 @@
 import { AppShell } from '@/components/app-shell';
-import { AdminRecentCallsSection, OrganizationLoadSection } from '@/components/admin-dashboard-sections';
+import { CallCommandCenter } from '@/components/call-command-center';
 import { requirePlatformAdmin } from '@/lib/auth';
 import { getAdminDashboardData } from '@/lib/dashboard-data';
 
@@ -16,11 +16,9 @@ export default async function AdminCallsPage() {
       activeNav="calls"
       headerMode="compact"
       eyebrow="Calls"
-      title="Cross-account call activity"
-      description="Review live call traffic and compare where the active assistant volume is sitting right now."
+      title="Calls"
     >
-      <AdminRecentCallsSection recentCalls={data.recentCalls} />
-      <OrganizationLoadSection organizations={data.organizations} />
+      <CallCommandCenter recentCalls={data.recentCalls} mode="admin" />
     </AppShell>
   );
 }

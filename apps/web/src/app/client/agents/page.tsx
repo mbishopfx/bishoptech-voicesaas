@@ -16,8 +16,7 @@ export default async function ClientAgentsPage() {
       activeNav="agents"
       headerMode="compact"
       eyebrow="Agents"
-      title="Assistant stack"
-      description="See the live inbound, outbound, and specialist agents currently assigned to the workspace."
+      title="Agents"
     >
       <div className="command-content-grid">
         <ClientAgentsSection agents={data.agents} organizationName={data.organizationName} />

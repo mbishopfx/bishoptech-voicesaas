@@ -26,9 +26,8 @@ export function BlastCampaignStudio({ organizationId, agents }: BlastCampaignStu
       <div className="section-header">
         <div>
           <span className="eyebrow-text">Blast campaigns</span>
-          <h3>Normalize a CSV list and queue outreach through the outbound worker.</h3>
+          <h3>Queue outreach</h3>
         </div>
-        <p>The campaign is queued for Railway so outbound traffic stays off the request thread and can scale across client workspaces safely.</p>
       </div>
 
       <div className="workspace-grid workspace-grid-wide">

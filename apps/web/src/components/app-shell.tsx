@@ -292,19 +292,16 @@ export function AppShell({
           <div className="command-status-head">
             <div>
               <span className="eyebrow-text">Environment</span>
-              <h3>Connected services</h3>
+              <h3>Services</h3>
             </div>
             <ClipboardPenLine size={18} />
           </div>
 
-          <div className="status-list">
+          <div className="command-status-strip">
             {availability.map((item) => (
-              <div key={item.label} className="status-row">
+              <div key={item.label} className="command-status-pill-row">
                 <span className={`status-dot ${item.ready ? 'is-ready' : 'is-blocked'}`} />
-                <div>
-                  <strong>{item.label}</strong>
-                  <p>{item.detail}</p>
-                </div>
+                <strong>{item.label}</strong>
               </div>
             ))}
           </div>

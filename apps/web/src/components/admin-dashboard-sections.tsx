@@ -1,6 +1,6 @@
 import Link from 'next/link';
 import type { Route } from 'next';
-import { AudioLines, Bot, Building2, PhoneCall, Send, Sparkles } from 'lucide-react';
+import { Activity, AudioLines, Bot, Building2, PhoneCall, Send } from 'lucide-react';
 
 import { CommandDeckPlayer } from '@/components/animated-voice-surfaces';
 import { formatRelativeTime } from '@/lib/format';
@@ -37,123 +37,93 @@ export function AdminControlDeckSection({
   const activeCall = recentCalls[0];
   const activeOrganizations = organizations.filter((organization) => organization.isActive).length;
   const liveAgents = organizations.reduce((sum, organization) => sum + organization.liveAgentCount, 0);
-  const surfacedMetrics = metrics.slice(0, 4);
 
   return (
-    <section className="glass-card command-control-deck">
-      <div className="command-control-head">
-        <div>
-          <span className="eyebrow-text">Platform control</span>
-          <h2>Live account visibility without the clutter</h2>
-          <p>
-            Watch conversation volume, client readiness, and rollout health from one fluid surface instead of digging
-            through disconnected tools.
-          </p>
+    <section className="ops-overview-grid">
+      <article className="glass-card ops-hero-panel">
+        <div className="ops-panel-head">
+          <div>
+            <span className="eyebrow-text">Platform pulse</span>
+            <h2>Admin command view</h2>
+          </div>
+          <span className="command-status-pill is-live">Live</span>
         </div>
-        <span className="command-status-pill is-live">Traffic flowing</span>
-      </div>
 
-      <div className="command-session-grid">
-        <div className="command-session-panel">
-          <div className="command-panel-head">
+        <div className="ops-hero-visual">
+          <CommandDeckPlayer className="command-deck-player" accent="cyan" />
+          <div className="ops-hero-overlay">
             <div>
-              <span className="eyebrow-text">Live pulse</span>
-              <h3>{activeCall ? `${activeCall.organizationName} • ${activeCall.direction} conversation` : 'Waiting for the next conversation'}</h3>
-            </div>
-            <AudioLines size={18} />
-          </div>
-
-          <div className="command-live-visual">
-            <CommandDeckPlayer className="command-deck-player" accent="cyan" />
-            <div className="command-live-fabric" aria-hidden="true">
-              <span>accounts / calls / coverage / readiness</span>
-              <span>░░ live call pulse moving across every workspace ░░</span>
-            </div>
-            <div className="command-live-overlay">
-              <span>{activeCall?.organizationName ?? 'Platform wide view'}</span>
-              <strong>{activeCall?.outcome ?? 'Monitoring active conversations and workspace health'}</strong>
-            </div>
-          </div>
-
-          <p className="command-card-copy">
-            {activeCall?.summary ??
-              'Recent call summaries will surface here once the first live conversations land in the platform.'}
-          </p>
-
-          <div className="command-stat-strip">
-            <div>
-              <span>Latest outcome</span>
-              <strong>{activeCall?.outcome ?? 'Idle'}</strong>
+              <span>Latest call</span>
+              <strong>{activeCall ? activeCall.organizationName : 'Waiting for traffic'}</strong>
             </div>
             <div>
-              <span>Talk time</span>
-              <strong>{activeCall?.duration ?? 'No recent call'}</strong>
+              <span>Status</span>
+              <strong>{activeCall?.outcome ?? 'Standby'}</strong>
             </div>
             <div>
-              <span>Direction</span>
-              <strong>{activeCall?.direction ?? 'standby'}</strong>
+              <span>Duration</span>
+              <strong>{activeCall?.duration ?? '0m'}</strong>
             </div>
           </div>
         </div>
 
-        <div className="command-console-stack">
-          <article className="command-transcript-panel">
-            <div className="command-panel-head">
-              <div>
-                <span className="eyebrow-text">Highlights</span>
-                <h3>What needs attention</h3>
-              </div>
-            </div>
-
-            <div className="command-console-log">
-              <p>
-                <strong>Latest summary</strong> {activeCall?.summary ?? 'No live transcript available yet.'}
-              </p>
-              <p>
-                <strong>Accounts live</strong> {activeOrganizations} active organizations are currently provisioned
-                across the Bishop Tech platform.
-              </p>
-              <p>
-                <strong>Assistants ready</strong> {liveAgents} live assistants are visible across onboarding, demo, and
-                production workspaces.
-              </p>
-            </div>
+        <div className="ops-kv-grid">
+          <article className="ops-log-card">
+            <span>Active orgs</span>
+            <strong>{activeOrganizations}</strong>
           </article>
-
-          <article className="command-routing-panel">
-            <div className="command-panel-head">
-              <div>
-                <span className="eyebrow-text">Readiness</span>
-                <h3>Coverage checkpoints</h3>
-              </div>
-            </div>
-
-            <div className="command-route-list">
-              <div>
-                <span>Account health</span>
-                <strong>{activeOrganizations} live</strong>
-              </div>
-              <div>
-                <span>Recent activity</span>
-                <strong>{recentCalls.length} recent events</strong>
-              </div>
-              <div>
-                <span>Assistant coverage</span>
-                <strong>{liveAgents} active agents</strong>
-              </div>
-            </div>
+          <article className="ops-log-card">
+            <span>Live agents</span>
+            <strong>{liveAgents}</strong>
+          </article>
+          <article className="ops-log-card">
+            <span>Recent calls</span>
+            <strong>{recentCalls.length}</strong>
+          </article>
+          <article className="ops-log-card">
+            <span>Campaigns</span>
+            <strong>{metrics[3]?.value ?? '0'}</strong>
           </article>
         </div>
+      </article>
 
-        <div className="command-mini-grid">
-          {surfacedMetrics.map((metric) => (
-            <article key={metric.label} className={`command-mini-card tone-${metric.tone ?? 'neutral'}`}>
-              <span>{metric.label}</span>
-              <strong>{metric.value}</strong>
-              <p>{metric.delta}</p>
-            </article>
-          ))}
-        </div>
+      <div className="ops-glance-grid">
+        <article className="glass-card ops-list-card">
+          <div className="ops-panel-head">
+            <div>
+              <span className="eyebrow-text">Live queue</span>
+              <strong>Calls in review</strong>
+            </div>
+            <AudioLines size={16} />
+          </div>
+          <div className="ops-mini-feed">
+            {recentCalls.slice(0, 4).map((call) => (
+              <div key={call.id} className="ops-mini-feed-row">
+                <strong>{call.organizationName}</strong>
+                <span>{call.outcome}</span>
+              </div>
+            ))}
+            {!recentCalls.length ? <div className="ops-empty-state">No calls logged.</div> : null}
+          </div>
+        </article>
+
+        <article className="glass-card ops-list-card">
+          <div className="ops-panel-head">
+            <div>
+              <span className="eyebrow-text">Watch list</span>
+              <strong>Accounts</strong>
+            </div>
+            <Activity size={16} />
+          </div>
+          <div className="ops-mini-feed">
+            {organizations.slice(0, 4).map((organization) => (
+              <div key={organization.id} className="ops-mini-feed-row">
+                <strong>{organization.name}</strong>
+                <span>{organization.liveAgentCount} agents</span>
+              </div>
+            ))}
+          </div>
+        </article>
       </div>
     </section>
   );
@@ -161,9 +131,9 @@ export function AdminControlDeckSection({
 
 export function AdminMetricsGrid({ metrics }: { metrics: MetricCard[] }) {
   return (
-    <section className="metric-grid command-metric-grid">
+    <section className="metric-grid command-metric-grid ops-metric-grid">
       {metrics.map((metric, index) => {
-        const Icon = metricIcons[index] ?? Sparkles;
+        const Icon = metricIcons[index] ?? Bot;
 
         return (
           <article key={metric.label} className={`glass-card command-metric-card tone-${metric.tone ?? 'neutral'}`}>
@@ -196,20 +166,20 @@ export function OrganizationRosterSection({
   const items = typeof limit === 'number' ? organizations.slice(0, limit) : organizations;
 
   return (
-    <section className="command-section-block">
+    <section className="command-section-block ops-section-panel">
       <div className="command-section-header">
         <div>
           <span className="eyebrow-text">Organizations</span>
-          <h2>Live account roster</h2>
+          <h2>Roster</h2>
         </div>
         <SectionAction href={actionHref} label={actionLabel} />
       </div>
 
-      <div className="command-organization-grid">
+      <div className="ops-roster-grid">
         {items.length ? (
           items.map((organization) => (
-            <article key={organization.id} className="glass-card command-organization-card">
-              <div className="command-organization-top">
+            <article key={organization.id} className="glass-card ops-roster-card">
+              <div className="ops-roster-head">
                 <div>
                   <h3>{organization.name}</h3>
                   <p>{organization.slug}</p>
@@ -219,32 +189,32 @@ export function OrganizationRosterSection({
                 </span>
               </div>
 
-              <div className="command-stat-strip">
-                <div>
+              <div className="ops-kv-grid">
+                <article className="ops-log-card">
                   <span>Plan</span>
-                  <strong>{organization.planName ?? 'Managed workspace'}</strong>
-                </div>
-                <div>
+                  <strong>{organization.planName ?? 'Managed'}</strong>
+                </article>
+                <article className="ops-log-card">
                   <span>Members</span>
                   <strong>{organization.memberCount}</strong>
-                </div>
-                <div>
+                </article>
+                <article className="ops-log-card">
                   <span>Agents</span>
                   <strong>
                     {organization.liveAgentCount}/{organization.agentCount}
                   </strong>
-                </div>
-                <div>
+                </article>
+                <article className="ops-log-card">
                   <span>Last call</span>
-                  <strong>{organization.lastCallAt ? formatRelativeTime(organization.lastCallAt) : 'No calls yet'}</strong>
-                </div>
+                  <strong>{organization.lastCallAt ? formatRelativeTime(organization.lastCallAt) : 'No calls'}</strong>
+                </article>
               </div>
 
-              <p className="command-card-copy">
-                {organization.latestCallSummary ?? 'No summary has been logged for this organization yet.'}
-              </p>
+              <div className="ops-summary-card">
+                <p>{organization.latestCallSummary ?? 'No call summary yet.'}</p>
+              </div>
 
-              <div className="pill-row">
+              <div className="ops-tag-row">
                 {organization.phoneNumbers.length ? (
                   organization.phoneNumbers.map((phoneNumber) => (
                     <span key={phoneNumber} className="surface-pill">
@@ -252,15 +222,14 @@ export function OrganizationRosterSection({
                     </span>
                   ))
                 ) : (
-                  <span className="surface-pill">No active phone number stored</span>
+                  <span className="surface-pill">No number</span>
                 )}
               </div>
             </article>
           ))
         ) : (
           <div className="glass-card empty-state">
-            <h4>No organizations have been provisioned yet.</h4>
-            <p>Use the onboarding page to create the first BishopTech Voice workspace.</p>
+            <h4>No organizations yet.</h4>
           </div>
         )}
       </div>
@@ -282,33 +251,33 @@ export function AdminRecentCallsSection({
   const items = typeof limit === 'number' ? recentCalls.slice(0, limit) : recentCalls;
 
   return (
-    <section className="command-section-block command-feed-panel">
+    <section className="command-section-block ops-section-panel">
       <div className="command-section-header">
         <div>
-          <span className="eyebrow-text">Recent activity</span>
-          <h2>Latest call events</h2>
+          <span className="eyebrow-text">Calls</span>
+          <h2>Recent</h2>
         </div>
         <SectionAction href={actionHref} label={actionLabel} />
       </div>
 
-      <div className="command-activity-feed">
+      <div className="ops-mini-feed">
         {items.length ? (
           items.map((call) => (
-            <article key={call.id} className="command-activity-item">
-              <div className="command-activity-meta">
+            <article key={call.id} className="ops-feed-card">
+              <div className="ops-feed-top">
                 <span>{call.direction}</span>
                 <span>{call.createdAt}</span>
               </div>
               <strong>{call.organizationName}</strong>
               <p>{call.summary}</p>
-              <div className="command-activity-footer">
+              <div className="ops-feed-top">
                 <span>{call.outcome}</span>
                 <span>{call.duration}</span>
               </div>
             </article>
           ))
         ) : (
-          <div className="empty-inline">No calls have been logged yet.</div>
+          <div className="ops-empty-state">No calls logged.</div>
         )}
       </div>
     </section>
@@ -329,26 +298,26 @@ export function AdminBlueprintHistorySection({
   const items = typeof limit === 'number' ? recentBlueprints.slice(0, limit) : recentBlueprints;
 
   return (
-    <section className="command-section-block">
+    <section className="command-section-block ops-section-panel">
       <div className="command-section-header">
         <div>
-          <span className="eyebrow-text">Saved demos</span>
-          <h2>Recent blueprint history</h2>
+          <span className="eyebrow-text">Demos</span>
+          <h2>Blueprints</h2>
         </div>
         <SectionAction href={actionHref} label={actionLabel} />
       </div>
 
-      <div className="command-compact-list">
+      <div className="ops-mini-feed">
         {items.length ? (
           items.map((blueprint) => (
-            <article key={blueprint.id} className="command-compact-item">
+            <article key={blueprint.id} className="ops-feed-card">
               <strong>{blueprint.title}</strong>
-              <p>{blueprint.websiteUrl ?? 'No website captured'}</p>
+              <p>{blueprint.websiteUrl ?? 'No source URL'}</p>
               <span>{blueprint.createdAt}</span>
             </article>
           ))
         ) : (
-          <div className="empty-inline">No demo blueprints have been saved yet.</div>
+          <div className="ops-empty-state">No blueprints saved.</div>
         )}
       </div>
     </section>
@@ -366,25 +335,24 @@ export function OrganizationLoadSection({
   const maxAgentCount = Math.max(...items.map((organization) => organization.liveAgentCount), 1);
 
   return (
-    <section className="glass-card command-chart-panel">
+    <section className="glass-card command-chart-panel ops-section-panel">
       <div className="command-section-header">
         <div>
-          <span className="eyebrow-text">Organization load</span>
-          <h2>Live agent volume by account</h2>
+          <span className="eyebrow-text">Load</span>
+          <h2>Agent volume</h2>
         </div>
-        <p>Bar lengths are normalized from the current live agent count across the organizations shown below.</p>
       </div>
 
       {items.length ? (
         <div className="command-bar-chart">
           {items.map((organization) => {
-            const normalized = Math.max((organization.liveAgentCount / maxAgentCount) * 100, organization.liveAgentCount ? 20 : 8);
+            const normalized = Math.max((organization.liveAgentCount / maxAgentCount) * 100, organization.liveAgentCount ? 16 : 6);
 
             return (
               <div key={organization.id} className="command-bar-row">
                 <div className="command-bar-label">
                   <strong>{organization.name}</strong>
-                  <span>{organization.liveAgentCount} live agents</span>
+                  <span>{organization.liveAgentCount} live</span>
                 </div>
                 <div className="command-bar-track">
                   <div className="command-bar-fill" style={{ width: `${normalized}%` }} />
@@ -394,7 +362,7 @@ export function OrganizationLoadSection({
           })}
         </div>
       ) : (
-        <div className="empty-inline">No organization data is available for the load view yet.</div>
+        <div className="ops-empty-state">No organization data.</div>
       )}
     </section>
   );

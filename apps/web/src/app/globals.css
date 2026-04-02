@@ -6230,3 +6230,553 @@ body::before {
     min-width: 52px;
   }
 }
+
+.command-page-head {
+  align-items: center;
+  gap: 20px;
+  padding: 28px 30px;
+}
+
+.command-page-copy p {
+  max-width: 48rem;
+  color: rgba(214, 222, 236, 0.72);
+}
+
+.command-status-card {
+  padding: 18px 18px 16px;
+}
+
+.command-status-strip {
+  display: grid;
+  gap: 10px;
+  margin-top: 14px;
+}
+
+.command-status-pill-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-height: 42px;
+  padding: 0 14px;
+  border: 1px solid rgba(120, 244, 255, 0.12);
+  border-radius: 14px;
+  background: rgba(8, 14, 20, 0.62);
+}
+
+.ops-overview-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1.45fr) minmax(320px, 0.8fr);
+  gap: 22px;
+}
+
+.ops-hero-panel,
+.ops-section-panel,
+.ops-call-center,
+.workflow-toolbar,
+.workflow-board-panel,
+.workflow-inspector,
+.workflow-preview-panel {
+  border: 1px solid rgba(120, 244, 255, 0.12);
+  box-shadow: 0 24px 70px rgba(0, 0, 0, 0.32);
+}
+
+.ops-hero-panel {
+  padding: 24px;
+  display: grid;
+  gap: 18px;
+}
+
+.ops-panel-head,
+.workflow-side-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+}
+
+.ops-panel-head h2,
+.workflow-side-head h3 {
+  margin: 6px 0 0;
+  font-size: clamp(1.4rem, 1.2rem + 1vw, 2rem);
+}
+
+.ops-hero-visual {
+  position: relative;
+  min-height: 260px;
+  overflow: hidden;
+  border: 1px solid rgba(120, 244, 255, 0.14);
+  border-radius: 24px;
+  background:
+    radial-gradient(circle at top left, rgba(91, 214, 255, 0.12), transparent 34%),
+    radial-gradient(circle at bottom right, rgba(162, 115, 255, 0.12), transparent 34%),
+    rgba(7, 12, 18, 0.84);
+}
+
+.ops-hero-visual .command-deck-player {
+  position: absolute;
+  inset: 0;
+}
+
+.ops-hero-overlay {
+  position: absolute;
+  inset: auto 18px 18px;
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.ops-hero-overlay > div,
+.ops-summary-card,
+.ops-list-card {
+  padding: 14px 16px;
+  border: 1px solid rgba(120, 244, 255, 0.12);
+  border-radius: 18px;
+  background: rgba(5, 10, 14, 0.72);
+  backdrop-filter: blur(18px);
+}
+
+.ops-hero-overlay span,
+.ops-log-card span,
+.ops-feed-top span,
+.ops-transcript-meta span,
+.ops-mini-feed-row span,
+.ops-chip,
+.workflow-toolbar-copy p {
+  color: rgba(176, 190, 209, 0.76);
+  font-size: 0.76rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+}
+
+.ops-hero-overlay strong,
+.ops-log-card strong,
+.ops-mini-feed-row strong,
+.ops-feed-card strong,
+.ops-summary-card p {
+  color: var(--text);
+}
+
+.ops-glance-grid,
+.workflow-side-stack {
+  display: grid;
+  gap: 22px;
+}
+
+.ops-list-card {
+  display: grid;
+  gap: 14px;
+  padding: 18px;
+}
+
+.ops-mini-feed {
+  display: grid;
+  gap: 12px;
+}
+
+.ops-mini-feed-row,
+.ops-feed-card {
+  display: grid;
+  gap: 6px;
+  padding: 12px 14px;
+  border: 1px solid rgba(120, 244, 255, 0.1);
+  border-radius: 16px;
+  background: rgba(9, 15, 20, 0.64);
+}
+
+.ops-mini-feed-row {
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+}
+
+.ops-feed-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.ops-kv-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.ops-log-card {
+  display: grid;
+  gap: 6px;
+  min-height: 84px;
+  padding: 14px;
+  border: 1px solid rgba(120, 244, 255, 0.1);
+  border-radius: 18px;
+  background: rgba(8, 14, 20, 0.74);
+}
+
+.ops-roster-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 18px;
+}
+
+.ops-roster-card {
+  display: grid;
+  gap: 14px;
+  padding: 20px;
+}
+
+.ops-roster-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.ops-roster-head h3 {
+  margin: 0;
+  font-size: 1.38rem;
+}
+
+.ops-roster-head p,
+.ops-feed-card p,
+.ops-summary-card p,
+.ops-call-row p,
+.ops-transcript-line p {
+  margin: 0;
+  color: rgba(214, 222, 236, 0.72);
+  line-height: 1.55;
+}
+
+.ops-tag-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.ops-empty-state {
+  padding: 18px;
+  border: 1px dashed rgba(120, 244, 255, 0.12);
+  border-radius: 18px;
+  color: rgba(214, 222, 236, 0.6);
+}
+
+.ops-call-center {
+  display: grid;
+  gap: 18px;
+  padding: 24px;
+}
+
+.ops-call-toolbar,
+.ops-call-actions {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+  flex-wrap: wrap;
+}
+
+.ops-chip-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.ops-chip {
+  display: inline-flex;
+  align-items: center;
+  min-height: 34px;
+  padding: 0 12px;
+  border: 1px solid rgba(120, 244, 255, 0.1);
+  border-radius: 999px;
+  background: rgba(7, 12, 18, 0.72);
+}
+
+.ops-chip.is-tone-cyan {
+  border-color: rgba(120, 244, 255, 0.22);
+  color: rgba(132, 244, 255, 0.92);
+}
+
+.ops-chip.is-tone-mint {
+  border-color: rgba(118, 255, 193, 0.2);
+  color: rgba(145, 255, 208, 0.9);
+}
+
+.ops-search-shell {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-width: min(100%, 360px);
+  min-height: 46px;
+  padding: 0 14px;
+  border: 1px solid rgba(120, 244, 255, 0.1);
+  border-radius: 16px;
+  background: rgba(8, 14, 20, 0.7);
+}
+
+.ops-search-shell input,
+.workflow-title-input {
+  width: 100%;
+  border: 0;
+  background: transparent;
+  color: var(--text);
+}
+
+.ops-search-shell input:focus,
+.workflow-title-input:focus {
+  outline: none;
+}
+
+.ops-call-layout {
+  display: grid;
+  grid-template-columns: minmax(300px, 0.62fr) minmax(0, 1fr);
+  gap: 18px;
+  min-height: 720px;
+}
+
+.ops-call-list,
+.ops-call-detail {
+  border: 1px solid rgba(120, 244, 255, 0.1);
+  border-radius: 22px;
+  background: rgba(7, 12, 18, 0.72);
+}
+
+.ops-call-list {
+  display: grid;
+  gap: 10px;
+  padding: 14px;
+  align-content: start;
+  max-height: 720px;
+  overflow: auto;
+}
+
+.ops-call-row {
+  display: grid;
+  gap: 8px;
+  width: 100%;
+  padding: 14px;
+  border: 1px solid rgba(120, 244, 255, 0.08);
+  border-radius: 18px;
+  background: rgba(10, 16, 22, 0.74);
+  text-align: left;
+  transition: transform 160ms ease, border-color 160ms ease, background 160ms ease;
+}
+
+.ops-call-row:hover,
+.ops-call-row.is-selected {
+  transform: translateY(-1px);
+  border-color: rgba(120, 244, 255, 0.22);
+  background: rgba(14, 22, 28, 0.9);
+}
+
+.ops-call-row-top,
+.ops-call-row-meta,
+.ops-transcript-meta {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.ops-call-direction {
+  display: inline-flex;
+  align-items: center;
+  min-height: 24px;
+  padding: 0 8px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.06);
+}
+
+.ops-call-direction.is-inbound {
+  color: rgba(138, 238, 255, 0.92);
+}
+
+.ops-call-direction.is-outbound {
+  color: rgba(146, 255, 206, 0.9);
+}
+
+.ops-call-detail {
+  display: grid;
+  gap: 18px;
+  padding: 20px;
+}
+
+.ops-call-detail-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.ops-call-detail-head h2 {
+  margin: 6px 0 0;
+  font-size: clamp(1.7rem, 1.4rem + 1vw, 2.4rem);
+}
+
+.ops-call-detail-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1.2fr) minmax(280px, 0.9fr);
+  gap: 18px;
+  min-height: 420px;
+}
+
+.ops-detail-panel {
+  display: grid;
+  gap: 14px;
+  padding: 16px;
+  border: 1px solid rgba(120, 244, 255, 0.1);
+  border-radius: 20px;
+  background: rgba(8, 14, 20, 0.74);
+}
+
+.ops-transcript-feed {
+  display: grid;
+  gap: 10px;
+  max-height: 480px;
+  overflow: auto;
+}
+
+.ops-transcript-line {
+  display: grid;
+  gap: 8px;
+  padding: 14px;
+  border-radius: 18px;
+  background: rgba(12, 20, 26, 0.8);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.ops-transcript-line.is-assistant {
+  border-color: rgba(120, 244, 255, 0.16);
+}
+
+.ops-transcript-line.is-caller {
+  border-color: rgba(155, 127, 255, 0.16);
+}
+
+.ops-log-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.workflow-studio {
+  display: grid;
+  gap: 18px;
+}
+
+.workflow-toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 18px;
+  padding: 18px 20px;
+  flex-wrap: wrap;
+}
+
+.workflow-toolbar-copy {
+  min-width: min(100%, 360px);
+  display: grid;
+  gap: 8px;
+}
+
+.workflow-title-input {
+  padding: 0;
+  font-size: clamp(1.5rem, 1.3rem + 0.8vw, 2.1rem);
+  font-weight: 700;
+}
+
+.workflow-toolbar-actions {
+  flex-wrap: wrap;
+}
+
+.workflow-layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1.45fr) minmax(320px, 0.75fr);
+  gap: 18px;
+  align-items: start;
+}
+
+.workflow-board-panel,
+.workflow-inspector,
+.workflow-preview-panel {
+  padding: 18px;
+}
+
+.workflow-canvas-frame {
+  position: relative;
+  min-height: 760px;
+  overflow: hidden;
+  border: 1px solid rgba(120, 244, 255, 0.1);
+  border-radius: 24px;
+  background:
+    linear-gradient(rgba(120, 244, 255, 0.04) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(120, 244, 255, 0.04) 1px, transparent 1px),
+    rgba(6, 11, 16, 0.84);
+  background-size: 44px 44px, 44px 44px, auto;
+}
+
+.workflow-node {
+  width: 272px;
+  min-height: 140px;
+}
+
+.workflow-node.is-selected {
+  border-color: rgba(120, 244, 255, 0.28);
+  box-shadow: 0 18px 44px rgba(0, 0, 0, 0.28);
+}
+
+.workflow-node p {
+  margin: 12px 0 0;
+  color: rgba(214, 222, 236, 0.72);
+  line-height: 1.45;
+}
+
+.workflow-empty {
+  inset: 26px;
+}
+
+.workflow-field-stack {
+  display: grid;
+  gap: 14px;
+}
+
+@media (max-width: 1180px) {
+  .ops-overview-grid,
+  .workflow-layout,
+  .ops-call-layout,
+  .ops-call-detail-grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .ops-roster-grid,
+  .ops-kv-grid,
+  .ops-log-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 760px) {
+  .command-page-head,
+  .ops-call-toolbar,
+  .ops-call-actions,
+  .workflow-toolbar {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .ops-hero-overlay,
+  .ops-roster-grid,
+  .ops-kv-grid,
+  .ops-log-grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .ops-call-center,
+  .workflow-board-panel,
+  .workflow-inspector,
+  .workflow-preview-panel {
+    padding: 16px;
+  }
+
+  .workflow-canvas-frame {
+    min-height: 620px;
+  }
+}

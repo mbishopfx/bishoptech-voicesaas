@@ -1,6 +1,7 @@
 'use client';
 
 import { useMemo, useState, useTransition } from 'react';
+import { Copy, Link2, Plus, Save, Trash2 } from 'lucide-react';
 
 import { MermaidPreview } from '@/components/mermaid-preview';
 import type { WorkflowBoard, WorkflowEdge, WorkflowNode } from '@/lib/types';
@@ -26,7 +27,7 @@ function buildBoardState(board: WorkflowBoard | null): WorkflowBoard {
   return (
     board ?? {
       title: 'Workflow Canvas',
-      description: 'Describe the stages, objections, handoffs, and outcomes.',
+      description: 'Map the live routing, handoffs, and outcomes.',
       nodes: [],
       edges: [],
     }
@@ -55,7 +56,7 @@ function toMermaid(nodes: WorkflowNode[], edges: WorkflowEdge[]) {
 function getNodeCenter(node: WorkflowNode) {
   return {
     x: node.x + 136,
-    y: node.y + 84,
+    y: node.y + 70,
   };
 }
 
@@ -69,10 +70,29 @@ export function WorkflowCanvas({ organizationId, initialBoard }: WorkflowCanvasP
   const [dragState, setDragState] = useState<DragState>(null);
   const [linkMode, setLinkMode] = useState(false);
   const [linkSource, setLinkSource] = useState<string | null>(null);
+  const [selectedNodeId, setSelectedNodeId] = useState<string | null>(seedBoard.nodes[0]?.id ?? null);
   const [saveMessage, setSaveMessage] = useState('');
   const [isSaving, startSaving] = useTransition();
 
   const mermaidChart = useMemo(() => toMermaid(nodes, edges), [edges, nodes]);
+  const selectedNode = nodes.find((node) => node.id === selectedNodeId) ?? null;
+
+  function addNode(tone: WorkflowNode['tone'] = 'metal') {
+    const id = `node-${nodes.length + 1}`;
+
+    setNodes((current) => [
+      ...current,
+      {
+        id,
+        title: tone === 'amber' ? 'Decision' : 'Step',
+        body: tone === 'amber' ? 'Branch or qualify here.' : 'Describe the next action.',
+        x: 80 + current.length * 28,
+        y: 88 + current.length * 24,
+        tone,
+      },
+    ]);
+    setSelectedNodeId(id);
+  }
 
   function handlePointerMove(event: React.PointerEvent<HTMLDivElement>) {
     if (!dragState) {
@@ -88,8 +108,8 @@ export function WorkflowCanvas({ organizationId, initialBoard }: WorkflowCanvasP
         node.id === dragState.nodeId
           ? {
               ...node,
-              x: Math.max(16, Math.min(nextX, bounds.width - 288)),
-              y: Math.max(16, Math.min(nextY, bounds.height - 180)),
+              x: Math.max(16, Math.min(nextX, bounds.width - 296)),
+              y: Math.max(16, Math.min(nextY, bounds.height - 172)),
             }
           : node,
       ),
@@ -98,6 +118,7 @@ export function WorkflowCanvas({ organizationId, initialBoard }: WorkflowCanvasP
 
   function handleNodeClick(nodeId: string) {
     if (!linkMode) {
+      setSelectedNodeId(nodeId);
       return;
     }
 
@@ -123,13 +144,32 @@ export function WorkflowCanvas({ organizationId, initialBoard }: WorkflowCanvasP
   }
 
   return (
-    <section className="section-block">
-      <div className="section-header">
-        <div>
-          <span className="eyebrow-text">Canvas builder</span>
-          <h3>Visual workflow mapping</h3>
+    <section className="workflow-studio">
+      <div className="glass-card workflow-toolbar">
+        <div className="workflow-toolbar-copy">
+          <span className="eyebrow-text">Workflow board</span>
+          <input
+            className="workflow-title-input"
+            value={title}
+            onChange={(event) => setTitle(event.target.value)}
+            aria-label="Workflow title"
+          />
+          <p>
+            {nodes.length} nodes • {edges.length} links {boardId ? `• board ${boardId.slice(0, 8)}` : '• unsaved'}
+          </p>
         </div>
-        <div className="button-row">
+
+        <div className="button-row workflow-toolbar-actions">
+          <button className="ghost-button" type="button" onClick={() => addNode('metal')}>
+            <Plus size={16} />
+            <span>Add node</span>
+          </button>
+
+          <button className="ghost-button" type="button" onClick={() => addNode('amber')}>
+            <Plus size={16} />
+            <span>Add branch</span>
+          </button>
+
           <button
             className={`ghost-button ${linkMode ? 'is-active' : ''}`}
             type="button"
@@ -138,28 +178,26 @@ export function WorkflowCanvas({ organizationId, initialBoard }: WorkflowCanvasP
               setLinkSource(null);
             }}
           >
-            {linkMode ? 'Cancel linking' : 'Link nodes'}
+            <Link2 size={16} />
+            <span>{linkMode ? 'Cancel link' : 'Link nodes'}</span>
           </button>
 
           <button
             className="ghost-button"
             type="button"
-            onClick={() => {
-              const id = `node-${nodes.length + 1}`;
-              setNodes((current) => [
-                ...current,
-                {
-                  id,
-                  title: 'New note',
-                  body: 'Describe the step or handoff.',
-                  x: 64 + current.length * 24,
-                  y: 72 + current.length * 24,
-                  tone: 'metal',
-                },
-              ]);
+            onClick={async () => {
+              if (!boardId) {
+                setSaveMessage('Save the board before sharing it.');
+                return;
+              }
+
+              const shareUrl = `${window.location.origin}${window.location.pathname}?board=${boardId}`;
+              await navigator.clipboard.writeText(shareUrl);
+              setSaveMessage('Share URL copied.');
             }}
           >
-            Add note
+            <Copy size={16} />
+            <span>Share URL</span>
           </button>
 
           <button
@@ -168,7 +206,7 @@ export function WorkflowCanvas({ organizationId, initialBoard }: WorkflowCanvasP
             disabled={isSaving || !organizationId}
             onClick={() => {
               if (!organizationId) {
-                setSaveMessage('Choose an organization before saving the workflow board.');
+                setSaveMessage('Choose an organization before saving.');
                 return;
               }
 
@@ -201,27 +239,16 @@ export function WorkflowCanvas({ organizationId, initialBoard }: WorkflowCanvasP
               });
             }}
           >
-            {isSaving ? 'Saving...' : 'Save board'}
+            <Save size={16} />
+            <span>{isSaving ? 'Saving...' : 'Save board'}</span>
           </button>
         </div>
       </div>
 
-      <div className="workspace-grid workspace-grid-wide">
-        <div className="glass-card form-card">
-          <div className="form-grid">
-            <label className="field field-span-2">
-              <span>Board title</span>
-              <input value={title} onChange={(event) => setTitle(event.target.value)} />
-            </label>
-
-            <label className="field field-span-2">
-              <span>Description</span>
-              <textarea rows={3} value={description} onChange={(event) => setDescription(event.target.value)} />
-            </label>
-          </div>
-
+      <div className="workflow-layout">
+        <div className="glass-card workflow-board-panel">
           <div
-            className="canvas-surface"
+            className="workflow-canvas-frame"
             onPointerMove={handlePointerMove}
             onPointerUp={() => setDragState(null)}
             onPointerLeave={() => setDragState(null)}
@@ -259,7 +286,9 @@ export function WorkflowCanvas({ organizationId, initialBoard }: WorkflowCanvasP
               nodes.map((node) => (
                 <article
                   key={node.id}
-                  className={`canvas-node ${toneClasses[node.tone ?? 'metal']} ${linkSource === node.id ? 'is-source' : ''}`}
+                  className={`canvas-node workflow-node ${toneClasses[node.tone ?? 'metal']} ${
+                    selectedNodeId === node.id ? 'is-selected' : ''
+                  } ${linkSource === node.id ? 'is-source' : ''}`}
                   style={{ left: node.x, top: node.y }}
                   onClick={() => handleNodeClick(node.id)}
                 >
@@ -278,62 +307,125 @@ export function WorkflowCanvas({ organizationId, initialBoard }: WorkflowCanvasP
                     <small>{node.id}</small>
                   </div>
 
-                  <label className="node-field">
-                    <span>Title</span>
-                    <input
-                      value={node.title}
-                      onChange={(event) => {
-                        setNodes((current) =>
-                          current.map((item) => (item.id === node.id ? { ...item, title: event.target.value } : item)),
-                        );
-                      }}
-                    />
-                  </label>
-
-                  <label className="node-field">
-                    <span>Note</span>
-                    <textarea
-                      value={node.body}
-                      onChange={(event) => {
-                        setNodes((current) =>
-                          current.map((item) => (item.id === node.id ? { ...item, body: event.target.value } : item)),
-                        );
-                      }}
-                    />
-                  </label>
+                  <p>{node.body}</p>
                 </article>
               ))
             ) : (
-              <div className="canvas-empty">
-                Add notes to map the call flow, handoffs, or booking sequence before showing the client.
+              <div className="canvas-empty workflow-empty">
+                Add a node to start mapping routing, objections, booking handoff, or escalation logic.
               </div>
             )}
           </div>
-
-          {saveMessage ? <p className="notice">{saveMessage}</p> : null}
         </div>
 
-        <div className="stack-panel">
-          <div className="glass-card workspace-card">
-            <div className="card-header">
+        <aside className="workflow-side-stack">
+          <div className="glass-card workflow-inspector">
+            <div className="workflow-side-head">
               <div>
-                <span className="eyebrow-text">Mermaid export</span>
-                <h3>Deck-ready output</h3>
+                <span className="eyebrow-text">Inspector</span>
+                <h3>{selectedNode ? selectedNode.title : 'Board details'}</h3>
               </div>
+
+              {selectedNode ? (
+                <button
+                  className="ghost-button"
+                  type="button"
+                  onClick={() => {
+                    const nextSelectedId = nodes.find((node) => node.id !== selectedNode.id)?.id ?? null;
+                    setNodes((current) => current.filter((node) => node.id !== selectedNode.id));
+                    setEdges((current) => current.filter((edge) => edge.from !== selectedNode.id && edge.to !== selectedNode.id));
+                    setSelectedNodeId(nextSelectedId);
+                  }}
+                >
+                  <Trash2 size={16} />
+                  <span>Delete</span>
+                </button>
+              ) : null}
             </div>
-            <pre className="code-block">{mermaidChart}</pre>
+
+            {selectedNode ? (
+              <div className="workflow-field-stack">
+                <label className="field">
+                  <span>Node title</span>
+                  <input
+                    value={selectedNode.title}
+                    onChange={(event) => {
+                      setNodes((current) =>
+                        current.map((node) => (node.id === selectedNode.id ? { ...node, title: event.target.value } : node)),
+                      );
+                    }}
+                  />
+                </label>
+
+                <label className="field">
+                  <span>Node type</span>
+                  <select
+                    className="select-field"
+                    value={selectedNode.tone ?? 'metal'}
+                    onChange={(event) => {
+                      setNodes((current) =>
+                        current.map((node) =>
+                          node.id === selectedNode.id
+                            ? { ...node, tone: event.target.value as WorkflowNode['tone'] }
+                            : node,
+                        ),
+                      );
+                    }}
+                  >
+                    <option value="metal">Standard</option>
+                    <option value="mint">Live handoff</option>
+                    <option value="amber">Decision</option>
+                  </select>
+                </label>
+
+                <label className="field">
+                  <span>Node note</span>
+                  <textarea
+                    rows={6}
+                    value={selectedNode.body}
+                    onChange={(event) => {
+                      setNodes((current) =>
+                        current.map((node) => (node.id === selectedNode.id ? { ...node, body: event.target.value } : node)),
+                      );
+                    }}
+                  />
+                </label>
+              </div>
+            ) : (
+              <div className="workflow-field-stack">
+                <label className="field">
+                  <span>Board summary</span>
+                  <textarea rows={5} value={description} onChange={(event) => setDescription(event.target.value)} />
+                </label>
+
+                <div className="ops-kv-grid">
+                  <article className="ops-log-card">
+                    <span>Nodes</span>
+                    <strong>{nodes.length}</strong>
+                  </article>
+                  <article className="ops-log-card">
+                    <span>Links</span>
+                    <strong>{edges.length}</strong>
+                  </article>
+                </div>
+              </div>
+            )}
+
+            {saveMessage ? <p className="notice">{saveMessage}</p> : null}
           </div>
 
-          <div className="glass-card workspace-card">
-            <div className="card-header">
+          <div className="glass-card workflow-preview-panel">
+            <div className="workflow-side-head">
               <div>
-                <span className="eyebrow-text">Rendered preview</span>
-                <h3>Visual output</h3>
+                <span className="eyebrow-text">Share output</span>
+                <h3>Mermaid preview</h3>
               </div>
             </div>
+
+            <pre className="code-block compact-code">{mermaidChart}</pre>
             <MermaidPreview chart={mermaidChart} />
           </div>
-        </div>
+        </aside>
       </div>
     </section>
   );
