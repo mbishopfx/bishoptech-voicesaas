@@ -1,7 +1,7 @@
 'use client';
 
 import { useMemo, useState, useTransition } from 'react';
-import { Copy, Link2, Plus, Save, Trash2 } from 'lucide-react';
+import { Copy, Link2, Plus, Save, Trash2, X } from 'lucide-react';
 
 import { MermaidPreview } from '@/components/mermaid-preview';
 import type { WorkflowBoard, WorkflowEdge, WorkflowNode } from '@/lib/types';
@@ -37,8 +37,8 @@ function buildBoardState(board: WorkflowBoard | null): WorkflowBoard {
 
 function getNodeCenter(node: WorkflowNode) {
   return {
-    x: node.x + 136,
-    y: node.y + 70,
+    x: node.x + 154,
+    y: node.y + 77,
   };
 }
 
@@ -50,7 +50,6 @@ export function WorkflowCanvas({ organizationId, initialBoard }: WorkflowCanvasP
   const [nodes, setNodes] = useState(seedBoard.nodes);
   const [edges, setEdges] = useState(seedBoard.edges);
   const [dragState, setDragState] = useState<DragState>(null);
-  const [linkMode, setLinkMode] = useState(false);
   const [linkSource, setLinkSource] = useState<string | null>(null);
   const [selectedNodeId, setSelectedNodeId] = useState<string | null>(seedBoard.nodes[0]?.id ?? null);
   const [saveMessage, setSaveMessage] = useState('');
@@ -58,6 +57,9 @@ export function WorkflowCanvas({ organizationId, initialBoard }: WorkflowCanvasP
 
   const mermaidChart = useMemo(() => workflowBoardToMermaid(nodes, edges), [edges, nodes]);
   const selectedNode = nodes.find((node) => node.id === selectedNodeId) ?? null;
+  const selectedNodeEdges = selectedNode
+    ? edges.filter((edge) => edge.from === selectedNode.id || edge.to === selectedNode.id)
+    : [];
 
   function addNode(tone: WorkflowNode['tone'] = 'metal') {
     const id = `node-${nodes.length + 1}`;
@@ -90,39 +92,43 @@ export function WorkflowCanvas({ organizationId, initialBoard }: WorkflowCanvasP
         node.id === dragState.nodeId
           ? {
               ...node,
-              x: Math.max(16, Math.min(nextX, bounds.width - 296)),
-              y: Math.max(16, Math.min(nextY, bounds.height - 172)),
+              x: Math.max(20, Math.min(nextX, bounds.width - 340)),
+              y: Math.max(20, Math.min(nextY, bounds.height - 188)),
             }
           : node,
       ),
     );
   }
 
-  function handleNodeClick(nodeId: string) {
-    if (!linkMode) {
-      setSelectedNodeId(nodeId);
+  function startLink(nodeId: string) {
+    setLinkSource((current) => (current === nodeId ? null : nodeId));
+    setSaveMessage('');
+  }
+
+  function completeLink(nodeId: string) {
+    if (!linkSource || linkSource === nodeId) {
       return;
     }
 
-    if (!linkSource) {
-      setLinkSource(nodeId);
+    const duplicate = edges.some((edge) => edge.from === linkSource && edge.to === nodeId);
+
+    if (duplicate) {
+      setLinkSource(null);
+      setSaveMessage('Those nodes are already linked.');
       return;
     }
 
-    if (linkSource !== nodeId) {
-      setEdges((current) => [
-        ...current,
-        {
-          id: `edge-${linkSource}-${nodeId}-${current.length + 1}`,
-          from: linkSource,
-          to: nodeId,
-          label: 'next',
-        },
-      ]);
-    }
+    setEdges((current) => [
+      ...current,
+      {
+        id: `edge-${linkSource}-${nodeId}-${current.length + 1}`,
+        from: linkSource,
+        to: nodeId,
+        label: 'next',
+      },
+    ]);
 
     setLinkSource(null);
-    setLinkMode(false);
   }
 
   return (
@@ -137,7 +143,9 @@ export function WorkflowCanvas({ organizationId, initialBoard }: WorkflowCanvasP
             aria-label="Workflow title"
           />
           <p>
-            {nodes.length} nodes • {edges.length} links {boardId ? `• board ${boardId.slice(0, 8)}` : '• unsaved'}
+            {nodes.length} nodes • {edges.length} links
+            {linkSource ? ` • linking from ${linkSource}` : ''}
+            {boardId ? ` • board ${boardId.slice(0, 8)}` : ' • unsaved'}
           </p>
         </div>
 
@@ -153,15 +161,14 @@ export function WorkflowCanvas({ organizationId, initialBoard }: WorkflowCanvasP
           </button>
 
           <button
-            className={`ghost-button ${linkMode ? 'is-active' : ''}`}
+            className={`ghost-button ${linkSource ? 'is-active' : ''}`}
             type="button"
             onClick={() => {
-              setLinkMode((current) => !current);
               setLinkSource(null);
             }}
           >
             <Link2 size={16} />
-            <span>{linkMode ? 'Cancel link' : 'Link nodes'}</span>
+            <span>{linkSource ? 'Cancel link' : 'Link nodes'}</span>
           </button>
 
           <button
@@ -272,8 +279,32 @@ export function WorkflowCanvas({ organizationId, initialBoard }: WorkflowCanvasP
                     selectedNodeId === node.id ? 'is-selected' : ''
                   } ${linkSource === node.id ? 'is-source' : ''}`}
                   style={{ left: node.x, top: node.y }}
-                  onClick={() => handleNodeClick(node.id)}
+                  onClick={() => setSelectedNodeId(node.id)}
                 >
+                  <button
+                    className={`workflow-port workflow-port-in ${linkSource ? 'is-active' : ''}`}
+                    type="button"
+                    aria-label={`Link into ${node.title}`}
+                    onClick={(event) => {
+                      event.stopPropagation();
+                      completeLink(node.id);
+                    }}
+                  >
+                    <span />
+                  </button>
+
+                  <button
+                    className={`workflow-port workflow-port-out ${linkSource === node.id ? 'is-active' : ''}`}
+                    type="button"
+                    aria-label={`Link out from ${node.title}`}
+                    onClick={(event) => {
+                      event.stopPropagation();
+                      startLink(node.id);
+                    }}
+                  >
+                    <span />
+                  </button>
+
                   <div
                     className="node-handle"
                     onPointerDown={(event) => {
@@ -372,6 +403,59 @@ export function WorkflowCanvas({ organizationId, initialBoard }: WorkflowCanvasP
                     }}
                   />
                 </label>
+
+                <div className="workflow-connection-panel">
+                  <div className="workflow-connection-head">
+                    <span>Connections</span>
+                    <button
+                      className="ghost-button"
+                      type="button"
+                      onClick={() => startLink(selectedNode.id)}
+                    >
+                      <Link2 size={16} />
+                      <span>{linkSource === selectedNode.id ? 'Linking...' : 'Start link'}</span>
+                    </button>
+                  </div>
+
+                  <div className="workflow-connection-list">
+                    {selectedNodeEdges.length ? (
+                      selectedNodeEdges.map((edge) => (
+                        <div key={edge.id} className="workflow-connection-row">
+                          <div className="workflow-connection-meta">
+                            <strong>
+                              {edge.from === selectedNode.id ? 'Out' : 'In'}:
+                              {' '}
+                              {edge.from === selectedNode.id ? edge.to : edge.from}
+                            </strong>
+                            <input
+                              value={edge.label ?? ''}
+                              onChange={(event) => {
+                                setEdges((current) =>
+                                  current.map((item) =>
+                                    item.id === edge.id ? { ...item, label: event.target.value } : item,
+                                  ),
+                                );
+                              }}
+                              placeholder="label"
+                            />
+                          </div>
+                          <button
+                            className="workflow-edge-delete"
+                            type="button"
+                            aria-label="Delete connection"
+                            onClick={() => {
+                              setEdges((current) => current.filter((item) => item.id !== edge.id));
+                            }}
+                          >
+                            <X size={14} />
+                          </button>
+                        </div>
+                      ))
+                    ) : (
+                      <div className="ops-empty-state">No connections on this node yet.</div>
+                    )}
+                  </div>
+                </div>
               </div>
             ) : (
               <div className="workflow-field-stack">

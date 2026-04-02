@@ -4,12 +4,10 @@ import {
   ChartNoAxesCombined,
   Headphones,
   MessagesSquare,
-  PhoneCall,
   Send,
   Settings2,
   ShieldCheck,
   Sparkles,
-  Workflow,
 } from 'lucide-react';
 import { redirect } from 'next/navigation';
 
@@ -40,34 +38,6 @@ const heroVisualCards = [
   {
     label: 'Live visibility',
     value: 'Calls, transcripts, workflows, and CRM updates in one loop.',
-    tone: 'mint',
-  },
-];
-
-const matrixCards = [
-  {
-    code: 'SALES',
-    title: 'Sales closer',
-    description:
-      'Guide buyers from the first question to the booked appointment or payment without losing your tone.',
-    bullets: ['Handles objections naturally', 'Books from the call', 'Pushes clean CRM notes'],
-    icon: PhoneCall,
-    tone: 'cyan',
-  },
-  {
-    code: 'SUPPORT',
-    title: 'Support guide',
-    description: 'Answer common issues, pull the right knowledge, and hand off with context when a human should step in.',
-    bullets: ['Pulls from your KB', 'Knows when to escalate', 'Summarizes every call'],
-    icon: Headphones,
-    tone: 'violet',
-  },
-  {
-    code: 'QUALIFICATION',
-    title: 'Lead qualifier',
-    description: 'Screen, score, and route incoming interest fast enough for your team to act while intent is still high.',
-    bullets: ['Captures fit signals early', 'Routes by priority', 'Triggers instant follow-up'],
-    icon: Workflow,
     tone: 'mint',
   },
 ];
@@ -160,7 +130,7 @@ export default async function LoginPage() {
 
           <nav className="matrix-nav">
             <a href="#sandbox">NEXUS</a>
-            <a href="#matrix" className="is-active">
+            <a href="#sandbox" className="is-active">
               MATRIX
             </a>
             <a href="#terminal">TERMINAL</a>
@@ -248,49 +218,6 @@ export default async function LoginPage() {
           {trustRail.map((item) => (
             <span key={item}>{item}</span>
           ))}
-        </section>
-
-        <section className="matrix-section" id="matrix">
-          <div className="matrix-section-head">
-            <div>
-              <h2>
-                Voice flows for <span>real teams.</span>
-              </h2>
-              <p>Choose the conversation pattern you need, then tune it to the offers, objections, and handoffs that matter to your business.</p>
-            </div>
-
-            <div className="matrix-tab-row">
-              <button className="is-active" type="button">
-                SALES
-              </button>
-              <button type="button">SUPPORT</button>
-              <button type="button">QUALIFICATION</button>
-            </div>
-          </div>
-
-          <div className="matrix-card-grid">
-            {matrixCards.map((card) => {
-              const Icon = card.icon;
-
-              return (
-                <article key={card.title} className={`matrix-feature-card tone-${card.tone}`}>
-                  <div className="matrix-feature-meta">
-                    <span className="matrix-feature-icon">
-                      <Icon size={20} />
-                    </span>
-                    <span>{card.code}</span>
-                  </div>
-                  <h3>{card.title}</h3>
-                  <p>{card.description}</p>
-                  <ul>
-                    {card.bullets.map((bullet) => (
-                      <li key={bullet}>{bullet}</li>
-                    ))}
-                  </ul>
-                </article>
-              );
-            })}
-          </div>
         </section>
 
         <section className="matrix-signal-section">
