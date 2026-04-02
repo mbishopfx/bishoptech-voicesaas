@@ -22,9 +22,7 @@ export default async function ClientPage() {
       current="client"
       viewer={viewer}
       activeNav="dashboard"
-      headerMode="compact"
-      eyebrow="Workspace"
-      title={data.organizationName}
+      headerMode="hidden"
       actions={null}
     >
       <ClientControlDeckSection data={data} />

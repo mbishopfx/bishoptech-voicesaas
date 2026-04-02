@@ -2,7 +2,10 @@ import Link from 'next/link';
 import type { Route } from 'next';
 import { Activity, AudioLines, Bot, Building2, PhoneCall, Send } from 'lucide-react';
 
-import { CommandDeckPlayer } from '@/components/animated-voice-surfaces';
+import { OrganizationLoadChart, PulseAreaChart } from '@/components/dashboard-charts';
+import { Badge } from '@/components/ui/badge';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow, TableWrap } from '@/components/ui/table';
 import { formatRelativeTime } from '@/lib/format';
 import type { DemoBlueprintSummary, MetricCard, OrganizationSummary, RecentCall } from '@/lib/types';
 
@@ -39,91 +42,94 @@ export function AdminControlDeckSection({
   const liveAgents = organizations.reduce((sum, organization) => sum + organization.liveAgentCount, 0);
 
   return (
-    <section className="ops-overview-grid">
-      <article className="glass-card ops-hero-panel">
-        <div className="ops-panel-head">
+    <section className="dashboard-window-grid">
+      <Card className="dashboard-primary-panel">
+        <CardHeader className="dashboard-panel-header">
           <div>
             <span className="eyebrow-text">Platform pulse</span>
-            <h2>Admin command view</h2>
+            <CardTitle className="dashboard-panel-title">Admin command view</CardTitle>
           </div>
-          <span className="command-status-pill is-live">Live</span>
-        </div>
+          <Badge tone="success">Live</Badge>
+        </CardHeader>
 
-        <div className="ops-hero-visual">
-          <CommandDeckPlayer className="command-deck-player" accent="cyan" />
-          <div className="ops-hero-overlay">
-            <div>
-              <span>Latest call</span>
-              <strong>{activeCall ? activeCall.organizationName : 'Waiting for traffic'}</strong>
-            </div>
-            <div>
-              <span>Status</span>
-              <strong>{activeCall?.outcome ?? 'Standby'}</strong>
-            </div>
-            <div>
-              <span>Duration</span>
-              <strong>{activeCall?.duration ?? '0m'}</strong>
+        <CardContent className="dashboard-primary-content">
+          <div className="dashboard-chart-block">
+            <div className="dashboard-chart-kicker">voice_current // live_transcript // conversion_flow</div>
+            <PulseAreaChart recentCalls={recentCalls} />
+            <div className="dashboard-inline-stats">
+              <div className="dashboard-inline-stat">
+                <span>Latest call</span>
+                <strong>{activeCall ? activeCall.organizationName : 'Waiting for traffic'}</strong>
+              </div>
+              <div className="dashboard-inline-stat">
+                <span>Status</span>
+                <strong>{activeCall?.outcome ?? 'Standby'}</strong>
+              </div>
+              <div className="dashboard-inline-stat">
+                <span>Duration</span>
+                <strong>{activeCall?.duration ?? '00:00'}</strong>
+              </div>
             </div>
           </div>
-        </div>
 
-        <div className="ops-kv-grid">
-          <article className="ops-log-card">
-            <span>Active orgs</span>
-            <strong>{activeOrganizations}</strong>
-          </article>
-          <article className="ops-log-card">
-            <span>Live agents</span>
-            <strong>{liveAgents}</strong>
-          </article>
-          <article className="ops-log-card">
-            <span>Recent calls</span>
-            <strong>{recentCalls.length}</strong>
-          </article>
-          <article className="ops-log-card">
-            <span>Campaigns</span>
-            <strong>{metrics[3]?.value ?? '0'}</strong>
-          </article>
-        </div>
-      </article>
+          <div className="dashboard-kpi-row">
+            <div className="dashboard-kpi-box">
+              <span>Active orgs</span>
+              <strong>{activeOrganizations}</strong>
+            </div>
+            <div className="dashboard-kpi-box">
+              <span>Live agents</span>
+              <strong>{liveAgents}</strong>
+            </div>
+            <div className="dashboard-kpi-box">
+              <span>Recent calls</span>
+              <strong>{recentCalls.length}</strong>
+            </div>
+            <div className="dashboard-kpi-box">
+              <span>Campaigns</span>
+              <strong>{metrics[3]?.value ?? '0'}</strong>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
 
-      <div className="ops-glance-grid">
-        <article className="glass-card ops-list-card">
-          <div className="ops-panel-head">
+      <div className="dashboard-side-column">
+        <Card className="dashboard-side-panel">
+          <CardHeader className="dashboard-panel-header">
             <div>
               <span className="eyebrow-text">Live queue</span>
-              <strong>Calls in review</strong>
+              <CardTitle className="dashboard-side-title">Calls in review</CardTitle>
             </div>
-            <AudioLines size={16} />
-          </div>
-          <div className="ops-mini-feed">
-            {recentCalls.slice(0, 4).map((call) => (
-              <div key={call.id} className="ops-mini-feed-row">
+            <AudioLines size={15} />
+          </CardHeader>
+          <CardContent className="dashboard-side-list">
+            {recentCalls.slice(0, 3).map((call) => (
+              <div key={call.id} className="dashboard-side-row">
                 <strong>{call.organizationName}</strong>
                 <span>{call.outcome}</span>
               </div>
             ))}
             {!recentCalls.length ? <div className="ops-empty-state">No calls logged.</div> : null}
-          </div>
-        </article>
+          </CardContent>
+        </Card>
 
-        <article className="glass-card ops-list-card">
-          <div className="ops-panel-head">
+        <Card className="dashboard-side-panel">
+          <CardHeader className="dashboard-panel-header">
             <div>
               <span className="eyebrow-text">Watch list</span>
-              <strong>Accounts</strong>
+              <CardTitle className="dashboard-side-title">Accounts</CardTitle>
             </div>
-            <Activity size={16} />
-          </div>
-          <div className="ops-mini-feed">
+            <Activity size={15} />
+          </CardHeader>
+          <CardContent className="dashboard-side-list">
             {organizations.slice(0, 4).map((organization) => (
-              <div key={organization.id} className="ops-mini-feed-row">
+              <div key={organization.id} className="dashboard-side-row">
                 <strong>{organization.name}</strong>
                 <span>{organization.liveAgentCount} agents</span>
               </div>
             ))}
-          </div>
-        </article>
+          </CardContent>
+        </Card>
       </div>
     </section>
   );
@@ -131,21 +137,25 @@ export function AdminControlDeckSection({
 
 export function AdminMetricsGrid({ metrics }: { metrics: MetricCard[] }) {
   return (
-    <section className="metric-grid command-metric-grid ops-metric-grid">
+    <section className="dashboard-stat-grid">
       {metrics.map((metric, index) => {
         const Icon = metricIcons[index] ?? Bot;
 
         return (
-          <article key={metric.label} className={`glass-card command-metric-card tone-${metric.tone ?? 'neutral'}`}>
-            <div className="command-metric-head">
-              <span className="command-metric-icon">
-                <Icon size={18} />
-              </span>
-              <span className="command-metric-delta">{metric.delta}</span>
-            </div>
-            <p className="command-metric-label">{metric.label}</p>
-            <strong className="command-metric-value">{metric.value}</strong>
-          </article>
+          <Card key={metric.label} className="dashboard-stat-card">
+            <CardContent className="dashboard-stat-content">
+              <div className="dashboard-stat-top">
+                <span className="dashboard-stat-icon">
+                  <Icon size={16} />
+                </span>
+                <Badge tone={metric.tone === 'positive' ? 'success' : metric.tone === 'warning' ? 'warning' : 'muted'}>
+                  {metric.delta}
+                </Badge>
+              </div>
+              <span className="dashboard-stat-label">{metric.label}</span>
+              <strong className="dashboard-stat-value">{metric.value}</strong>
+            </CardContent>
+          </Card>
         );
       })}
     </section>
@@ -166,74 +176,58 @@ export function OrganizationRosterSection({
   const items = typeof limit === 'number' ? organizations.slice(0, limit) : organizations;
 
   return (
-    <section className="command-section-block ops-section-panel">
-      <div className="command-section-header">
+    <Card className="dashboard-data-panel">
+      <CardHeader className="dashboard-table-header">
         <div>
           <span className="eyebrow-text">Organizations</span>
-          <h2>Roster</h2>
+          <CardTitle className="dashboard-side-title">Account roster</CardTitle>
         </div>
         <SectionAction href={actionHref} label={actionLabel} />
-      </div>
-
-      <div className="ops-roster-grid">
-        {items.length ? (
-          items.map((organization) => (
-            <article key={organization.id} className="glass-card ops-roster-card">
-              <div className="ops-roster-head">
-                <div>
-                  <h3>{organization.name}</h3>
-                  <p>{organization.slug}</p>
-                </div>
-                <span className={`command-status-pill ${organization.isActive ? 'is-live' : 'is-muted'}`}>
-                  {organization.isActive ? 'Active' : 'Inactive'}
-                </span>
-              </div>
-
-              <div className="ops-kv-grid">
-                <article className="ops-log-card">
-                  <span>Plan</span>
-                  <strong>{organization.planName ?? 'Managed'}</strong>
-                </article>
-                <article className="ops-log-card">
-                  <span>Members</span>
-                  <strong>{organization.memberCount}</strong>
-                </article>
-                <article className="ops-log-card">
-                  <span>Agents</span>
-                  <strong>
-                    {organization.liveAgentCount}/{organization.agentCount}
-                  </strong>
-                </article>
-                <article className="ops-log-card">
-                  <span>Last call</span>
-                  <strong>{organization.lastCallAt ? formatRelativeTime(organization.lastCallAt) : 'No calls'}</strong>
-                </article>
-              </div>
-
-              <div className="ops-summary-card">
-                <p>{organization.latestCallSummary ?? 'No call summary yet.'}</p>
-              </div>
-
-              <div className="ops-tag-row">
-                {organization.phoneNumbers.length ? (
-                  organization.phoneNumbers.map((phoneNumber) => (
-                    <span key={phoneNumber} className="surface-pill">
-                      {phoneNumber}
-                    </span>
-                  ))
-                ) : (
-                  <span className="surface-pill">No number</span>
-                )}
-              </div>
-            </article>
-          ))
-        ) : (
-          <div className="glass-card empty-state">
-            <h4>No organizations yet.</h4>
-          </div>
-        )}
-      </div>
-    </section>
+      </CardHeader>
+      <CardContent>
+        <TableWrap>
+          <Table>
+            <TableHead>
+              <TableRow>
+                <TableHeader>Account</TableHeader>
+                <TableHeader>Plan</TableHeader>
+                <TableHeader>Members</TableHeader>
+                <TableHeader>Agents</TableHeader>
+                <TableHeader>Last call</TableHeader>
+                <TableHeader>Status</TableHeader>
+              </TableRow>
+            </TableHead>
+            <TableBody>
+              {items.length ? (
+                items.map((organization) => (
+                  <TableRow key={organization.id}>
+                    <TableCell>
+                      <div className="dashboard-table-primary">
+                        <strong>{organization.name}</strong>
+                        <span>{organization.slug}</span>
+                      </div>
+                    </TableCell>
+                    <TableCell>{organization.planName ?? 'Managed'}</TableCell>
+                    <TableCell>{organization.memberCount}</TableCell>
+                    <TableCell>
+                      {organization.liveAgentCount}/{organization.agentCount}
+                    </TableCell>
+                    <TableCell>{organization.lastCallAt ? formatRelativeTime(organization.lastCallAt) : 'No calls'}</TableCell>
+                    <TableCell>
+                      <Badge tone={organization.isActive ? 'success' : 'muted'}>{organization.isActive ? 'Active' : 'Inactive'}</Badge>
+                    </TableCell>
+                  </TableRow>
+                ))
+              ) : (
+                <TableRow>
+                  <TableCell colSpan={6}>No organizations provisioned yet.</TableCell>
+                </TableRow>
+              )}
+            </TableBody>
+          </Table>
+        </TableWrap>
+      </CardContent>
+    </Card>
   );
 }
 
@@ -251,36 +245,32 @@ export function AdminRecentCallsSection({
   const items = typeof limit === 'number' ? recentCalls.slice(0, limit) : recentCalls;
 
   return (
-    <section className="command-section-block ops-section-panel">
-      <div className="command-section-header">
+    <Card className="dashboard-data-panel">
+      <CardHeader className="dashboard-table-header">
         <div>
           <span className="eyebrow-text">Calls</span>
-          <h2>Recent</h2>
+          <CardTitle className="dashboard-side-title">Recent traffic</CardTitle>
         </div>
         <SectionAction href={actionHref} label={actionLabel} />
-      </div>
-
-      <div className="ops-mini-feed">
+      </CardHeader>
+      <CardContent className="dashboard-side-list">
         {items.length ? (
           items.map((call) => (
-            <article key={call.id} className="ops-feed-card">
-              <div className="ops-feed-top">
-                <span>{call.direction}</span>
-                <span>{call.createdAt}</span>
+            <div key={call.id} className="dashboard-feed-row">
+              <div>
+                <strong>{call.organizationName}</strong>
+                <span>
+                  {call.direction} • {call.createdAt}
+                </span>
               </div>
-              <strong>{call.organizationName}</strong>
-              <p>{call.summary}</p>
-              <div className="ops-feed-top">
-                <span>{call.outcome}</span>
-                <span>{call.duration}</span>
-              </div>
-            </article>
+              <Badge tone="muted">{call.outcome}</Badge>
+            </div>
           ))
         ) : (
           <div className="ops-empty-state">No calls logged.</div>
         )}
-      </div>
-    </section>
+      </CardContent>
+    </Card>
   );
 }
 
@@ -298,29 +288,30 @@ export function AdminBlueprintHistorySection({
   const items = typeof limit === 'number' ? recentBlueprints.slice(0, limit) : recentBlueprints;
 
   return (
-    <section className="command-section-block ops-section-panel">
-      <div className="command-section-header">
+    <Card className="dashboard-data-panel">
+      <CardHeader className="dashboard-table-header">
         <div>
           <span className="eyebrow-text">Demos</span>
-          <h2>Blueprints</h2>
+          <CardTitle className="dashboard-side-title">Blueprint history</CardTitle>
         </div>
         <SectionAction href={actionHref} label={actionLabel} />
-      </div>
-
-      <div className="ops-mini-feed">
+      </CardHeader>
+      <CardContent className="dashboard-side-list">
         {items.length ? (
           items.map((blueprint) => (
-            <article key={blueprint.id} className="ops-feed-card">
-              <strong>{blueprint.title}</strong>
-              <p>{blueprint.websiteUrl ?? 'No source URL'}</p>
-              <span>{blueprint.createdAt}</span>
-            </article>
+            <div key={blueprint.id} className="dashboard-feed-row">
+              <div>
+                <strong>{blueprint.title}</strong>
+                <span>{blueprint.websiteUrl ?? 'No source URL'}</span>
+              </div>
+              <Badge tone="muted">{blueprint.createdAt}</Badge>
+            </div>
           ))
         ) : (
           <div className="ops-empty-state">No blueprints saved.</div>
         )}
-      </div>
-    </section>
+      </CardContent>
+    </Card>
   );
 }
 
@@ -332,38 +323,18 @@ export function OrganizationLoadSection({
   limit?: number;
 }) {
   const items = typeof limit === 'number' ? organizations.slice(0, limit) : organizations;
-  const maxAgentCount = Math.max(...items.map((organization) => organization.liveAgentCount), 1);
 
   return (
-    <section className="glass-card command-chart-panel ops-section-panel">
-      <div className="command-section-header">
+    <Card className="dashboard-data-panel">
+      <CardHeader className="dashboard-table-header">
         <div>
-          <span className="eyebrow-text">Load</span>
-          <h2>Agent volume</h2>
+          <span className="eyebrow-text">Capacity</span>
+          <CardTitle className="dashboard-side-title">Agent load by account</CardTitle>
         </div>
-      </div>
-
-      {items.length ? (
-        <div className="command-bar-chart">
-          {items.map((organization) => {
-            const normalized = Math.max((organization.liveAgentCount / maxAgentCount) * 100, organization.liveAgentCount ? 16 : 6);
-
-            return (
-              <div key={organization.id} className="command-bar-row">
-                <div className="command-bar-label">
-                  <strong>{organization.name}</strong>
-                  <span>{organization.liveAgentCount} live</span>
-                </div>
-                <div className="command-bar-track">
-                  <div className="command-bar-fill" style={{ width: `${normalized}%` }} />
-                </div>
-              </div>
-            );
-          })}
-        </div>
-      ) : (
-        <div className="ops-empty-state">No organization data.</div>
-      )}
-    </section>
+      </CardHeader>
+      <CardContent>
+        <OrganizationLoadChart organizations={items} />
+      </CardContent>
+    </Card>
   );
 }

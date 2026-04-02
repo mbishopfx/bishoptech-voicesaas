@@ -2,7 +2,10 @@ import Link from 'next/link';
 import type { Route } from 'next';
 import { AudioLines, Bot, ChartNoAxesCombined, PhoneCall, Send } from 'lucide-react';
 
-import { CommandDeckPlayer } from '@/components/animated-voice-surfaces';
+import { OutcomeBarChart, PulseAreaChart } from '@/components/dashboard-charts';
+import { Badge } from '@/components/ui/badge';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow, TableWrap } from '@/components/ui/table';
 import type { ClientDashboardData, DashboardAgent, LeadRecord, MetricCard, RecentCall } from '@/lib/types';
 
 const metricIcons = [ChartNoAxesCombined, Bot, PhoneCall, Send] as const;
@@ -26,21 +29,25 @@ function SectionAction({ href, label }: ActionProps) {
 
 export function ClientMetricsGrid({ metrics }: { metrics: MetricCard[] }) {
   return (
-    <section className="metric-grid command-metric-grid ops-metric-grid">
+    <section className="dashboard-stat-grid">
       {metrics.map((metric, index) => {
         const Icon = metricIcons[index] ?? AudioLines;
 
         return (
-          <article key={metric.label} className={`glass-card command-metric-card tone-${metric.tone ?? 'neutral'}`}>
-            <div className="command-metric-head">
-              <span className="command-metric-icon">
-                <Icon size={18} />
-              </span>
-              <span className="command-metric-delta">{metric.delta}</span>
-            </div>
-            <p className="command-metric-label">{metric.label}</p>
-            <strong className="command-metric-value">{metric.value}</strong>
-          </article>
+          <Card key={metric.label} className="dashboard-stat-card">
+            <CardContent className="dashboard-stat-content">
+              <div className="dashboard-stat-top">
+                <span className="dashboard-stat-icon">
+                  <Icon size={16} />
+                </span>
+                <Badge tone={metric.tone === 'positive' ? 'success' : metric.tone === 'warning' ? 'warning' : 'muted'}>
+                  {metric.delta}
+                </Badge>
+              </div>
+              <span className="dashboard-stat-label">{metric.label}</span>
+              <strong className="dashboard-stat-value">{metric.value}</strong>
+            </CardContent>
+          </Card>
         );
       })}
     </section>
@@ -56,92 +63,95 @@ export function ClientControlDeckSection({
   const primaryAgent = data.agents[0];
 
   return (
-    <section className="ops-overview-grid">
-      <article className="glass-card ops-hero-panel">
-        <div className="ops-panel-head">
+    <section className="dashboard-window-grid">
+      <Card className="dashboard-primary-panel">
+        <CardHeader className="dashboard-panel-header">
           <div>
             <span className="eyebrow-text">Workspace pulse</span>
-            <h2>{data.organizationName}</h2>
+            <CardTitle className="dashboard-panel-title">{data.organizationName}</CardTitle>
           </div>
-          <span className="command-status-pill is-live">{data.planName ?? 'Managed'}</span>
-        </div>
+          <Badge tone="cyan">{data.planName ?? 'Managed'}</Badge>
+        </CardHeader>
 
-        <div className="ops-hero-visual">
-          <CommandDeckPlayer className="command-deck-player" accent="violet" />
-          <div className="ops-hero-overlay">
-            <div>
-              <span>Lead assistant</span>
-              <strong>{primaryAgent?.name ?? 'Pending'}</strong>
+        <CardContent className="dashboard-primary-content">
+          <div className="dashboard-chart-block">
+            <div className="dashboard-chart-kicker">sessions // response quality // transcript depth</div>
+            <PulseAreaChart recentCalls={data.recentCalls} />
+            <div className="dashboard-inline-stats">
+              <div className="dashboard-inline-stat">
+                <span>Lead agent</span>
+                <strong>{primaryAgent?.name ?? 'Pending'}</strong>
+              </div>
+              <div className="dashboard-inline-stat">
+                <span>Latest outcome</span>
+                <strong>{activeCall?.outcome ?? 'Standby'}</strong>
+              </div>
+              <div className="dashboard-inline-stat">
+                <span>Numbers</span>
+                <strong>{data.phoneNumbers.length}</strong>
+              </div>
             </div>
-            <div>
-              <span>Latest call</span>
-              <strong>{activeCall?.outcome ?? 'Standby'}</strong>
+          </div>
+
+          <div className="dashboard-kpi-row">
+            <div className="dashboard-kpi-box">
+              <span>Agents</span>
+              <strong>{data.agents.length}</strong>
             </div>
-            <div>
+            <div className="dashboard-kpi-box">
+              <span>Calls</span>
+              <strong>{data.recentCalls.length}</strong>
+            </div>
+            <div className="dashboard-kpi-box">
               <span>Campaigns</span>
               <strong>{data.campaigns.length}</strong>
             </div>
-          </div>
-        </div>
-
-        <div className="ops-kv-grid">
-          <article className="ops-log-card">
-            <span>Numbers</span>
-            <strong>{data.phoneNumbers.length}</strong>
-          </article>
-          <article className="ops-log-card">
-            <span>Agents</span>
-            <strong>{data.agents.length}</strong>
-          </article>
-          <article className="ops-log-card">
-            <span>Calls</span>
-            <strong>{data.recentCalls.length}</strong>
-          </article>
-          <article className="ops-log-card">
-            <span>Timezone</span>
-            <strong>{data.timezone}</strong>
-          </article>
-        </div>
-      </article>
-
-      <div className="ops-glance-grid">
-        <article className="glass-card ops-list-card">
-          <div className="ops-panel-head">
-            <div>
-              <span className="eyebrow-text">Assistant stack</span>
-              <strong>Live roles</strong>
+            <div className="dashboard-kpi-box">
+              <span>Timezone</span>
+              <strong>{data.timezone}</strong>
             </div>
-            <Bot size={16} />
           </div>
-          <div className="ops-mini-feed">
+        </CardContent>
+      </Card>
+
+      <div className="dashboard-side-column">
+        <Card className="dashboard-side-panel">
+          <CardHeader className="dashboard-panel-header">
+            <div>
+              <span className="eyebrow-text">Assistants</span>
+              <CardTitle className="dashboard-side-title">Live stack</CardTitle>
+            </div>
+            <Bot size={15} />
+          </CardHeader>
+          <CardContent className="dashboard-side-list">
             {data.agents.slice(0, 4).map((agent) => (
-              <div key={agent.id} className="ops-mini-feed-row">
+              <div key={agent.id} className="dashboard-side-row">
                 <strong>{agent.name}</strong>
                 <span>{agent.role}</span>
               </div>
             ))}
             {!data.agents.length ? <div className="ops-empty-state">No agents assigned.</div> : null}
-          </div>
-        </article>
+          </CardContent>
+        </Card>
 
-        <article className="glass-card ops-list-card">
-          <div className="ops-panel-head">
+        <Card className="dashboard-side-panel">
+          <CardHeader className="dashboard-panel-header">
             <div>
-              <span className="eyebrow-text">Recent calls</span>
-              <strong>Queue</strong>
+              <span className="eyebrow-text">Recent queue</span>
+              <CardTitle className="dashboard-side-title">Calls</CardTitle>
             </div>
-            <AudioLines size={16} />
-          </div>
-          <div className="ops-mini-feed">
+            <AudioLines size={15} />
+          </CardHeader>
+          <CardContent className="dashboard-side-list">
             {data.recentCalls.slice(0, 4).map((call) => (
-              <div key={call.id} className="ops-mini-feed-row">
+              <div key={call.id} className="dashboard-side-row">
                 <strong>{call.caller}</strong>
                 <span>{call.outcome}</span>
               </div>
             ))}
             {!data.recentCalls.length ? <div className="ops-empty-state">No calls logged.</div> : null}
-          </div>
-        </article>
+          </CardContent>
+        </Card>
       </div>
     </section>
   );
@@ -162,103 +172,85 @@ export function ClientAgentsSection({
   const items = typeof limit === 'number' ? agents.slice(0, limit) : agents;
 
   return (
-    <section className="command-section-block ops-section-panel">
-      <div className="command-section-header">
+    <Card className="dashboard-data-panel">
+      <CardHeader className="dashboard-table-header">
         <div>
           <span className="eyebrow-text">Agents</span>
-          <h2>Assistant stack</h2>
+          <CardTitle className="dashboard-side-title">Assistant stack</CardTitle>
         </div>
         <SectionAction href={actionHref} label={actionLabel} />
-      </div>
-
-      <div className="ops-roster-grid">
-        {items.length ? (
-          items.map((agent) => (
-            <article key={agent.id} className="glass-card ops-roster-card">
-              <div className="ops-roster-head">
-                <div>
-                  <h3>{agent.name}</h3>
-                  <p>{agent.role}</p>
-                </div>
-                <span className={`command-status-pill ${agent.status === 'live' ? 'is-live' : 'is-muted'}`}>
-                  {agent.status}
-                </span>
-              </div>
-
-              <div className="ops-kv-grid">
-                <article className="ops-log-card">
-                  <span>Voice</span>
-                  <strong>{agent.voice}</strong>
-                </article>
-                <article className="ops-log-card">
-                  <span>Model</span>
-                  <strong>{agent.model}</strong>
-                </article>
-              </div>
-
-              <div className="ops-summary-card">
-                <p>{agent.purpose}</p>
-              </div>
-
-              <div className="ops-tag-row">
-                <span className="surface-pill">Synced {agent.lastSyncedAt}</span>
-                {agent.vapiAssistantId ? <span className="surface-pill">{agent.vapiAssistantId.slice(0, 8)}</span> : null}
-              </div>
-            </article>
-          ))
-        ) : (
-          <div className="glass-card empty-state">
-            <h4>No agents assigned.</h4>
-          </div>
-        )}
-      </div>
-    </section>
+      </CardHeader>
+      <CardContent>
+        <TableWrap>
+          <Table>
+            <TableHead>
+              <TableRow>
+                <TableHeader>Name</TableHeader>
+                <TableHeader>Role</TableHeader>
+                <TableHeader>Voice</TableHeader>
+                <TableHeader>Model</TableHeader>
+                <TableHeader>Status</TableHeader>
+              </TableRow>
+            </TableHead>
+            <TableBody>
+              {items.length ? (
+                items.map((agent) => (
+                  <TableRow key={agent.id}>
+                    <TableCell>
+                      <div className="dashboard-table-primary">
+                        <strong>{agent.name}</strong>
+                        <span>{agent.lastSyncedAt}</span>
+                      </div>
+                    </TableCell>
+                    <TableCell>{agent.role}</TableCell>
+                    <TableCell>{agent.voice}</TableCell>
+                    <TableCell>{agent.model}</TableCell>
+                    <TableCell>
+                      <Badge tone={agent.status === 'live' ? 'success' : 'muted'}>{agent.status}</Badge>
+                    </TableCell>
+                  </TableRow>
+                ))
+              ) : (
+                <TableRow>
+                  <TableCell colSpan={5}>No agents assigned.</TableCell>
+                </TableRow>
+              )}
+            </TableBody>
+          </Table>
+        </TableWrap>
+      </CardContent>
+    </Card>
   );
 }
 
 export function ClientWorkspaceSummarySection({ data }: { data: ClientDashboardData }) {
   return (
-    <section className="command-section-block ops-section-panel">
-      <div className="command-section-header">
+    <Card className="dashboard-data-panel">
+      <CardHeader className="dashboard-table-header">
         <div>
           <span className="eyebrow-text">Workspace</span>
-          <h2>Snapshot</h2>
+          <CardTitle className="dashboard-side-title">Environment</CardTitle>
         </div>
-      </div>
-
-      <div className="glass-card ops-list-card">
-        <div className="ops-kv-grid">
-          <article className="ops-log-card">
-            <span>Plan</span>
-            <strong>{data.planName ?? 'Managed'}</strong>
-          </article>
-          <article className="ops-log-card">
-            <span>Numbers</span>
-            <strong>{data.phoneNumbers.length}</strong>
-          </article>
-          <article className="ops-log-card">
-            <span>Campaigns</span>
-            <strong>{data.campaigns.length}</strong>
-          </article>
-          <article className="ops-log-card">
-            <span>Blueprints</span>
-            <strong>{data.recentBlueprints.length}</strong>
-          </article>
+      </CardHeader>
+      <CardContent className="dashboard-side-list">
+        <div className="dashboard-side-row">
+          <strong>Plan</strong>
+          <span>{data.planName ?? 'Managed'}</span>
         </div>
-
-        <div className="ops-tag-row">
-          {data.phoneNumbers.length ? (
-            data.phoneNumbers.map((phoneNumber) => (
-              <span key={phoneNumber} className="surface-pill">
-                {phoneNumber}
-              </span>
-            ))
-          ) : (
-            <span className="surface-pill">No active number</span>
-          )}
+        <div className="dashboard-side-row">
+          <strong>Numbers</strong>
+          <span>{data.phoneNumbers.length}</span>
         </div>
-      </div>
-    </section>
+        <div className="dashboard-side-row">
+          <strong>Blueprints</strong>
+          <span>{data.recentBlueprints.length}</span>
+        </div>
+        <div className="dashboard-side-row">
+          <strong>Timezone</strong>
+          <span>{data.timezone}</span>
+        </div>
+      </CardContent>
+    </Card>
   );
 }
 
@@ -276,165 +268,152 @@ export function ClientRecentCallsSection({
   const items = typeof limit === 'number' ? recentCalls.slice(0, limit) : recentCalls;
 
   return (
-    <section className="command-section-block ops-section-panel">
-      <div className="command-section-header">
+    <Card className="dashboard-data-panel">
+      <CardHeader className="dashboard-table-header">
         <div>
           <span className="eyebrow-text">Calls</span>
-          <h2>Recent</h2>
+          <CardTitle className="dashboard-side-title">Recent traffic</CardTitle>
         </div>
         <SectionAction href={actionHref} label={actionLabel} />
-      </div>
-
-      <div className="ops-mini-feed">
+      </CardHeader>
+      <CardContent className="dashboard-side-list">
         {items.length ? (
           items.map((call) => (
-            <article key={call.id} className="ops-feed-card">
-              <div className="ops-feed-top">
-                <span>{call.direction}</span>
-                <span>{call.createdAt}</span>
+            <div key={call.id} className="dashboard-feed-row">
+              <div>
+                <strong>{call.caller}</strong>
+                <span>
+                  {call.direction} • {call.createdAt}
+                </span>
               </div>
-              <strong>{call.caller}</strong>
-              <p>{call.summary}</p>
-              <div className="ops-feed-top">
-                <span>{call.outcome}</span>
-                <span>{call.duration}</span>
-              </div>
-            </article>
+              <Badge tone="muted">{call.outcome}</Badge>
+            </div>
           ))
         ) : (
           <div className="ops-empty-state">No calls logged.</div>
         )}
-      </div>
-    </section>
+      </CardContent>
+    </Card>
   );
 }
 
 export function ClientLeadsSection({ leads }: { leads: LeadRecord[] }) {
   return (
-    <section className="command-section-block ops-section-panel">
-      <div className="command-section-header">
+    <Card className="dashboard-data-panel">
+      <CardHeader className="dashboard-table-header">
         <div>
           <span className="eyebrow-text">Leads</span>
-          <h2>Inbox</h2>
+          <CardTitle className="dashboard-side-title">Captured contacts</CardTitle>
         </div>
-      </div>
-
-      <div className="table-shell compact-table">
-        <div className="table-header">
-          <span>Lead</span>
-          <span>Intent</span>
-          <span>Urgency</span>
-          <span>Updated</span>
-        </div>
-
-        {leads.length ? (
-          leads.map((lead) => (
-            <div className="table-row" key={lead.id}>
-              <div>
-                <strong>{lead.name}</strong>
-                <p>{lead.transcriptExcerpt}</p>
-              </div>
-              <div>{lead.service}</div>
-              <div>{lead.urgency}</div>
-              <div>{lead.createdAt}</div>
-            </div>
-          ))
-        ) : (
-          <div className="table-empty">No leads captured.</div>
-        )}
-      </div>
-    </section>
+      </CardHeader>
+      <CardContent>
+        <TableWrap>
+          <Table>
+            <TableHead>
+              <TableRow>
+                <TableHeader>Lead</TableHeader>
+                <TableHeader>Intent</TableHeader>
+                <TableHeader>Urgency</TableHeader>
+                <TableHeader>Updated</TableHeader>
+              </TableRow>
+            </TableHead>
+            <TableBody>
+              {leads.length ? (
+                leads.map((lead) => (
+                  <TableRow key={lead.id}>
+                    <TableCell>
+                      <div className="dashboard-table-primary">
+                        <strong>{lead.name}</strong>
+                        <span>{lead.transcriptExcerpt}</span>
+                      </div>
+                    </TableCell>
+                    <TableCell>{lead.service}</TableCell>
+                    <TableCell>{lead.urgency}</TableCell>
+                    <TableCell>{lead.createdAt}</TableCell>
+                  </TableRow>
+                ))
+              ) : (
+                <TableRow>
+                  <TableCell colSpan={4}>No leads captured.</TableCell>
+                </TableRow>
+              )}
+            </TableBody>
+          </Table>
+        </TableWrap>
+      </CardContent>
+    </Card>
   );
 }
 
 export function ClientCallLogSection({ recentCalls }: { recentCalls: RecentCall[] }) {
   return (
-    <section className="command-section-block ops-section-panel">
-      <div className="command-section-header">
+    <Card className="dashboard-data-panel">
+      <CardHeader className="dashboard-table-header">
         <div>
-          <span className="eyebrow-text">Log</span>
-          <h2>Calls</h2>
+          <span className="eyebrow-text">Call log</span>
+          <CardTitle className="dashboard-side-title">Recordings</CardTitle>
         </div>
-      </div>
-
-      <div className="table-shell compact-table">
-        <div className="table-header">
-          <span>Caller</span>
-          <span>Outcome</span>
-          <span>Duration</span>
-          <span>Asset</span>
-        </div>
-
-        {recentCalls.length ? (
-          recentCalls.map((call) => (
-            <div className="table-row" key={call.id}>
-              <div>
-                <strong>{call.caller}</strong>
-                <p>{call.summary}</p>
-              </div>
-              <div>{call.outcome}</div>
-              <div>{call.duration}</div>
-              <div>
-                {call.recordingUrl ? (
-                  <a className="text-link" href={call.recordingUrl} target="_blank" rel="noreferrer">
-                    {call.recordingLabel ?? 'Recording'}
-                  </a>
-                ) : (
-                  'No asset'
-                )}
-              </div>
-            </div>
-          ))
-        ) : (
-          <div className="table-empty">No calls recorded.</div>
-        )}
-      </div>
-    </section>
+      </CardHeader>
+      <CardContent>
+        <TableWrap>
+          <Table>
+            <TableHead>
+              <TableRow>
+                <TableHeader>Caller</TableHeader>
+                <TableHeader>Outcome</TableHeader>
+                <TableHeader>Duration</TableHeader>
+                <TableHeader>Asset</TableHeader>
+              </TableRow>
+            </TableHead>
+            <TableBody>
+              {recentCalls.length ? (
+                recentCalls.map((call) => (
+                  <TableRow key={call.id}>
+                    <TableCell>
+                      <div className="dashboard-table-primary">
+                        <strong>{call.caller}</strong>
+                        <span>{call.summary}</span>
+                      </div>
+                    </TableCell>
+                    <TableCell>{call.outcome}</TableCell>
+                    <TableCell>{call.duration}</TableCell>
+                    <TableCell>
+                      {call.recordingUrl ? (
+                        <a className="text-link" href={call.recordingUrl} target="_blank" rel="noreferrer">
+                          {call.recordingLabel ?? 'Recording'}
+                        </a>
+                      ) : (
+                        'No asset'
+                      )}
+                    </TableCell>
+                  </TableRow>
+                ))
+              ) : (
+                <TableRow>
+                  <TableCell colSpan={4}>No calls recorded.</TableCell>
+                </TableRow>
+              )}
+            </TableBody>
+          </Table>
+        </TableWrap>
+      </CardContent>
+    </Card>
   );
 }
 
 export function ClientOutcomeChartSection({ recentCalls }: { recentCalls: RecentCall[] }) {
-  const outcomeGroups = Array.from(
-    recentCalls.reduce<Map<string, number>>((accumulator, call) => {
-      accumulator.set(call.outcome, (accumulator.get(call.outcome) ?? 0) + 1);
-      return accumulator;
-    }, new Map()),
-  )
-    .sort((a, b) => b[1] - a[1])
-    .slice(0, 6);
-  const maxOutcomeCount = Math.max(...outcomeGroups.map(([, count]) => count), 1);
-
   return (
-    <section className="glass-card command-chart-panel ops-section-panel">
-      <div className="command-section-header">
+    <Card className="dashboard-data-panel">
+      <CardHeader className="dashboard-table-header">
         <div>
           <span className="eyebrow-text">Outcomes</span>
-          <h2>Distribution</h2>
+          <CardTitle className="dashboard-side-title">Result distribution</CardTitle>
         </div>
-      </div>
-
-      {outcomeGroups.length ? (
-        <div className="command-bar-chart">
-          {outcomeGroups.map(([outcome, count]) => {
-            const normalized = Math.max((count / maxOutcomeCount) * 100, 16);
-
-            return (
-              <div key={outcome} className="command-bar-row">
-                <div className="command-bar-label">
-                  <strong>{outcome}</strong>
-                  <span>{count}</span>
-                </div>
-                <div className="command-bar-track">
-                  <div className="command-bar-fill" style={{ width: `${normalized}%` }} />
-                </div>
-              </div>
-            );
-          })}
-        </div>
-      ) : (
-        <div className="ops-empty-state">No outcomes yet.</div>
-      )}
-    </section>
+      </CardHeader>
+      <CardContent>
+        <OutcomeBarChart recentCalls={recentCalls} />
+      </CardContent>
+    </Card>
   );
 }
 
@@ -452,28 +431,29 @@ export function ClientCampaignsSection({
   const items = typeof limit === 'number' ? campaigns.slice(0, limit) : campaigns;
 
   return (
-    <section className="command-section-block ops-section-panel">
-      <div className="command-section-header">
+    <Card className="dashboard-data-panel">
+      <CardHeader className="dashboard-table-header">
         <div>
           <span className="eyebrow-text">Campaigns</span>
-          <h2>Outbound</h2>
+          <CardTitle className="dashboard-side-title">Outbound queue</CardTitle>
         </div>
         <SectionAction href={actionHref} label={actionLabel} />
-      </div>
-
-      <div className="ops-mini-feed">
+      </CardHeader>
+      <CardContent className="dashboard-side-list">
         {items.length ? (
           items.map((campaign) => (
-            <article key={campaign.id} className="ops-feed-card">
-              <strong>{campaign.name}</strong>
-              <p>{campaign.createdAt}</p>
-              <span>{campaign.status}</span>
-            </article>
+            <div key={campaign.id} className="dashboard-feed-row">
+              <div>
+                <strong>{campaign.name}</strong>
+                <span>{campaign.createdAt}</span>
+              </div>
+              <Badge tone="muted">{campaign.status}</Badge>
+            </div>
           ))
         ) : (
           <div className="ops-empty-state">No campaigns launched.</div>
         )}
-      </div>
-    </section>
+      </CardContent>
+    </Card>
   );
 }
