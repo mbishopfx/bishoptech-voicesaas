@@ -4,12 +4,14 @@ import { NextResponse } from 'next/server';
 import { z } from 'zod';
 
 import { getViewerContext } from '@/lib/auth';
+import { buildAssistantConfigSnapshot } from '@/lib/assistant-config';
 import { buildClientAssistantDefinitions } from '@/lib/client-stack';
 import { appConfig } from '@/lib/app-config';
 import { formatRelativeTime } from '@/lib/format';
 import { getSupabaseAdminClient } from '@/lib/supabase-admin';
 import type { DashboardAgent, OnboardingResult } from '@/lib/types';
 import { createAssistant, createSquad } from '@/lib/vapi';
+import { resolveVapiCredentialsForOrganization } from '@/lib/vapi-credentials';
 
 export const runtime = 'nodejs';
 
@@ -24,6 +26,8 @@ const onboardingSchema = z.object({
   websiteUrl: z.string().optional(),
   googleBusinessProfile: z.string().optional(),
   orchestrationMode: z.enum(['inbound', 'outbound', 'multi']).default('multi'),
+  vapiAccountMode: z.enum(['managed', 'byo']).default('managed'),
+  vapiApiKey: z.string().optional(),
 });
 
 function slugify(input: string) {
@@ -43,8 +47,8 @@ export async function POST(request: Request) {
 
     const payload = onboardingSchema.parse(await request.json());
 
-    if (!appConfig.supabase.url || !appConfig.supabase.hasServiceRole || !appConfig.vapi.apiKey) {
-      throw new Error('Supabase admin access and Vapi API access are required for onboarding.');
+    if (!appConfig.supabase.url || !appConfig.supabase.hasServiceRole) {
+      throw new Error('Supabase admin access is required for onboarding.');
     }
 
     const supabase = getSupabaseAdminClient();
@@ -85,6 +89,57 @@ export async function POST(request: Request) {
 
     const organizationId = organizationInsert.data.id;
 
+    if (payload.vapiAccountMode === 'byo') {
+      if (!payload.vapiApiKey?.trim()) {
+        throw new Error('A BYO Vapi API key is required when BYO mode is selected.');
+      }
+
+      const apiKeyInsert = await supabase
+        .from('api_keys')
+        .insert({
+          organization_id: organizationId,
+          provider: 'vapi',
+          label: `${payload.businessName} Vapi key`,
+          secret_value: payload.vapiApiKey.trim(),
+          is_default: true,
+          metadata: {
+            onboardingMode: 'byo',
+          },
+          created_by: viewer.id,
+          updated_by: viewer.id,
+        })
+        .select('id')
+        .single();
+
+      if (apiKeyInsert.error || !apiKeyInsert.data) {
+        throw new Error(apiKeyInsert.error?.message ?? 'Unable to store the BYO Vapi key.');
+      }
+
+      const orgUpdate = await supabase
+        .from('organizations')
+        .update({
+          vapi_account_mode: 'byo',
+          vapi_api_key_id: apiKeyInsert.data.id,
+        })
+        .eq('id', organizationId);
+
+      if (orgUpdate.error) {
+        throw new Error(orgUpdate.error.message);
+      }
+    } else {
+      const orgUpdate = await supabase
+        .from('organizations')
+        .update({
+          vapi_account_mode: 'managed',
+          vapi_api_key_id: null,
+        })
+        .eq('id', organizationId);
+
+      if (orgUpdate.error) {
+        throw new Error(orgUpdate.error.message);
+      }
+    }
+
     const [{ error: profileError }, { error: membershipError }] = await Promise.all([
       supabase.from('user_profiles').upsert({
         id: authUserId,
@@ -108,6 +163,8 @@ export async function POST(request: Request) {
       throw new Error(membershipError.message);
     }
 
+    const credentials = await resolveVapiCredentialsForOrganization(organizationId);
+
     const createdAssistants: Array<{
       role: DashboardAgent['role'];
       name: string;
@@ -117,7 +174,19 @@ export async function POST(request: Request) {
     }> = [];
 
     for (const definition of definitions) {
-      const created = await createAssistant(definition.payload, `${organizationSlug}-${definition.role}-${payload.contactEmail}`);
+      const created = await createAssistant(
+        definition.payload,
+        `${organizationSlug}-${definition.role}-${payload.contactEmail}`,
+        credentials.apiKey,
+      );
+
+      const snapshot = buildAssistantConfigSnapshot(definition.payload, {
+        accountMode: payload.vapiAccountMode,
+        syncStatus: 'synced',
+        livePayload: definition.payload,
+        lastPublishedAt: new Date().toISOString(),
+        lastSyncedAt: new Date().toISOString(),
+      });
 
       createdAssistants.push({
         role: definition.role,
@@ -136,6 +205,13 @@ export async function POST(request: Request) {
           vertical: payload.vertical,
           websiteUrl: payload.websiteUrl,
           googleBusinessProfile: payload.googleBusinessProfile,
+          accountMode: payload.vapiAccountMode,
+          syncStatus: snapshot.syncStatus,
+          lastPublishedAt: snapshot.lastPublishedAt,
+          lastSyncedAt: snapshot.lastSyncedAt,
+          vapiPayload: snapshot.draftPayload,
+          vapiDraftPayload: snapshot.draftPayload,
+          vapiLivePayload: snapshot.livePayload,
         },
       });
     }
@@ -150,7 +226,7 @@ export async function POST(request: Request) {
         const squad = await createSquad({
           name: `${payload.businessName} Routing Squad`,
           members: [{ assistantId: inbound.vapiAssistantId }, { assistantId: specialist.vapiAssistantId }],
-        });
+        }, `${organizationSlug}-squad-${payload.contactEmail}`, credentials.apiKey);
 
         squadId = squad.id;
       }
@@ -178,7 +254,20 @@ export async function POST(request: Request) {
       throw new Error(agentInsert.error.message);
     }
 
-    const agents: DashboardAgent[] = (agentInsert.data ?? []).map((agent) => ({
+    type InsertedAgentRow = {
+      id: string;
+      organization_id: string;
+      name: string;
+      agent_type: DashboardAgent['role'];
+      vapi_assistant_id: string | null;
+      is_active: boolean;
+      config: Record<string, unknown> | null;
+      updated_at: string;
+    };
+
+    const insertedAgents = (agentInsert.data ?? []) as InsertedAgentRow[];
+
+    const agents: DashboardAgent[] = insertedAgents.map((agent: InsertedAgentRow) => ({
       id: agent.id,
       organizationId: agent.organization_id,
       name: agent.name,
@@ -198,6 +287,8 @@ export async function POST(request: Request) {
       email: payload.contactEmail,
       organizationSlug,
       orchestrationMode: payload.orchestrationMode,
+      vapiAccountMode: payload.vapiAccountMode,
+      vapiCredentialMode: payload.vapiAccountMode === 'byo' ? 'byo' : credentials.source === 'env' ? 'managed' : 'none',
       agents,
       warnings,
     };

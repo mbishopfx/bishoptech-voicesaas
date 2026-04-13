@@ -189,7 +189,8 @@ export function ClientAgentsSection({
                 <TableHeader>Role</TableHeader>
                 <TableHeader>Voice</TableHeader>
                 <TableHeader>Model</TableHeader>
-                <TableHeader>Status</TableHeader>
+                <TableHeader>Sync</TableHeader>
+                <TableHeader>Actions</TableHeader>
               </TableRow>
             </TableHead>
             <TableBody>
@@ -206,13 +207,23 @@ export function ClientAgentsSection({
                     <TableCell>{agent.voice}</TableCell>
                     <TableCell>{agent.model}</TableCell>
                     <TableCell>
-                      <Badge tone={agent.status === 'live' ? 'success' : 'muted'}>{agent.status}</Badge>
+                      <div style={{ display: 'flex', gap: '0.4rem', flexWrap: 'wrap' }}>
+                        <Badge tone={agent.status === 'live' ? 'success' : 'muted'}>{agent.status}</Badge>
+                        <Badge tone={agent.syncStatus === 'error' ? 'warning' : agent.syncStatus === 'synced' ? 'success' : 'muted'}>
+                          {agent.syncStatus ?? 'unknown'}
+                        </Badge>
+                      </div>
+                    </TableCell>
+                    <TableCell>
+                      <Link className="text-link" href={`/client/agents/${agent.id}` as Route}>
+                        Edit
+                      </Link>
                     </TableCell>
                   </TableRow>
                 ))
               ) : (
                 <TableRow>
-                  <TableCell colSpan={5}>No agents assigned.</TableCell>
+                  <TableCell colSpan={6}>No agents assigned.</TableCell>
                 </TableRow>
               )}
             </TableBody>
@@ -223,7 +234,13 @@ export function ClientAgentsSection({
   );
 }
 
-export function ClientWorkspaceSummarySection({ data }: { data: ClientDashboardData }) {
+export function ClientWorkspaceSummarySection({
+  data,
+  showSettingsLink = true,
+}: {
+  data: ClientDashboardData;
+  showSettingsLink?: boolean;
+}) {
   return (
     <Card className="dashboard-data-panel">
       <CardHeader className="dashboard-table-header">
@@ -238,6 +255,14 @@ export function ClientWorkspaceSummarySection({ data }: { data: ClientDashboardD
           <span>{data.planName ?? 'Managed'}</span>
         </div>
         <div className="dashboard-side-row">
+          <strong>Vapi</strong>
+          <span>
+            {data.vapiAccountMode === 'byo'
+              ? `BYO • ${data.vapiApiKeyLabel ?? 'Key connected'}`
+              : data.vapiManagedLabel ?? 'Managed by BishopTech'}
+          </span>
+        </div>
+        <div className="dashboard-side-row">
           <strong>Numbers</strong>
           <span>{data.phoneNumbers.length}</span>
         </div>
@@ -249,6 +274,11 @@ export function ClientWorkspaceSummarySection({ data }: { data: ClientDashboardD
           <strong>Timezone</strong>
           <span>{data.timezone}</span>
         </div>
+        {showSettingsLink ? (
+          <Link className="text-link" href="/client/settings">
+            Manage workspace settings
+          </Link>
+        ) : null}
       </CardContent>
     </Card>
   );

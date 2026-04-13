@@ -2,6 +2,7 @@ import { appConfig } from '@/lib/app-config';
 
 type VapiFetchOptions = {
   idempotencyKey?: string;
+  apiKey?: string;
 };
 
 export type VapiAssistantPayload = {
@@ -14,6 +15,7 @@ export type VapiAssistantPayload = {
       role: 'system' | 'assistant' | 'user';
       content: string;
     }>;
+    [key: string]: unknown;
   };
   voice: {
     provider: string;
@@ -24,7 +26,27 @@ export type VapiAssistantPayload = {
         voiceId: string;
       }>;
     };
+    [key: string]: unknown;
   };
+  server?: {
+    url?: string;
+    timeoutSeconds?: number;
+    message?: unknown;
+    [key: string]: unknown;
+  };
+  tools?: Array<Record<string, unknown>>;
+  knowledgeBase?: Record<string, unknown>;
+  credentialIds?: string[];
+  hooks?: Array<Record<string, unknown>>;
+  metadata?: Record<string, unknown>;
+  [key: string]: unknown;
+};
+
+export type VapiAssistantRecord = VapiAssistantPayload & {
+  id: string;
+  orgId?: string;
+  createdAt?: string;
+  updatedAt?: string;
 };
 
 export type VapiCreateCallPayload = {
@@ -63,10 +85,14 @@ export async function vapiFetch<T>(
   init: RequestInit = {},
   options: VapiFetchOptions = {},
 ) {
-  assertVapiConfigured();
+  const apiKey = options.apiKey ?? appConfig.vapi.apiKey;
+
+  if (!apiKey) {
+    assertVapiConfigured();
+  }
 
   const headers = new Headers(init.headers);
-  headers.set('Authorization', `Bearer ${appConfig.vapi.apiKey}`);
+  headers.set('Authorization', `Bearer ${apiKey}`);
   headers.set('Content-Type', 'application/json');
 
   if (options.idempotencyKey) {
@@ -86,30 +112,48 @@ export async function vapiFetch<T>(
   return res.json() as Promise<T>;
 }
 
-export async function createAssistant(payload: VapiAssistantPayload, idempotencyKey?: string) {
+export async function createAssistant(payload: VapiAssistantPayload, idempotencyKey?: string, apiKey?: string) {
   return vapiFetch<{ id: string }>('/assistant', {
     method: 'POST',
     body: JSON.stringify(payload),
-  }, { idempotencyKey });
+  }, { idempotencyKey, apiKey });
 }
 
-export async function createOutboundCall(payload: VapiCreateCallPayload, idempotencyKey?: string) {
+export async function getAssistant(assistantId: string, apiKey?: string) {
+  return vapiFetch<VapiAssistantRecord>(`/assistant/${assistantId}`, {
+    method: 'GET',
+  }, { apiKey });
+}
+
+export async function updateAssistant(
+  assistantId: string,
+  payload: VapiAssistantPayload,
+  idempotencyKey?: string,
+  apiKey?: string,
+) {
+  return vapiFetch<VapiAssistantRecord>(`/assistant/${assistantId}`, {
+    method: 'PATCH',
+    body: JSON.stringify(payload),
+  }, { idempotencyKey, apiKey });
+}
+
+export async function createOutboundCall(payload: VapiCreateCallPayload, idempotencyKey?: string, apiKey?: string) {
   return vapiFetch<{ id: string }>('/call', {
     method: 'POST',
     body: JSON.stringify(payload),
-  }, { idempotencyKey });
+  }, { idempotencyKey, apiKey });
 }
 
-export async function createSquad(payload: VapiSquadPayload, idempotencyKey?: string) {
+export async function createSquad(payload: VapiSquadPayload, idempotencyKey?: string, apiKey?: string) {
   return vapiFetch<{ id: string }>('/squad', {
     method: 'POST',
     body: JSON.stringify(payload),
-  }, { idempotencyKey });
+  }, { idempotencyKey, apiKey });
 }
 
-export async function createCampaign(payload: VapiCampaignPayload, idempotencyKey?: string) {
+export async function createCampaign(payload: VapiCampaignPayload, idempotencyKey?: string, apiKey?: string) {
   return vapiFetch<{ id: string }>('/campaign', {
     method: 'POST',
     body: JSON.stringify(payload),
-  }, { idempotencyKey });
+  }, { idempotencyKey, apiKey });
 }

@@ -1,3 +1,5 @@
+import type { AssistantConfigSnapshot } from '@/lib/assistant-config';
+
 export type MetricTone = 'neutral' | 'positive' | 'warning';
 export type AgentRole = 'inbound' | 'outbound' | 'specialist';
 export type OrchestrationMode = 'inbound' | 'outbound' | 'multi';
@@ -46,6 +48,12 @@ export type DashboardAgent = {
   status: 'ready' | 'pending' | 'live';
   purpose: string;
   lastSyncedAt: string;
+  syncStatus?: 'synced' | 'draft' | 'dirty' | 'error' | 'unknown';
+  lastError?: string | null;
+  accountMode?: 'managed' | 'byo';
+  config?: AssistantConfigSnapshot | Record<string, unknown>;
+  draftPayload?: Record<string, unknown>;
+  livePayload?: Record<string, unknown>;
 };
 
 export type OrganizationSummary = {
@@ -59,6 +67,10 @@ export type OrganizationSummary = {
   agentCount: number;
   liveAgentCount: number;
   phoneNumbers: string[];
+  vapiAccountMode?: 'managed' | 'byo';
+  vapiManagedLabel?: string | null;
+  vapiApiKeyLabel?: string | null;
+  vapiApiKeyId?: string | null;
   lastCallAt?: string;
   latestCallSummary?: string;
 };
@@ -225,6 +237,8 @@ export type OnboardingRequest = {
   websiteUrl?: string;
   googleBusinessProfile?: string;
   orchestrationMode: OrchestrationMode;
+  vapiAccountMode: 'managed' | 'byo';
+  vapiApiKey?: string;
 };
 
 export type OnboardingResult = {
@@ -234,6 +248,8 @@ export type OnboardingResult = {
   email: string;
   organizationSlug: string;
   orchestrationMode: OrchestrationMode;
+  vapiAccountMode: 'managed' | 'byo';
+  vapiCredentialMode: 'managed' | 'byo' | 'none';
   agents: DashboardAgent[];
   warnings: string[];
 };
@@ -285,8 +301,13 @@ export type AdminDashboardData = {
 export type ClientDashboardData = {
   organizationId: string;
   organizationName: string;
+  organizationSlug: string;
   planName: string | null;
   timezone: string;
+  vapiAccountMode: 'managed' | 'byo';
+  vapiManagedLabel: string | null;
+  vapiApiKeyLabel: string | null;
+  vapiApiKeyId: string | null;
   metrics: MetricCard[];
   phoneNumbers: string[];
   agents: DashboardAgent[];

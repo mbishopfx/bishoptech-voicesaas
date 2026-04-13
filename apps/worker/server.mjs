@@ -125,11 +125,13 @@ function resolveExternalId(payload) {
   return candidates.find((candidate) => typeof candidate === 'string' && candidate.length > 0) || null;
 }
 
-async function vapiFetch(path, init = {}, idempotencyKey) {
-  ensureVapi();
+async function vapiFetch(path, init = {}, idempotencyKey, apiKey = vapiApiKey) {
+  if (!apiKey) {
+    ensureVapi();
+  }
 
   const headers = new Headers(init.headers || {});
-  headers.set('Authorization', `Bearer ${vapiApiKey}`);
+  headers.set('Authorization', `Bearer ${apiKey}`);
   headers.set('Content-Type', 'application/json');
 
   if (idempotencyKey) {
@@ -223,6 +225,7 @@ async function processCampaignLaunchJob(job) {
   const sourceAgentId = payload.sourceAgentId;
   const campaignName = payload.campaignName;
   const script = payload.script;
+  const resolvedVapiApiKey = typeof payload.vapiApiKey === 'string' && payload.vapiApiKey ? payload.vapiApiKey : vapiApiKey;
 
   if (typeof campaignRecordId !== 'string' || typeof sourceAgentId !== 'string' || typeof campaignName !== 'string' || typeof script !== 'string') {
     throw new Error('Campaign launch job payload is missing the required fields.');
@@ -311,6 +314,7 @@ async function processCampaignLaunchJob(job) {
       }),
     },
     `campaign-assistant-${campaignRecordId}`,
+    resolvedVapiApiKey,
   );
 
   const campaign = await vapiFetch(
@@ -328,6 +332,7 @@ async function processCampaignLaunchJob(job) {
       }),
     },
     `campaign-${campaignRecordId}`,
+    resolvedVapiApiKey,
   );
 
   const nextTargetFilter = {

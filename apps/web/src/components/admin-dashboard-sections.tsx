@@ -193,6 +193,7 @@ export function OrganizationRosterSection({
                 <TableHeader>Plan</TableHeader>
                 <TableHeader>Members</TableHeader>
                 <TableHeader>Agents</TableHeader>
+                <TableHeader>Vapi</TableHeader>
                 <TableHeader>Last call</TableHeader>
                 <TableHeader>Status</TableHeader>
               </TableRow>
@@ -212,6 +213,12 @@ export function OrganizationRosterSection({
                     <TableCell>
                       {organization.liveAgentCount}/{organization.agentCount}
                     </TableCell>
+                    <TableCell>
+                      <div className="dashboard-table-primary">
+                        <strong>{organization.vapiAccountMode === 'byo' ? 'BYO' : 'Managed'}</strong>
+                        <span>{organization.vapiAccountMode === 'byo' ? 'Customer-owned key' : organization.vapiManagedLabel ?? 'BishopTech'}</span>
+                      </div>
+                    </TableCell>
                     <TableCell>{organization.lastCallAt ? formatRelativeTime(organization.lastCallAt) : 'No calls'}</TableCell>
                     <TableCell>
                       <Badge tone={organization.isActive ? 'success' : 'muted'}>{organization.isActive ? 'Active' : 'Inactive'}</Badge>
@@ -220,7 +227,7 @@ export function OrganizationRosterSection({
                 ))
               ) : (
                 <TableRow>
-                  <TableCell colSpan={6}>No organizations provisioned yet.</TableCell>
+                  <TableCell colSpan={7}>No organizations provisioned yet.</TableCell>
                 </TableRow>
               )}
             </TableBody>

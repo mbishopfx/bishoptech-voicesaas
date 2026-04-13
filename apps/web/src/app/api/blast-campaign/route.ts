@@ -6,6 +6,7 @@ import { appConfig } from '@/lib/app-config';
 import { parseBlastCsv } from '@/lib/csv';
 import { getSupabaseAdminClient } from '@/lib/supabase-admin';
 import { enqueueWorkerJob } from '@/lib/worker-queue';
+import { resolveVapiCredentialsForOrganization } from '@/lib/vapi-credentials';
 
 export const runtime = 'nodejs';
 
@@ -33,7 +34,7 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: 'You do not have permission to launch campaigns for this organization.' }, { status: 403 });
     }
 
-    if (!appConfig.vapi.apiKey || !appConfig.vapi.outboundPhoneNumberId || !appConfig.supabase.hasServiceRole) {
+    if (!appConfig.supabase.hasServiceRole) {
       throw new Error('Outbound campaign routing is not fully configured.');
     }
 
@@ -63,6 +64,11 @@ export async function POST(request: Request) {
 
     const outboundAgent = agentResult.data;
     const resolvedPhoneNumberId = payload.phoneNumberId ?? appConfig.vapi.outboundPhoneNumberId;
+    const credentials = await resolveVapiCredentialsForOrganization(payload.organizationId);
+
+    if (!resolvedPhoneNumberId) {
+      throw new Error('No outbound phone number is configured for this campaign.');
+    }
 
     const campaignInsert = await supabase
       .from('campaigns')
@@ -119,6 +125,7 @@ export async function POST(request: Request) {
         voiceLabel: payload.voiceLabel ?? null,
         recipientsAccepted: preview.validRecipients.length,
         recipientsRejected: preview.rejectedRows.length,
+        vapiApiKey: credentials.apiKey,
       },
     });
 

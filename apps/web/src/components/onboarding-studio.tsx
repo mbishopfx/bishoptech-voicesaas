@@ -15,6 +15,8 @@ const defaultState: OnboardingRequest = {
   websiteUrl: '',
   googleBusinessProfile: '',
   orchestrationMode: 'multi',
+  vapiAccountMode: 'managed',
+  vapiApiKey: '',
 };
 
 export function OnboardingStudio() {
@@ -115,6 +117,25 @@ export function OnboardingStudio() {
               </select>
             </label>
 
+            <label className="field">
+              <span>Vapi ownership</span>
+              <select className="select-field" value={form.vapiAccountMode} onChange={(event) => updateField('vapiAccountMode', event.target.value as 'managed' | 'byo')}>
+                <option value="managed">Managed by BishopTech</option>
+                <option value="byo">Bring your own Vapi</option>
+              </select>
+            </label>
+
+            {form.vapiAccountMode === 'byo' ? (
+              <label className="field field-span-2">
+                <span>BYO Vapi API key</span>
+                <input
+                  value={form.vapiApiKey ?? ''}
+                  placeholder="vapi_..."
+                  onChange={(event) => updateField('vapiApiKey', event.target.value)}
+                />
+              </label>
+            ) : null}
+
             <label className="field field-span-2">
               <span>Website URL</span>
               <input
@@ -206,6 +227,8 @@ export function OnboardingStudio() {
             <span className="surface-pill">Org {result.organizationId}</span>
             <span className="surface-pill">{result.organizationSlug}</span>
             <span className="surface-pill">{result.orchestrationMode}</span>
+            <span className="surface-pill">{result.vapiAccountMode}</span>
+            <span className="surface-pill">{result.vapiCredentialMode}</span>
           </div>
 
           <div className="agent-stack-grid">

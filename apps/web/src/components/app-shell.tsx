@@ -128,6 +128,7 @@ function getShellConfig(current: AppShellProps['current'], viewer: ViewerContext
         { key: 'calls', href: '/client/calls', label: 'Calls', icon: PhoneCall, active: activeNav === 'calls' },
         { key: 'campaigns', href: '/client/campaigns', label: 'Campaigns', icon: Send, active: activeNav === 'campaigns' },
         { key: 'workflow', href: '/client/workflow', label: 'Workflow', icon: Workflow, active: activeNav === 'workflow' },
+        { key: 'settings', href: '/client/settings', label: 'Settings', icon: Settings, active: activeNav === 'settings' },
       ],
       quickAction: {
         href: '/client/campaigns',

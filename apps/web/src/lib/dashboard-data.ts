@@ -1,4 +1,5 @@
 import { buildFallbackDemoTemplate } from '@/lib/demo-template';
+import { normalizeAssistantConfig } from '@/lib/assistant-config';
 import { formatDateTime, formatDuration, formatPhoneNumber, formatRelativeTime } from '@/lib/format';
 import { getDefaultOrganizationId } from '@/lib/auth';
 import { getSupabaseAdminClient } from '@/lib/supabase-admin';
@@ -23,6 +24,9 @@ type OrganizationRow = {
   timezone: string;
   plan_name: string | null;
   is_active: boolean;
+  vapi_account_mode?: 'managed' | 'byo' | null;
+  vapi_managed_label?: string | null;
+  vapi_api_key_id?: string | null;
   created_at?: string;
 };
 
@@ -34,6 +38,10 @@ type AgentRow = {
   vapi_assistant_id: string | null;
   is_active: boolean;
   config: Record<string, unknown> | null;
+  vapi_sync_status?: string | null;
+  vapi_last_error?: string | null;
+  vapi_last_synced_at?: string | null;
+  vapi_last_published_at?: string | null;
   updated_at?: string;
 };
 
@@ -76,6 +84,13 @@ type PhoneNumberRow = {
   is_active: boolean;
 };
 
+type ApiKeyRow = {
+  id: string;
+  organization_id: string;
+  label: string;
+  provider: string;
+};
+
 type VoicemailAssetRow = {
   id: string;
   organization_id: string;
@@ -106,6 +121,30 @@ type WorkflowBoardRow = {
 
 function parseString(value: unknown, fallback = '') {
   return typeof value === 'string' ? value : fallback;
+}
+
+async function getVapiApiKeyLabel(
+  supabase: Awaited<ReturnType<typeof getSupabaseAdminClient>>,
+  organizationId: string,
+  apiKeyId?: string | null,
+) {
+  if (!apiKeyId) {
+    return null;
+  }
+
+  const result = await supabase
+    .from('api_keys')
+    .select('id, organization_id, label, provider')
+    .eq('id', apiKeyId)
+    .eq('organization_id', organizationId)
+    .maybeSingle();
+
+  if (result.error || !result.data) {
+    return null;
+  }
+
+  const apiKey = result.data as ApiKeyRow;
+  return apiKey.provider === 'vapi' ? apiKey.label : null;
 }
 
 function parseNumber(value: unknown): number | null {
@@ -347,6 +386,7 @@ function buildAgentPurpose(agentType: string, config?: Record<string, unknown> |
 
 function mapAgent(row: AgentRow): DashboardAgent {
   const config = row.config ?? {};
+  const snapshot = normalizeAssistantConfig(config, row.name);
 
   return {
     id: row.id,
@@ -354,11 +394,17 @@ function mapAgent(row: AgentRow): DashboardAgent {
     name: row.name,
     role: parseAgentRole(row.agent_type),
     vapiAssistantId: row.vapi_assistant_id ?? undefined,
-    voice: parseString(config.voiceLabel, parseString(config.voiceId, 'Primary voice')),
-    model: parseString(config.modelName, 'Model not synced'),
+    voice: parseString(config.voiceLabel, parseString(snapshot.draftPayload.voice.voiceId, 'Primary voice')),
+    model: parseString(config.modelName, parseString(snapshot.draftPayload.model.model, 'Model not synced')),
     status: row.is_active ? 'live' : 'pending',
     purpose: buildAgentPurpose(row.agent_type, config),
-    lastSyncedAt: formatRelativeTime(row.updated_at),
+    lastSyncedAt: formatRelativeTime(row.vapi_last_synced_at ?? row.vapi_last_published_at ?? row.updated_at),
+    syncStatus: snapshot.syncStatus,
+    lastError: row.vapi_last_error ?? snapshot.lastError ?? null,
+    accountMode: snapshot.accountMode,
+    config,
+    draftPayload: snapshot.draftPayload,
+    livePayload: snapshot.livePayload,
   };
 }
 
@@ -566,11 +612,14 @@ export async function getAdminDashboardData(viewer: ViewerContext): Promise<Admi
     blueprintResult,
     voicemailAssetResult,
   ] = await Promise.all([
-    supabase.from('organizations').select('id, name, slug, timezone, plan_name, is_active, created_at').order('created_at', { ascending: true }),
+    supabase
+      .from('organizations')
+      .select('id, name, slug, timezone, plan_name, is_active, vapi_account_mode, vapi_managed_label, vapi_api_key_id, created_at')
+      .order('created_at', { ascending: true }),
     supabase.from('organization_members').select('organization_id'),
     supabase
       .from('agents')
-      .select('id, organization_id, name, agent_type, vapi_assistant_id, is_active, config, updated_at')
+      .select('id, organization_id, name, agent_type, vapi_assistant_id, is_active, config, vapi_sync_status, vapi_last_error, vapi_last_synced_at, vapi_last_published_at, updated_at')
       .order('created_at', { ascending: false }),
     supabase
       .from('calls')
@@ -656,6 +705,10 @@ export async function getAdminDashboardData(viewer: ViewerContext): Promise<Admi
       agentCount: organizationAgents.length,
       liveAgentCount: organizationAgents.filter((agent) => agent.is_active).length,
       phoneNumbers: organizationPhones.map((phoneNumber) => formatPhoneNumber(phoneNumber.phone_e164)),
+      vapiAccountMode: organization.vapi_account_mode === 'byo' ? 'byo' : 'managed',
+      vapiManagedLabel: organization.vapi_managed_label ?? null,
+      vapiApiKeyLabel: null,
+      vapiApiKeyId: organization.vapi_api_key_id ?? null,
       lastCallAt: latestCall?.created_at,
       latestCallSummary: latestCall?.summary ?? undefined,
     };
@@ -711,8 +764,13 @@ export async function getClientDashboardData(viewer: ViewerContext, organization
     return {
       organizationId: '',
       organizationName: 'No organization assigned',
+      organizationSlug: '',
       planName: null,
       timezone: 'America/Chicago',
+      vapiAccountMode: 'managed',
+      vapiManagedLabel: null,
+      vapiApiKeyLabel: null,
+      vapiApiKeyId: null,
       metrics: [
         { label: 'Captured leads', value: '0', delta: 'No org membership yet' },
         { label: 'Live agents', value: '0', delta: 'No org membership yet' },
@@ -742,12 +800,12 @@ export async function getClientDashboardData(viewer: ViewerContext, organization
   ] = await Promise.all([
     supabase
       .from('organizations')
-      .select('id, name, slug, timezone, plan_name, is_active')
+      .select('id, name, slug, timezone, plan_name, is_active, vapi_account_mode, vapi_managed_label, vapi_api_key_id')
       .eq('id', resolvedOrganizationId)
       .maybeSingle(),
     supabase
       .from('agents')
-      .select('id, organization_id, name, agent_type, vapi_assistant_id, is_active, config, updated_at')
+      .select('id, organization_id, name, agent_type, vapi_assistant_id, is_active, config, vapi_sync_status, vapi_last_error, vapi_last_synced_at, vapi_last_published_at, updated_at')
       .eq('organization_id', resolvedOrganizationId)
       .order('created_at', { ascending: true }),
     supabase
@@ -803,6 +861,7 @@ export async function getClientDashboardData(viewer: ViewerContext, organization
   const voicemailAssets = (voicemailAssetResult.data ?? []) as VoicemailAssetRow[];
   const voicemailAssetMap = new Map(voicemailAssets.map((asset) => [asset.id, asset]));
   const organizationName = organization?.name ?? 'Workspace';
+  const vapiApiKeyLabel = await getVapiApiKeyLabel(supabase, resolvedOrganizationId, organization?.vapi_api_key_id);
 
   const metrics: MetricCard[] = [
     {
@@ -834,8 +893,13 @@ export async function getClientDashboardData(viewer: ViewerContext, organization
   return {
     organizationId: resolvedOrganizationId,
     organizationName,
+    organizationSlug: organization?.slug ?? '',
     planName: organization?.plan_name ?? null,
     timezone: organization?.timezone ?? 'America/Chicago',
+    vapiAccountMode: organization?.vapi_account_mode === 'byo' ? 'byo' : 'managed',
+    vapiManagedLabel: organization?.vapi_managed_label ?? null,
+    vapiApiKeyLabel,
+    vapiApiKeyId: organization?.vapi_api_key_id ?? null,
     metrics,
     phoneNumbers: phoneNumbers.map((phoneNumber) => formatPhoneNumber(phoneNumber.phone_e164)),
     agents,

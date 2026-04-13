@@ -5,6 +5,7 @@ import { getViewerContext } from '@/lib/auth';
 import { appConfig } from '@/lib/app-config';
 import { buildFallbackDemoTemplate, buildVapiAssistantPayload } from '@/lib/demo-template';
 import { createAssistant, createOutboundCall } from '@/lib/vapi';
+import { resolveVapiCredentialsForOrganization } from '@/lib/vapi-credentials';
 
 export const runtime = 'nodejs';
 
@@ -88,9 +89,11 @@ export async function POST(request: Request) {
     const payload = demoCallRequestSchema.parse(await request.json());
     const normalizedPhone = normalizePhoneNumber(payload.targetPhoneNumber);
     const template = payload.template ?? buildFallbackDemoTemplate({});
+    const credentials = await resolveVapiCredentialsForOrganization(payload.organizationId);
+    const phoneNumberId = template.recommendedStack.telephony.phoneNumberId ?? appConfig.vapi.demoPhoneNumberId;
 
-    if (!appConfig.vapi.apiKey || !appConfig.vapi.demoPhoneNumberId) {
-      throw new Error('Live demo calling requires VAPI_API_KEY and VAPI_DEMO_PHONE_NUMBER_ID.');
+    if (!phoneNumberId) {
+      throw new Error('Live demo calling requires a demo phone number.');
     }
 
     const assistantId =
@@ -99,26 +102,28 @@ export async function POST(request: Request) {
         await createAssistant(
           buildVapiAssistantPayload(template),
           `assistant-${template.businessContext.businessName}-${normalizedPhone}`,
+          credentials.apiKey,
         )
       ).id;
 
     const call = await createOutboundCall(
       {
         assistantId,
-        phoneNumberId: appConfig.vapi.demoPhoneNumberId,
+        phoneNumberId,
         customer: {
           number: normalizedPhone,
         },
       },
       `call-${assistantId}-${normalizedPhone}`,
+      credentials.apiKey,
     );
 
     return NextResponse.json({
       mode: 'live',
-      message: `Assistant ${assistantId} was created under the shared Vapi account and the demo call was launched to ${normalizedPhone}.`,
+      message: `Assistant ${assistantId} was created and the demo call was launched to ${normalizedPhone}.`,
       assistantId,
       callId: call.id,
-      phoneNumberId: appConfig.vapi.demoPhoneNumberId,
+      phoneNumberId,
       warnings: template.mode === 'fallback' ? ['The assistant template came from the local fallback generator.'] : [],
     });
   } catch (error) {
