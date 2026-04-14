@@ -4,6 +4,7 @@ import Link from 'next/link';
 import { AgentEditor } from '@/components/agent-editor';
 import { AppShell } from '@/components/app-shell';
 import { ClientWorkspaceSummarySection } from '@/components/client-dashboard-sections';
+import { Button } from '@/components/ui/button';
 import { requireViewer } from '@/lib/auth';
 import { getClientDashboardData } from '@/lib/dashboard-data';
 import { canManageOrganization } from '@/lib/auth';
@@ -38,9 +39,9 @@ export default async function ClientAgentPage({ params }: AgentPageProps) {
       eyebrow="Agents"
       title={selectedAgent.name}
       actions={
-        <Link className="voice-secondary-button" href="/client/agents">
-          Back to agents
-        </Link>
+        <Button asChild variant="outline" className="rounded-md">
+          <Link href="/client/agents">Back to agents</Link>
+        </Button>
       }
     >
       <div className="command-content-grid">

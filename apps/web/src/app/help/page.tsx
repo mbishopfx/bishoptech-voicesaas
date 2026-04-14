@@ -30,7 +30,7 @@ export default async function HelpPage() {
               <h4>Kickoff call first</h4>
             </div>
           </div>
-          <p>The product is sold through a booked onboarding call so the workflow, scope, number strategy, and reporting expectations are clear before setup starts.</p>
+          <p>The product is sold through a booked onboarding call so the routing, scope, number strategy, and reporting expectations are clear before setup starts.</p>
         </article>
 
         <article className="glass-card workspace-card">

@@ -4,7 +4,6 @@ import { formatDateTime, formatDuration, formatPhoneNumber, formatRelativeTime }
 import { getDefaultOrganizationId } from '@/lib/auth';
 import { getSupabaseAdminClient } from '@/lib/supabase-admin';
 import { createSupabaseServerClient } from '@/lib/supabase/server';
-import { DEFAULT_WORKFLOW_PHASES } from '@/lib/workflow';
 import type {
   AdminDashboardData,
   ClientDashboardData,
@@ -15,7 +14,6 @@ import type {
   OrganizationSummary,
   RecentCall,
   ViewerContext,
-  WorkflowBoard,
 } from '@/lib/types';
 
 type OrganizationRow = {
@@ -108,17 +106,6 @@ type BlueprintRow = {
   title: string;
   website_url: string | null;
   created_at: string;
-};
-
-type WorkflowBoardRow = {
-  id: string;
-  organization_id: string;
-  title: string;
-  description: string | null;
-  nodes: Array<Record<string, unknown>> | null;
-  edges: Array<Record<string, unknown>> | null;
-  metadata: Record<string, unknown> | null;
-  updated_at: string;
 };
 
 function parseString(value: unknown, fallback = '') {
@@ -522,94 +509,6 @@ function mapBlueprint(row: BlueprintRow): DemoBlueprintSummary {
   };
 }
 
-function mapWorkflowBoard(row: WorkflowBoardRow | null): WorkflowBoard | null {
-  if (!row) {
-    return null;
-  }
-
-  return {
-    id: row.id,
-    organizationId: row.organization_id,
-    title: row.title,
-    description: row.description ?? 'Visual workflow map for the handoff, follow-up, and routing story.',
-    nodes: (row.nodes ?? []) as WorkflowBoard['nodes'],
-    edges: (row.edges ?? []) as WorkflowBoard['edges'],
-    metadata: {
-      phaseOrder: Array.isArray(row.metadata?.phaseOrder)
-        ? (row.metadata?.phaseOrder as string[])
-        : [...DEFAULT_WORKFLOW_PHASES],
-      isTemplate: row.metadata?.isTemplate === true,
-      sharedLabel: typeof row.metadata?.sharedLabel === 'string' ? row.metadata.sharedLabel : undefined,
-    },
-    updatedAt: formatRelativeTime(row.updated_at),
-  };
-}
-
-export function buildEmptyWorkflowBoard(organizationId?: string | null): WorkflowBoard {
-  return {
-    organizationId: organizationId ?? undefined,
-    title: 'Workflow Canvas',
-    description: 'Map the live routing, handoffs, and capture steps before you present the workflow.',
-    nodes: [],
-    edges: [],
-    metadata: {
-      phaseOrder: [...DEFAULT_WORKFLOW_PHASES],
-      isTemplate: false,
-    },
-  };
-}
-
-export async function getWorkflowBoardForOrganization(organizationId?: string | null, boardId?: string | null) {
-  if (!organizationId) {
-    return buildEmptyWorkflowBoard();
-  }
-
-  const supabase = await createSupabaseServerClient();
-  const query = supabase
-    .from('workflow_boards')
-    .select('id, organization_id, title, description, nodes, edges, metadata, updated_at')
-    .eq('organization_id', organizationId)
-    .order('updated_at', { ascending: false })
-    .limit(1);
-
-  const result = boardId
-    ? await supabase
-        .from('workflow_boards')
-        .select('id, organization_id, title, description, nodes, edges, metadata, updated_at')
-        .eq('organization_id', organizationId)
-        .eq('id', boardId)
-        .maybeSingle()
-    : await query.maybeSingle();
-
-  return mapWorkflowBoard((result.data as WorkflowBoardRow | null) ?? null) ?? buildEmptyWorkflowBoard(organizationId);
-}
-
-export async function getPublicWorkflowBoard(boardId: string) {
-  const supabase = getSupabaseAdminClient();
-  const boardResult = await supabase
-    .from('workflow_boards')
-    .select('id, organization_id, title, description, nodes, edges, metadata, updated_at')
-    .eq('id', boardId)
-    .maybeSingle();
-
-  const board = mapWorkflowBoard((boardResult.data as WorkflowBoardRow | null) ?? null);
-
-  if (!board) {
-    return null;
-  }
-
-  const organizationResult = await supabase
-    .from('organizations')
-    .select('id, name, slug')
-    .eq('id', board.organizationId ?? '')
-    .maybeSingle();
-
-  return {
-    board,
-    organizationName: (organizationResult.data as { name?: string | null } | null)?.name ?? 'Voice Workflow',
-  };
-}
-
 export async function getAdminDashboardData(viewer: ViewerContext): Promise<AdminDashboardData> {
   const supabase = await createSupabaseServerClient();
   const activeOrganizationId = getDefaultOrganizationId(viewer);
@@ -621,7 +520,6 @@ export async function getAdminDashboardData(viewer: ViewerContext): Promise<Admi
     callResult,
     campaignResult,
     phoneNumberResult,
-    boardResult,
     blueprintResult,
     voicemailAssetResult,
   ] = await Promise.all([
@@ -647,15 +545,6 @@ export async function getAdminDashboardData(viewer: ViewerContext): Promise<Admi
       .from('phone_numbers')
       .select('id, organization_id, phone_e164, friendly_name, is_active')
       .eq('is_active', true),
-    activeOrganizationId
-      ? supabase
-          .from('workflow_boards')
-          .select('id, organization_id, title, description, nodes, edges, metadata, updated_at')
-          .eq('organization_id', activeOrganizationId)
-          .order('updated_at', { ascending: false })
-          .limit(1)
-          .maybeSingle()
-      : Promise.resolve({ data: null } as { data: null }),
     supabase
       .from('demo_blueprints')
       .select('id, organization_id, title, website_url, created_at')
@@ -764,7 +653,6 @@ export async function getAdminDashboardData(viewer: ViewerContext): Promise<Admi
     organizations: organizationCards,
     recentCalls,
     activeOrganizationId: activeOrganizationId ?? undefined,
-    latestWorkflowBoard: mapWorkflowBoard((boardResult as { data: WorkflowBoardRow | null }).data) ?? buildEmptyWorkflowBoard(activeOrganizationId),
     recentBlueprints: blueprints.map(mapBlueprint),
   };
 }
@@ -795,7 +683,6 @@ export async function getClientDashboardData(viewer: ViewerContext, organization
       leads: [],
       recentCalls: [],
       campaigns: [],
-      latestWorkflowBoard: buildEmptyWorkflowBoard(),
       recentBlueprints: [],
     };
   }
@@ -807,7 +694,6 @@ export async function getClientDashboardData(viewer: ViewerContext, organization
     callResult,
     campaignResult,
     phoneNumberResult,
-    boardResult,
     blueprintResult,
     voicemailAssetResult,
   ] = await Promise.all([
@@ -844,13 +730,6 @@ export async function getClientDashboardData(viewer: ViewerContext, organization
       .select('id, organization_id, phone_e164, friendly_name, is_active')
       .eq('organization_id', resolvedOrganizationId)
       .eq('is_active', true),
-    supabase
-      .from('workflow_boards')
-      .select('id, organization_id, title, description, nodes, edges, metadata, updated_at')
-      .eq('organization_id', resolvedOrganizationId)
-      .order('updated_at', { ascending: false })
-      .limit(1)
-      .maybeSingle(),
     supabase
       .from('demo_blueprints')
       .select('id, organization_id, title, website_url, created_at')
@@ -924,7 +803,6 @@ export async function getClientDashboardData(viewer: ViewerContext, organization
       status: campaign.status,
       createdAt: formatDateTime(campaign.created_at),
     })),
-    latestWorkflowBoard: mapWorkflowBoard((boardResult.data as WorkflowBoardRow | null) ?? null) ?? buildEmptyWorkflowBoard(resolvedOrganizationId),
     recentBlueprints: blueprints.map(mapBlueprint),
   };
 }

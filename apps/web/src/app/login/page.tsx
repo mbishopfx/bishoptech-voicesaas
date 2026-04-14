@@ -1,4 +1,4 @@
-import { ArrowRight, LockKeyhole, ShieldCheck, Sparkles, Workflow } from 'lucide-react';
+import { ArrowRight, LockKeyhole, Settings2, ShieldCheck, Sparkles } from 'lucide-react';
 import { redirect } from 'next/navigation';
 
 import { loginAction } from '@/app/auth/actions';
@@ -16,13 +16,13 @@ type LoginPageProps = {
 const trustCards = [
   {
     title: 'Secure workspace access',
-    body: 'Log into the live operations layer for dashboards, transcripts, campaigns, and workflow controls.',
+    body: 'Log into the live operations layer for dashboards, transcripts, campaigns, and assistant controls.',
     icon: ShieldCheck,
   },
   {
     title: 'Operational visibility',
     body: 'Monitor calls, agent behavior, and account performance from the same Bishop Tech control plane.',
-    icon: Workflow,
+    icon: Settings2,
   },
   {
     title: 'Continuous improvement',

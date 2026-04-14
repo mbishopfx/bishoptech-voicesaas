@@ -3,6 +3,7 @@ import Link from 'next/link';
 import { AppShell } from '@/components/app-shell';
 import { ClientWorkspaceSummarySection } from '@/components/client-dashboard-sections';
 import { WorkspaceSettingsPanel } from '@/components/workspace-settings-panel';
+import { Button } from '@/components/ui/button';
 import { canManageOrganization, requireViewer } from '@/lib/auth';
 import { getClientDashboardData } from '@/lib/dashboard-data';
 
@@ -22,9 +23,9 @@ export default async function ClientSettingsPage() {
       eyebrow="Settings"
       title="Workspace settings"
       actions={
-        <Link className="voice-secondary-button" href="/client/agents">
-          Back to agents
-        </Link>
+        <Button asChild variant="outline" className="rounded-md">
+          <Link href="/client/agents">Back to agents</Link>
+        </Button>
       }
     >
       <div className="command-content-grid">

@@ -119,39 +119,6 @@ export type LeadRecord = {
   createdAt: string;
 };
 
-export type WorkflowNode = {
-  id: string;
-  title: string;
-  body: string;
-  x: number;
-  y: number;
-  phase?: string;
-  kind?: 'step' | 'decision' | 'handoff' | 'system' | 'outcome';
-  tone?: 'metal' | 'mint' | 'amber';
-};
-
-export type WorkflowEdge = {
-  id: string;
-  from: string;
-  to: string;
-  label?: string;
-};
-
-export type WorkflowBoard = {
-  id?: string;
-  organizationId?: string;
-  title: string;
-  description: string;
-  nodes: WorkflowNode[];
-  edges: WorkflowEdge[];
-  metadata?: {
-    isTemplate?: boolean;
-    phaseOrder?: string[];
-    sharedLabel?: string;
-  };
-  updatedAt?: string;
-};
-
 export type DemoBlueprintSummary = {
   id: string;
   title: string;
@@ -301,7 +268,6 @@ export type AdminDashboardData = {
   organizations: OrganizationSummary[];
   recentCalls: RecentCall[];
   activeOrganizationId?: string;
-  latestWorkflowBoard: WorkflowBoard | null;
   recentBlueprints: DemoBlueprintSummary[];
 };
 
@@ -326,6 +292,5 @@ export type ClientDashboardData = {
     status: string;
     createdAt: string;
   }>;
-  latestWorkflowBoard: WorkflowBoard | null;
   recentBlueprints: DemoBlueprintSummary[];
 };

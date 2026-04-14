@@ -147,7 +147,7 @@ export function ClientControlDeckSection({
             <SectionEyebrow>Workspace pulse</SectionEyebrow>
             <CardTitle className="text-3xl tracking-[-0.05em]">{data.organizationName}</CardTitle>
             <CardDescription className="max-w-2xl text-sm leading-6">
-              Live operations snapshot for agent readiness, call handling, campaign pressure, and workflow execution.
+              Live operations snapshot for agent readiness, call handling, campaign pressure, and account health.
             </CardDescription>
           </div>
           <CardAction className="flex items-center gap-2">

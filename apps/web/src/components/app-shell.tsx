@@ -18,7 +18,6 @@ import {
   ShieldCheck,
   Sparkles,
   WandSparkles,
-  Workflow,
 } from 'lucide-react';
 
 import { logoutAction } from '@/app/auth/actions';
@@ -124,7 +123,6 @@ function getShellConfig(current: AppShellProps['current'], viewer: ViewerContext
         { key: 'onboarding', href: '/admin/onboarding', label: 'Onboarding', icon: ClipboardPenLine, active: activeNav === 'onboarding' },
         { key: 'demo-lab', href: '/admin/demo-lab', label: 'Demo Lab', icon: Sparkles, active: activeNav === 'demo-lab' },
         { key: 'calls', href: '/admin/calls', label: 'Calls', icon: PhoneCall, active: activeNav === 'calls' },
-        { key: 'workflow', href: '/admin/workflow', label: 'Workflow', icon: Workflow, active: activeNav === 'workflow' },
       ],
       quickAction: {
         href: '/admin/onboarding',
@@ -147,7 +145,6 @@ function getShellConfig(current: AppShellProps['current'], viewer: ViewerContext
         { key: 'leads', href: '/client/leads', label: 'Leads', icon: ChartNoAxesCombined, active: activeNav === 'leads' },
         { key: 'calls', href: '/client/calls', label: 'Calls', icon: PhoneCall, active: activeNav === 'calls' },
         { key: 'campaigns', href: '/client/campaigns', label: 'Campaigns', icon: Send, active: activeNav === 'campaigns' },
-        { key: 'workflow', href: '/client/workflow', label: 'Workflow', icon: Workflow, active: activeNav === 'workflow' },
         { key: 'settings', href: '/client/settings', label: 'Settings', icon: Settings, active: activeNav === 'settings' },
       ],
       quickAction: {
@@ -360,7 +357,7 @@ export function AppShell({
                   <Input
                     readOnly
                     value=""
-                    placeholder="Search calls, agents, workflows, campaigns"
+                    placeholder="Search calls, agents, campaigns, settings"
                     className="h-10 rounded-lg border-white/10 bg-white/[0.03] pl-9 text-sm placeholder:text-muted-foreground"
                   />
                 </div>

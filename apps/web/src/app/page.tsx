@@ -37,7 +37,7 @@ const heroVisualCards = [
   },
   {
     label: 'Live visibility',
-    value: 'Calls, transcripts, workflows, and CRM updates in one loop.',
+    value: 'Calls, transcripts, routing, and CRM updates in one loop.',
     tone: 'mint',
   },
 ];
@@ -57,7 +57,7 @@ const deconstructionItems = [
   },
   {
     title: 'Keeps every next step connected',
-    body: 'Calls, transcripts, scheduling, CRM updates, and workflows stay stitched together instead of living in separate tools.',
+    body: 'Calls, transcripts, scheduling, CRM updates, and routing stay stitched together instead of living in separate tools.',
     icon: Sparkles,
     tone: 'mint',
   },
