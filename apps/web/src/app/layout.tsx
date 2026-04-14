@@ -1,9 +1,13 @@
 import type { Metadata } from 'next';
-import { Manrope, Sora } from 'next/font/google';
+import { Manrope, Sora, Geist } from 'next/font/google';
 import type { ReactNode } from 'react';
 
 import '@/app/globals.css';
+import { TooltipProvider } from '@/components/ui/tooltip';
 import { appConfig } from '@/lib/app-config';
+import { cn } from "@/lib/utils";
+
+const geist = Geist({subsets:['latin'],variable:'--font-sans'});
 
 const bodyFont = Manrope({
   subsets: ['latin'],
@@ -25,8 +29,10 @@ export const metadata: Metadata = {
 
 export default function RootLayout({ children }: { children: ReactNode }) {
   return (
-    <html lang="en" className={`${bodyFont.variable} ${labelFont.variable}`}>
-      <body>{children}</body>
+    <html lang="en" className={cn(bodyFont.variable, labelFont.variable, geist.variable, 'dark font-sans')}>
+      <body className="bg-background text-foreground antialiased">
+        <TooltipProvider>{children}</TooltipProvider>
+      </body>
     </html>
   );
 }

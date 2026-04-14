@@ -4,6 +4,8 @@ import { useEffect, useId, useState } from 'react';
 
 type MermaidPreviewProps = {
   chart: string;
+  onRender?: (svg: string) => void;
+  className?: string;
 };
 
 type MermaidBrowserApi = {
@@ -67,7 +69,7 @@ function loadMermaid() {
   return window.__bishopTechMermaidReady;
 }
 
-export function MermaidPreview({ chart }: MermaidPreviewProps) {
+export function MermaidPreview({ chart, onRender, className }: MermaidPreviewProps) {
   const id = useId().replace(/:/g, '');
   const [svg, setSvg] = useState<string>('');
   const [error, setError] = useState<string>('');
@@ -99,6 +101,7 @@ export function MermaidPreview({ chart }: MermaidPreviewProps) {
         if (!cancelled) {
           setSvg(rendered);
           setError('');
+          onRender?.(rendered);
         }
       } catch (err) {
         if (!cancelled) {
@@ -123,5 +126,5 @@ export function MermaidPreview({ chart }: MermaidPreviewProps) {
     );
   }
 
-  return <div className="mermaid-preview" dangerouslySetInnerHTML={{ __html: svg }} />;
+  return <div className={className ?? 'mermaid-preview'} dangerouslySetInnerHTML={{ __html: svg }} />;
 }

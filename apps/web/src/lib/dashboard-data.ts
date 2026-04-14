@@ -4,6 +4,7 @@ import { formatDateTime, formatDuration, formatPhoneNumber, formatRelativeTime }
 import { getDefaultOrganizationId } from '@/lib/auth';
 import { getSupabaseAdminClient } from '@/lib/supabase-admin';
 import { createSupabaseServerClient } from '@/lib/supabase/server';
+import { DEFAULT_WORKFLOW_PHASES } from '@/lib/workflow';
 import type {
   AdminDashboardData,
   ClientDashboardData,
@@ -116,6 +117,7 @@ type WorkflowBoardRow = {
   description: string | null;
   nodes: Array<Record<string, unknown>> | null;
   edges: Array<Record<string, unknown>> | null;
+  metadata: Record<string, unknown> | null;
   updated_at: string;
 };
 
@@ -532,6 +534,13 @@ function mapWorkflowBoard(row: WorkflowBoardRow | null): WorkflowBoard | null {
     description: row.description ?? 'Visual workflow map for the handoff, follow-up, and routing story.',
     nodes: (row.nodes ?? []) as WorkflowBoard['nodes'],
     edges: (row.edges ?? []) as WorkflowBoard['edges'],
+    metadata: {
+      phaseOrder: Array.isArray(row.metadata?.phaseOrder)
+        ? (row.metadata?.phaseOrder as string[])
+        : [...DEFAULT_WORKFLOW_PHASES],
+      isTemplate: row.metadata?.isTemplate === true,
+      sharedLabel: typeof row.metadata?.sharedLabel === 'string' ? row.metadata.sharedLabel : undefined,
+    },
     updatedAt: formatRelativeTime(row.updated_at),
   };
 }
@@ -543,6 +552,10 @@ export function buildEmptyWorkflowBoard(organizationId?: string | null): Workflo
     description: 'Map the live routing, handoffs, and capture steps before you present the workflow.',
     nodes: [],
     edges: [],
+    metadata: {
+      phaseOrder: [...DEFAULT_WORKFLOW_PHASES],
+      isTemplate: false,
+    },
   };
 }
 
@@ -554,7 +567,7 @@ export async function getWorkflowBoardForOrganization(organizationId?: string | 
   const supabase = await createSupabaseServerClient();
   const query = supabase
     .from('workflow_boards')
-    .select('id, organization_id, title, description, nodes, edges, updated_at')
+    .select('id, organization_id, title, description, nodes, edges, metadata, updated_at')
     .eq('organization_id', organizationId)
     .order('updated_at', { ascending: false })
     .limit(1);
@@ -562,7 +575,7 @@ export async function getWorkflowBoardForOrganization(organizationId?: string | 
   const result = boardId
     ? await supabase
         .from('workflow_boards')
-        .select('id, organization_id, title, description, nodes, edges, updated_at')
+        .select('id, organization_id, title, description, nodes, edges, metadata, updated_at')
         .eq('organization_id', organizationId)
         .eq('id', boardId)
         .maybeSingle()
@@ -575,7 +588,7 @@ export async function getPublicWorkflowBoard(boardId: string) {
   const supabase = getSupabaseAdminClient();
   const boardResult = await supabase
     .from('workflow_boards')
-    .select('id, organization_id, title, description, nodes, edges, updated_at')
+    .select('id, organization_id, title, description, nodes, edges, metadata, updated_at')
     .eq('id', boardId)
     .maybeSingle();
 
@@ -637,7 +650,7 @@ export async function getAdminDashboardData(viewer: ViewerContext): Promise<Admi
     activeOrganizationId
       ? supabase
           .from('workflow_boards')
-          .select('id, organization_id, title, description, nodes, edges, updated_at')
+          .select('id, organization_id, title, description, nodes, edges, metadata, updated_at')
           .eq('organization_id', activeOrganizationId)
           .order('updated_at', { ascending: false })
           .limit(1)
@@ -833,7 +846,7 @@ export async function getClientDashboardData(viewer: ViewerContext, organization
       .eq('is_active', true),
     supabase
       .from('workflow_boards')
-      .select('id, organization_id, title, description, nodes, edges, updated_at')
+      .select('id, organization_id, title, description, nodes, edges, metadata, updated_at')
       .eq('organization_id', resolvedOrganizationId)
       .order('updated_at', { ascending: false })
       .limit(1)

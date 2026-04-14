@@ -9,14 +9,13 @@ import {
   Building2,
   ChartNoAxesCombined,
   ClipboardPenLine,
-  Headphones,
   House,
   LogOut,
   PhoneCall,
+  Search,
   Send,
   Settings,
   ShieldCheck,
-  Search,
   Sparkles,
   WandSparkles,
   Workflow,
@@ -25,6 +24,27 @@ import {
 import { logoutAction } from '@/app/auth/actions';
 import { getIntegrationAvailability } from '@/lib/app-config';
 import type { ViewerContext } from '@/lib/types';
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent } from '@/components/ui/card';
+import { Input } from '@/components/ui/input';
+import {
+  Sidebar,
+  SidebarContent,
+  SidebarFooter,
+  SidebarGroup,
+  SidebarGroupContent,
+  SidebarGroupLabel,
+  SidebarHeader,
+  SidebarInset,
+  SidebarMenu,
+  SidebarMenuButton,
+  SidebarMenuItem,
+  SidebarProvider,
+  SidebarRail,
+  SidebarSeparator,
+  SidebarTrigger,
+} from '@/components/ui/sidebar';
 
 type AppShellProps = {
   current: 'admin' | 'client' | 'help';
@@ -108,7 +128,7 @@ function getShellConfig(current: AppShellProps['current'], viewer: ViewerContext
       ],
       quickAction: {
         href: '/admin/onboarding',
-        label: 'Onboard Account',
+        label: 'Onboard account',
         icon: Sparkles,
       },
     };
@@ -132,7 +152,7 @@ function getShellConfig(current: AppShellProps['current'], viewer: ViewerContext
       ],
       quickAction: {
         href: '/client/campaigns',
-        label: 'Launch Campaign',
+        label: 'Launch campaign',
         icon: Send,
       },
     };
@@ -155,27 +175,31 @@ function getShellConfig(current: AppShellProps['current'], viewer: ViewerContext
   };
 }
 
-function NavLink({ item, className }: { item: ShellNavItem; className: string }) {
+function NavLink({ item }: { item: ShellNavItem }) {
   const Icon = item.icon;
-  const content = (
-    <>
-      <Icon size={18} />
-      <span>{item.label}</span>
-    </>
-  );
 
   if (item.href.startsWith('#')) {
     return (
-      <a className={`${className} ${item.active ? 'is-active' : ''}`} href={item.href}>
-        {content}
-      </a>
+      <SidebarMenuItem>
+        <SidebarMenuButton tooltip={item.label} isActive={item.active} size="lg" asChild>
+          <a href={item.href}>
+            <Icon />
+            <span>{item.label}</span>
+          </a>
+        </SidebarMenuButton>
+      </SidebarMenuItem>
     );
   }
 
   return (
-    <Link className={`${className} ${item.active ? 'is-active' : ''}`} href={item.href as Route}>
-      {content}
-    </Link>
+    <SidebarMenuItem>
+      <SidebarMenuButton tooltip={item.label} isActive={item.active} size="lg" asChild>
+        <Link href={item.href as Route}>
+          <Icon />
+          <span>{item.label}</span>
+        </Link>
+      </SidebarMenuButton>
+    </SidebarMenuItem>
   );
 }
 
@@ -195,154 +219,198 @@ export function AppShell({
   const viewerBadge = getViewerBadge(viewer);
   const shellConfig = getShellConfig(current, viewer, activeNav);
   const workspaceName = viewer.memberships[0]?.organizationName ?? 'BishopTech Voice';
-  const activityHref =
-    current === 'help' ? '#prompt-starters' : current === 'admin' ? '/admin/calls' : '/client/calls';
   const readinessCount = availability.filter((item) => item.ready).length;
+  const statusTone = readinessCount === availability.length ? 'success' : 'warning';
+  const pageTitle = title ?? shellConfig.sideLinks.find((item) => item.active)?.label ?? 'Workspace';
 
   return (
-    <div className="command-shell">
-      <header className="command-topbar">
-        <div className="command-topbar-brand">
-          <Link className="command-brand-lockup" href={current === 'admin' ? '/admin' : current === 'client' ? '/client' : '/help'}>
-            <span className="command-brand-mark">
-              <ShieldCheck size={16} strokeWidth={2.2} />
-            </span>
-            <span>BishopTech Voice</span>
+    <SidebarProvider defaultOpen>
+      <Sidebar collapsible="icon" variant="inset" className="border-r border-sidebar-border/70 bg-sidebar/95">
+        <SidebarHeader className="gap-4 border-b border-sidebar-border/70 px-4 py-4">
+          <Link href={(current === 'admin' ? '/admin' : current === 'client' ? '/client' : '/help') as Route} className="flex items-start gap-3 rounded-lg border border-white/8 bg-white/[0.03] px-3 py-3">
+            <div className="flex size-10 items-center justify-center rounded-lg border border-white/10 bg-white/[0.04] text-primary">
+              <ShieldCheck className="size-4" />
+            </div>
+            <div className="min-w-0 space-y-1">
+              <p className="text-[0.65rem] font-medium uppercase tracking-[0.22em] text-muted-foreground">
+                BishopTech
+              </p>
+              <p className="truncate text-sm font-semibold text-foreground">Voice Platform</p>
+              <p className="truncate text-xs text-muted-foreground">{workspaceName}</p>
+            </div>
           </Link>
 
-          <nav className="command-top-links" aria-label="Top navigation">
-            {shellConfig.topLinks.map((link) =>
-              link.href.startsWith('#') ? (
-                <a key={link.href} className={`command-top-link ${link.active ? 'is-active' : ''}`} href={link.href}>
-                  {link.label}
-                </a>
-              ) : (
-                <Link key={link.href} className={`command-top-link ${link.active ? 'is-active' : ''}`} href={link.href as Route}>
-                  {link.label}
-                </Link>
-              ),
-            )}
-          </nav>
-        </div>
-
-        <div className="command-topbar-center">
-          <label className="command-search-shell" aria-label="Search the workspace">
-            <Search size={16} />
-            <input type="search" placeholder="Search calls, agents, prompts, campaigns..." />
-          </label>
-        </div>
-
-        <div className="command-topbar-tools">
-          <div className="command-runtime-pill">
-            <span className="command-runtime-dot" />
-            <span>{readinessCount === availability.length ? 'Platform ready' : `${readinessCount}/${availability.length} services ready`}</span>
-          </div>
-          <a className="command-icon-button" href={activityHref} aria-label="Recent activity">
-            <Bell size={18} />
-          </a>
-          <Link className="command-icon-button" href="/help" aria-label="Open help">
-            <Settings size={18} />
-          </Link>
-          <div className="command-avatar" aria-hidden="true">
-            {getInitials(viewer)}
-          </div>
-        </div>
-      </header>
-
-      <aside className="command-sidebar">
-        <div className="command-sidebar-head">
-          <div className="command-sidebar-title-row">
-            <div className="command-sidebar-mic">
-              <Headphones size={16} />
-            </div>
-            <div>
-              <h2>Voice Workspace</h2>
-              <p>{workspaceName}</p>
-            </div>
-          </div>
-          <span className="command-sidebar-kicker">
-            {current === 'admin' ? 'Admin operations' : current === 'client' ? 'Workspace operations' : 'Guides and playbooks'}
-          </span>
-          <div className="command-sidebar-live">
-            <span className="command-live-dot" />
-            <span>{viewerBadge}</span>
-          </div>
-        </div>
-
-        <nav className="command-sidebar-nav" aria-label="Section navigation">
-          {shellConfig.sideLinks.map((item) => (
-            <NavLink key={item.href} item={item} className="command-side-link" />
-          ))}
-        </nav>
-
-        {shellConfig.quickAction ? (
-          shellConfig.quickAction.href.startsWith('#') ? (
-            <a className="command-primary-action" href={shellConfig.quickAction.href}>
-              <shellConfig.quickAction.icon size={18} />
-              <span>{shellConfig.quickAction.label}</span>
-            </a>
-          ) : (
-            <Link className="command-primary-action" href={shellConfig.quickAction.href as Route}>
-              <shellConfig.quickAction.icon size={18} />
-              <span>{shellConfig.quickAction.label}</span>
-            </Link>
-          )
-        ) : null}
-
-        <div className="glass-card command-status-card">
-          <div className="command-status-head">
-            <div>
-              <span className="eyebrow-text">Environment</span>
-              <h3>Services</h3>
-            </div>
-            <ClipboardPenLine size={18} />
-          </div>
-
-          <div className="command-status-strip">
-            {availability.map((item) => (
-              <div key={item.label} className="command-status-pill-row">
-                <span className={`status-dot ${item.ready ? 'is-ready' : 'is-blocked'}`} />
-                <strong>{item.label}</strong>
+          <Card className="rounded-lg border border-white/8 bg-white/[0.02] py-0 shadow-none">
+            <CardContent className="space-y-3 px-3 py-3">
+              <div className="flex items-center justify-between gap-3">
+                <div className="min-w-0">
+                  <p className="truncate text-sm font-medium text-foreground">{viewerName}</p>
+                  <p className="truncate text-xs text-muted-foreground">{viewer.email}</p>
+                </div>
+                <div className="flex size-10 items-center justify-center rounded-lg border border-white/10 bg-background text-sm font-semibold text-foreground">
+                  {getInitials(viewer)}
+                </div>
               </div>
-            ))}
+              <div className="flex items-center justify-between gap-2">
+                <Badge tone={viewer.isPlatformAdmin ? 'cyan' : 'muted'}>{viewerBadge}</Badge>
+                <Badge tone={statusTone}>
+                  {readinessCount}/{availability.length} ready
+                </Badge>
+              </div>
+            </CardContent>
+          </Card>
+        </SidebarHeader>
+
+        <SidebarContent className="gap-2">
+          <SidebarGroup>
+            <SidebarGroupLabel>Navigation</SidebarGroupLabel>
+            <SidebarGroupContent>
+              <SidebarMenu>
+                {shellConfig.sideLinks.map((item) => (
+                  <NavLink key={item.key} item={item} />
+                ))}
+              </SidebarMenu>
+            </SidebarGroupContent>
+          </SidebarGroup>
+
+          <SidebarSeparator />
+
+          <SidebarGroup>
+            <SidebarGroupLabel>Platform status</SidebarGroupLabel>
+            <SidebarGroupContent className="space-y-2 px-2">
+              {availability.map((item) => (
+                <div
+                  key={item.label}
+                  className="rounded-lg border border-white/8 bg-white/[0.025] px-3 py-2"
+                >
+                  <div className="flex items-center justify-between gap-3">
+                    <p className="text-sm font-medium text-foreground">{item.label}</p>
+                    <span className={`size-2 rounded-full ${item.ready ? 'bg-emerald-400' : 'bg-amber-400'}`} />
+                  </div>
+                  <p className="mt-1 text-xs leading-5 text-muted-foreground">{item.detail}</p>
+                </div>
+              ))}
+            </SidebarGroupContent>
+          </SidebarGroup>
+        </SidebarContent>
+
+        <SidebarFooter className="gap-3 border-t border-sidebar-border/70 px-4 py-4">
+          {shellConfig.quickAction ? (
+            <Button asChild className="h-10 justify-start rounded-lg bg-primary text-primary-foreground">
+              <Link href={shellConfig.quickAction.href as Route}>
+                <shellConfig.quickAction.icon data-icon="inline-start" />
+                {shellConfig.quickAction.label}
+              </Link>
+            </Button>
+          ) : null}
+
+          <div className="grid grid-cols-2 gap-2">
+            <Button asChild variant="outline" className="justify-start rounded-lg border-white/10 bg-transparent">
+              <Link href="/help">
+                <BookOpen data-icon="inline-start" />
+                Help
+              </Link>
+            </Button>
+            <form action={logoutAction}>
+              <Button type="submit" variant="outline" className="w-full justify-start rounded-lg border-white/10 bg-transparent">
+                <LogOut data-icon="inline-start" />
+                Logout
+              </Button>
+            </form>
+          </div>
+        </SidebarFooter>
+        <SidebarRail />
+      </Sidebar>
+
+      <SidebarInset className="bg-transparent">
+        <div className="flex min-h-svh flex-col">
+          <header className="sticky top-0 z-30 border-b border-white/8 bg-background/80 backdrop-blur-xl">
+            <div className="flex flex-wrap items-center gap-3 px-4 py-3 md:px-6">
+              <SidebarTrigger className="rounded-lg border border-white/10 bg-white/[0.03] md:hidden" />
+
+              <div className="flex flex-wrap items-center gap-2">
+                {shellConfig.topLinks.map((link) =>
+                  link.href.startsWith('#') ? (
+                    <Button
+                      key={link.href}
+                      asChild
+                      variant={link.active ? 'secondary' : 'ghost'}
+                      size="sm"
+                      className="rounded-lg"
+                    >
+                      <a href={link.href}>{link.label}</a>
+                    </Button>
+                  ) : (
+                    <Button
+                      key={link.href}
+                      asChild
+                      variant={link.active ? 'secondary' : 'ghost'}
+                      size="sm"
+                      className="rounded-lg"
+                    >
+                      <Link href={link.href as Route}>{link.label}</Link>
+                    </Button>
+                  ),
+                )}
+              </div>
+
+              <div className="min-w-[220px] flex-1">
+                <div className="relative">
+                  <Search className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
+                  <Input
+                    readOnly
+                    value=""
+                    placeholder="Search calls, agents, workflows, campaigns"
+                    className="h-10 rounded-lg border-white/10 bg-white/[0.03] pl-9 text-sm placeholder:text-muted-foreground"
+                  />
+                </div>
+              </div>
+
+              <div className="ml-auto flex items-center gap-2">
+                <Badge tone={statusTone}>
+                  {readinessCount === availability.length ? 'Platform ready' : 'Attention needed'}
+                </Badge>
+                <Button asChild variant="ghost" size="icon-sm" className="rounded-lg">
+                  <Link href={(current === 'admin' ? '/admin/calls' : '/client/calls') as Route} aria-label="Recent activity">
+                    <Bell />
+                  </Link>
+                </Button>
+                <Button asChild variant="ghost" size="icon-sm" className="rounded-lg">
+                  <Link href="/help" aria-label="Help">
+                    <Settings />
+                  </Link>
+                </Button>
+              </div>
+            </div>
+          </header>
+
+          <div className="flex-1 px-4 py-4 md:px-6 md:py-6">
+            {headerMode !== 'hidden' ? (
+              <Card className={`mb-6 border border-white/8 bg-card/90 shadow-panel ${headerMode === 'compact' ? 'py-0' : 'py-0'}`}>
+                <CardContent className="flex flex-col gap-5 px-5 py-5 md:flex-row md:items-end md:justify-between md:px-6">
+                  <div className="space-y-2">
+                    <p className="text-[0.7rem] font-medium uppercase tracking-[0.22em] text-muted-foreground">
+                      {eyebrow ?? (current === 'admin' ? 'Admin workspace' : current === 'client' ? 'Client workspace' : 'Playbooks')}
+                    </p>
+                    <div className="space-y-2">
+                      <h1 className={`${headerMode === 'hero' ? 'text-3xl md:text-4xl' : 'text-2xl'} font-semibold tracking-[-0.04em] text-foreground`}>
+                        {pageTitle}
+                      </h1>
+                      {description ? (
+                        <p className="max-w-3xl text-sm leading-6 text-muted-foreground md:text-base">{description}</p>
+                      ) : null}
+                    </div>
+                  </div>
+
+                  {actions ? <div className="flex flex-wrap items-center gap-2">{actions}</div> : null}
+                </CardContent>
+              </Card>
+            ) : null}
+
+            <div className="space-y-6">{children}</div>
           </div>
         </div>
-
-        <div className="command-sidebar-footer">
-          <Link className="command-footer-link" href="/help">
-            <BookOpen size={16} />
-            <span>Playbooks</span>
-          </Link>
-          <form action={logoutAction}>
-            <button className="command-footer-link command-footer-button" type="submit">
-              <LogOut size={16} />
-              <span>Logout</span>
-            </button>
-          </form>
-        </div>
-      </aside>
-
-      <main className={`command-main ${headerMode === 'hidden' ? 'is-header-hidden' : ''}`}>
-        {headerMode !== 'hidden' ? (
-          <section className={`command-page-head ${headerMode === 'compact' ? 'is-compact' : ''}`}>
-            <div className="command-page-copy">
-              {eyebrow ? <span className="eyebrow-text">{eyebrow}</span> : null}
-              {title ? <h1>{title}</h1> : null}
-              {description ? <p>{description}</p> : null}
-            </div>
-
-            <div className="command-page-tools">
-              <div className="command-user-card">
-                <strong>{viewerName}</strong>
-                <span>{viewerBadge}</span>
-              </div>
-              {actions ? <div className="command-page-actions">{actions}</div> : null}
-            </div>
-          </section>
-        ) : null}
-
-        <div className="page-stack">{children}</div>
-      </main>
-    </div>
+      </SidebarInset>
+    </SidebarProvider>
   );
 }

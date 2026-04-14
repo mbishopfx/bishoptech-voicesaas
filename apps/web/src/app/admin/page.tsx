@@ -22,10 +22,10 @@ export default async function AdminPage() {
 
       <AdminMetricsGrid metrics={data.metrics} />
 
-      <div className="command-content-grid">
+      <div className="grid gap-6 xl:grid-cols-[minmax(0,1.55fr)_minmax(320px,0.75fr)]">
         <OrganizationRosterSection organizations={data.organizations} limit={6} actionHref="/admin/organizations" actionLabel="View all" />
 
-        <aside className="command-side-stack">
+        <aside className="grid gap-6">
           <AdminRecentCallsSection recentCalls={data.recentCalls} limit={5} actionHref="/admin/calls" actionLabel="Open calls" />
           <AdminBlueprintHistorySection
             recentBlueprints={data.recentBlueprints}

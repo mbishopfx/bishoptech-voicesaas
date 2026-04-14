@@ -125,6 +125,8 @@ export type WorkflowNode = {
   body: string;
   x: number;
   y: number;
+  phase?: string;
+  kind?: 'step' | 'decision' | 'handoff' | 'system' | 'outcome';
   tone?: 'metal' | 'mint' | 'amber';
 };
 
@@ -142,6 +144,11 @@ export type WorkflowBoard = {
   description: string;
   nodes: WorkflowNode[];
   edges: WorkflowEdge[];
+  metadata?: {
+    isTemplate?: boolean;
+    phaseOrder?: string[];
+    sharedLabel?: string;
+  };
   updatedAt?: string;
 };
 

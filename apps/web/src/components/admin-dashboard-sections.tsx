@@ -1,10 +1,17 @@
 import Link from 'next/link';
 import type { Route } from 'next';
-import { Activity, AudioLines, Bot, Building2, PhoneCall, Send } from 'lucide-react';
+import {
+  ArrowRight,
+  Bot,
+  Building2,
+  PhoneCall,
+  Send,
+} from 'lucide-react';
 
 import { OrganizationLoadChart, PulseAreaChart } from '@/components/dashboard-charts';
 import { Badge } from '@/components/ui/badge';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Card, CardAction, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow, TableWrap } from '@/components/ui/table';
 import { formatRelativeTime } from '@/lib/format';
 import type { DemoBlueprintSummary, MetricCard, OrganizationSummary, RecentCall } from '@/lib/types';
@@ -16,15 +23,79 @@ type ActionProps = {
   label?: string;
 };
 
+function SectionEyebrow({ children }: { children: string }) {
+  return (
+    <span className="text-[0.68rem] font-medium uppercase tracking-[0.22em] text-muted-foreground">
+      {children}
+    </span>
+  );
+}
+
+function EmptyState({ children }: { children: string }) {
+  return (
+    <div className="rounded-lg border border-dashed border-border/80 bg-muted/30 px-4 py-6 text-sm text-muted-foreground">
+      {children}
+    </div>
+  );
+}
+
 function SectionAction({ href, label }: ActionProps) {
   if (!href || !label) {
     return null;
   }
 
   return (
-    <Link className="text-link" href={href as Route}>
-      {label}
-    </Link>
+    <CardAction>
+      <Button asChild variant="ghost" size="sm" className="rounded-md text-muted-foreground hover:text-foreground">
+        <Link href={href as Route}>
+          {label}
+          <ArrowRight data-icon="inline-end" />
+        </Link>
+      </Button>
+    </CardAction>
+  );
+}
+
+function toneToBadge(tone?: MetricCard['tone']) {
+  if (tone === 'positive') {
+    return 'success';
+  }
+
+  if (tone === 'warning') {
+    return 'warning';
+  }
+
+  return 'muted';
+}
+
+function StackList({
+  items,
+}: {
+  items: Array<{
+    title: string;
+    detail: string;
+    badge?: { label: string; tone?: 'default' | 'success' | 'warning' | 'muted' | 'cyan' };
+  }>;
+}) {
+  if (!items.length) {
+    return <EmptyState>Nothing to show yet.</EmptyState>;
+  }
+
+  return (
+    <div className="space-y-2">
+      {items.map((item, index) => (
+        <div
+          key={`${item.title}-${index}`}
+          className="flex items-start justify-between gap-3 rounded-lg border border-border/80 bg-muted/20 px-3 py-3"
+        >
+          <div className="min-w-0 space-y-1">
+            <div className="truncate text-sm font-medium text-foreground">{item.title}</div>
+            <div className="text-xs leading-5 text-muted-foreground">{item.detail}</div>
+          </div>
+          {item.badge ? <Badge tone={item.badge.tone ?? 'muted'}>{item.badge.label}</Badge> : null}
+        </div>
+      ))}
+    </div>
   );
 }
 
@@ -42,92 +113,87 @@ export function AdminControlDeckSection({
   const liveAgents = organizations.reduce((sum, organization) => sum + organization.liveAgentCount, 0);
 
   return (
-    <section className="dashboard-window-grid">
-      <Card className="dashboard-primary-panel">
-        <CardHeader className="dashboard-panel-header">
-          <div>
-            <span className="eyebrow-text">Platform pulse</span>
-            <CardTitle className="dashboard-panel-title">Admin command view</CardTitle>
+    <section className="grid gap-4 xl:grid-cols-[minmax(0,1.7fr)_minmax(320px,0.9fr)]">
+      <Card className="border border-border/80 bg-card/85 py-0 shadow-none">
+        <CardHeader className="gap-3 border-b border-border/70 pb-5">
+          <div className="space-y-2">
+            <SectionEyebrow>Platform pulse</SectionEyebrow>
+            <CardTitle className="text-3xl tracking-[-0.05em]">Admin command view</CardTitle>
+            <CardDescription className="max-w-2xl text-sm leading-6">
+              Executive visibility into organization load, live call traffic, and assistant footprint across the platform.
+            </CardDescription>
           </div>
-          <Badge tone="success">Live</Badge>
+          <CardAction className="flex items-center gap-2">
+            <Badge tone="success">Live</Badge>
+            <Badge tone="cyan">{activeOrganizations} active orgs</Badge>
+          </CardAction>
         </CardHeader>
-
-        <CardContent className="dashboard-primary-content">
-          <div className="dashboard-chart-block">
-            <div className="dashboard-chart-kicker">voice_current // live_transcript // conversion_flow</div>
-            <PulseAreaChart recentCalls={recentCalls} />
-            <div className="dashboard-inline-stats">
-              <div className="dashboard-inline-stat">
-                <span>Latest call</span>
-                <strong>{activeCall ? activeCall.organizationName : 'Waiting for traffic'}</strong>
+        <CardContent className="space-y-5 px-5 py-5">
+          <div className="rounded-lg border border-border/70 bg-background/60 p-3">
+            <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
+              <div className="text-xs uppercase tracking-[0.18em] text-muted-foreground">
+                voice current / live transcript / conversion flow
               </div>
-              <div className="dashboard-inline-stat">
-                <span>Status</span>
-                <strong>{activeCall?.outcome ?? 'Standby'}</strong>
-              </div>
-              <div className="dashboard-inline-stat">
-                <span>Duration</span>
-                <strong>{activeCall?.duration ?? '00:00'}</strong>
+              <div className="text-xs text-muted-foreground">
+                Latest org: {activeCall ? activeCall.organizationName : 'Waiting for traffic'}
               </div>
             </div>
+            <PulseAreaChart recentCalls={recentCalls} />
           </div>
 
-          <div className="dashboard-kpi-row">
-            <div className="dashboard-kpi-box">
-              <span>Active orgs</span>
-              <strong>{activeOrganizations}</strong>
+          <div className="grid gap-3 md:grid-cols-4">
+            <div className="rounded-lg border border-border/70 bg-muted/20 px-4 py-3">
+              <div className="text-xs uppercase tracking-[0.16em] text-muted-foreground">Active orgs</div>
+              <div className="mt-2 text-base font-medium text-foreground">{activeOrganizations}</div>
             </div>
-            <div className="dashboard-kpi-box">
-              <span>Live agents</span>
-              <strong>{liveAgents}</strong>
+            <div className="rounded-lg border border-border/70 bg-muted/20 px-4 py-3">
+              <div className="text-xs uppercase tracking-[0.16em] text-muted-foreground">Live agents</div>
+              <div className="mt-2 text-base font-medium text-foreground">{liveAgents}</div>
             </div>
-            <div className="dashboard-kpi-box">
-              <span>Recent calls</span>
-              <strong>{recentCalls.length}</strong>
+            <div className="rounded-lg border border-border/70 bg-muted/20 px-4 py-3">
+              <div className="text-xs uppercase tracking-[0.16em] text-muted-foreground">Recent calls</div>
+              <div className="mt-2 text-base font-medium text-foreground">{recentCalls.length}</div>
             </div>
-            <div className="dashboard-kpi-box">
-              <span>Campaigns</span>
-              <strong>{metrics[3]?.value ?? '0'}</strong>
+            <div className="rounded-lg border border-border/70 bg-muted/20 px-4 py-3">
+              <div className="text-xs uppercase tracking-[0.16em] text-muted-foreground">Campaigns</div>
+              <div className="mt-2 text-base font-medium text-foreground">{metrics[3]?.value ?? '0'}</div>
             </div>
           </div>
         </CardContent>
       </Card>
 
-      <div className="dashboard-side-column">
-        <Card className="dashboard-side-panel">
-          <CardHeader className="dashboard-panel-header">
-            <div>
-              <span className="eyebrow-text">Live queue</span>
-              <CardTitle className="dashboard-side-title">Calls in review</CardTitle>
-            </div>
-            <AudioLines size={15} />
+      <div className="grid gap-4">
+        <Card className="border border-border/80 bg-card/80 py-0 shadow-none">
+          <CardHeader className="border-b border-border/70 pb-4">
+            <SectionEyebrow>Live queue</SectionEyebrow>
+            <CardTitle>Calls in review</CardTitle>
+            <CardDescription>Newest traffic requiring platform-level visibility.</CardDescription>
           </CardHeader>
-          <CardContent className="dashboard-side-list">
-            {recentCalls.slice(0, 3).map((call) => (
-              <div key={call.id} className="dashboard-side-row">
-                <strong>{call.organizationName}</strong>
-                <span>{call.outcome}</span>
-              </div>
-            ))}
-            {!recentCalls.length ? <div className="ops-empty-state">No calls logged.</div> : null}
+          <CardContent className="px-4 py-4">
+            <StackList
+              items={recentCalls.slice(0, 3).map((call) => ({
+                title: call.organizationName,
+                detail: `${call.direction} • ${call.duration} • ${call.createdAt}`,
+                badge: { label: call.outcome, tone: 'muted' },
+              }))}
+            />
           </CardContent>
         </Card>
 
-        <Card className="dashboard-side-panel">
-          <CardHeader className="dashboard-panel-header">
-            <div>
-              <span className="eyebrow-text">Watch list</span>
-              <CardTitle className="dashboard-side-title">Accounts</CardTitle>
-            </div>
-            <Activity size={15} />
+        <Card className="border border-border/80 bg-card/80 py-0 shadow-none">
+          <CardHeader className="border-b border-border/70 pb-4">
+            <SectionEyebrow>Watch list</SectionEyebrow>
+            <CardTitle>Accounts</CardTitle>
+            <CardDescription>Organizations with current live footprint on the platform.</CardDescription>
           </CardHeader>
-          <CardContent className="dashboard-side-list">
-            {organizations.slice(0, 4).map((organization) => (
-              <div key={organization.id} className="dashboard-side-row">
-                <strong>{organization.name}</strong>
-                <span>{organization.liveAgentCount} agents</span>
-              </div>
-            ))}
+          <CardContent className="px-4 py-4">
+            <StackList
+              items={organizations.slice(0, 4).map((organization) => ({
+                title: organization.name,
+                detail: `${organization.liveAgentCount} live agents • ${organization.memberCount} members`,
+                badge: { label: organization.isActive ? 'Active' : 'Inactive', tone: organization.isActive ? 'success' : 'muted' },
+              }))}
+            />
           </CardContent>
         </Card>
       </div>
@@ -137,23 +203,23 @@ export function AdminControlDeckSection({
 
 export function AdminMetricsGrid({ metrics }: { metrics: MetricCard[] }) {
   return (
-    <section className="dashboard-stat-grid">
+    <section className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
       {metrics.map((metric, index) => {
         const Icon = metricIcons[index] ?? Bot;
 
         return (
-          <Card key={metric.label} className="dashboard-stat-card">
-            <CardContent className="dashboard-stat-content">
-              <div className="dashboard-stat-top">
-                <span className="dashboard-stat-icon">
-                  <Icon size={16} />
-                </span>
-                <Badge tone={metric.tone === 'positive' ? 'success' : metric.tone === 'warning' ? 'warning' : 'muted'}>
-                  {metric.delta}
-                </Badge>
+          <Card key={metric.label} className="border border-border/80 bg-card/80 py-0 shadow-none">
+            <CardContent className="flex items-start justify-between gap-4 px-4 py-4">
+              <div className="space-y-2">
+                <div className="flex items-center gap-2 text-muted-foreground">
+                  <span className="flex size-8 items-center justify-center rounded-md border border-border/70 bg-background/80">
+                    <Icon className="size-4" />
+                  </span>
+                  <span className="text-xs uppercase tracking-[0.18em]">{metric.label}</span>
+                </div>
+                <div className="text-2xl font-semibold tracking-[-0.04em] text-foreground">{metric.value}</div>
               </div>
-              <span className="dashboard-stat-label">{metric.label}</span>
-              <strong className="dashboard-stat-value">{metric.value}</strong>
+              <Badge tone={toneToBadge(metric.tone)}>{metric.delta}</Badge>
             </CardContent>
           </Card>
         );
@@ -176,36 +242,35 @@ export function OrganizationRosterSection({
   const items = typeof limit === 'number' ? organizations.slice(0, limit) : organizations;
 
   return (
-    <Card className="dashboard-data-panel">
-      <CardHeader className="dashboard-table-header">
-        <div>
-          <span className="eyebrow-text">Organizations</span>
-          <CardTitle className="dashboard-side-title">Account roster</CardTitle>
-        </div>
+    <Card className="border border-border/80 bg-card/80 py-0 shadow-none">
+      <CardHeader className="border-b border-border/70 pb-4">
+        <SectionEyebrow>Organizations</SectionEyebrow>
+        <CardTitle>Account roster</CardTitle>
+        <CardDescription>Commercial mode, capacity, and last-touch state across all customers.</CardDescription>
         <SectionAction href={actionHref} label={actionLabel} />
       </CardHeader>
-      <CardContent>
+      <CardContent className="px-0 py-0">
         <TableWrap>
           <Table>
-            <TableHead>
-              <TableRow>
-                <TableHeader>Account</TableHeader>
-                <TableHeader>Plan</TableHeader>
-                <TableHeader>Members</TableHeader>
-                <TableHeader>Agents</TableHeader>
-                <TableHeader>Vapi</TableHeader>
-                <TableHeader>Last call</TableHeader>
-                <TableHeader>Status</TableHeader>
+            <TableHeader>
+              <TableRow className="border-border/70 bg-muted/15">
+                <TableHead className="px-4">Account</TableHead>
+                <TableHead>Plan</TableHead>
+                <TableHead>Members</TableHead>
+                <TableHead>Agents</TableHead>
+                <TableHead>Vapi</TableHead>
+                <TableHead>Last call</TableHead>
+                <TableHead className="px-4">Status</TableHead>
               </TableRow>
-            </TableHead>
+            </TableHeader>
             <TableBody>
               {items.length ? (
                 items.map((organization) => (
-                  <TableRow key={organization.id}>
-                    <TableCell>
-                      <div className="dashboard-table-primary">
-                        <strong>{organization.name}</strong>
-                        <span>{organization.slug}</span>
+                  <TableRow key={organization.id} className="border-border/70">
+                    <TableCell className="px-4 py-3 align-top">
+                      <div className="space-y-1">
+                        <div className="font-medium text-foreground">{organization.name}</div>
+                        <div className="text-xs text-muted-foreground">{organization.slug}</div>
                       </div>
                     </TableCell>
                     <TableCell>{organization.planName ?? 'Managed'}</TableCell>
@@ -214,20 +279,30 @@ export function OrganizationRosterSection({
                       {organization.liveAgentCount}/{organization.agentCount}
                     </TableCell>
                     <TableCell>
-                      <div className="dashboard-table-primary">
-                        <strong>{organization.vapiAccountMode === 'byo' ? 'BYO' : 'Managed'}</strong>
-                        <span>{organization.vapiAccountMode === 'byo' ? 'Customer-owned key' : organization.vapiManagedLabel ?? 'BishopTech'}</span>
+                      <div className="space-y-1">
+                        <div className="font-medium text-foreground">
+                          {organization.vapiAccountMode === 'byo' ? 'BYO' : 'Managed'}
+                        </div>
+                        <div className="text-xs text-muted-foreground">
+                          {organization.vapiAccountMode === 'byo'
+                            ? 'Customer-owned key'
+                            : organization.vapiManagedLabel ?? 'BishopTech'}
+                        </div>
                       </div>
                     </TableCell>
                     <TableCell>{organization.lastCallAt ? formatRelativeTime(organization.lastCallAt) : 'No calls'}</TableCell>
-                    <TableCell>
-                      <Badge tone={organization.isActive ? 'success' : 'muted'}>{organization.isActive ? 'Active' : 'Inactive'}</Badge>
+                    <TableCell className="px-4">
+                      <Badge tone={organization.isActive ? 'success' : 'muted'}>
+                        {organization.isActive ? 'Active' : 'Inactive'}
+                      </Badge>
                     </TableCell>
                   </TableRow>
                 ))
               ) : (
                 <TableRow>
-                  <TableCell colSpan={7}>No organizations provisioned yet.</TableCell>
+                  <TableCell colSpan={7} className="px-4 py-8">
+                    <EmptyState>No organizations provisioned yet.</EmptyState>
+                  </TableCell>
                 </TableRow>
               )}
             </TableBody>
@@ -252,29 +327,24 @@ export function AdminRecentCallsSection({
   const items = typeof limit === 'number' ? recentCalls.slice(0, limit) : recentCalls;
 
   return (
-    <Card className="dashboard-data-panel">
-      <CardHeader className="dashboard-table-header">
-        <div>
-          <span className="eyebrow-text">Calls</span>
-          <CardTitle className="dashboard-side-title">Recent traffic</CardTitle>
-        </div>
+    <Card className="border border-border/80 bg-card/80 py-0 shadow-none">
+      <CardHeader className="border-b border-border/70 pb-4">
+        <SectionEyebrow>Calls</SectionEyebrow>
+        <CardTitle>Recent traffic</CardTitle>
+        <CardDescription>Latest system-wide call traffic for operator review.</CardDescription>
         <SectionAction href={actionHref} label={actionLabel} />
       </CardHeader>
-      <CardContent className="dashboard-side-list">
+      <CardContent className="px-4 py-4">
         {items.length ? (
-          items.map((call) => (
-            <div key={call.id} className="dashboard-feed-row">
-              <div>
-                <strong>{call.organizationName}</strong>
-                <span>
-                  {call.direction} • {call.createdAt}
-                </span>
-              </div>
-              <Badge tone="muted">{call.outcome}</Badge>
-            </div>
-          ))
+          <StackList
+            items={items.map((call) => ({
+              title: call.organizationName,
+              detail: `${call.direction} • ${call.createdAt}`,
+              badge: { label: call.outcome, tone: 'muted' },
+            }))}
+          />
         ) : (
-          <div className="ops-empty-state">No calls logged.</div>
+          <EmptyState>No calls logged.</EmptyState>
         )}
       </CardContent>
     </Card>
@@ -295,27 +365,24 @@ export function AdminBlueprintHistorySection({
   const items = typeof limit === 'number' ? recentBlueprints.slice(0, limit) : recentBlueprints;
 
   return (
-    <Card className="dashboard-data-panel">
-      <CardHeader className="dashboard-table-header">
-        <div>
-          <span className="eyebrow-text">Demos</span>
-          <CardTitle className="dashboard-side-title">Blueprint history</CardTitle>
-        </div>
+    <Card className="border border-border/80 bg-card/80 py-0 shadow-none">
+      <CardHeader className="border-b border-border/70 pb-4">
+        <SectionEyebrow>Demos</SectionEyebrow>
+        <CardTitle>Blueprint history</CardTitle>
+        <CardDescription>Recent demo flows and pre-sales assets generated by the platform.</CardDescription>
         <SectionAction href={actionHref} label={actionLabel} />
       </CardHeader>
-      <CardContent className="dashboard-side-list">
+      <CardContent className="px-4 py-4">
         {items.length ? (
-          items.map((blueprint) => (
-            <div key={blueprint.id} className="dashboard-feed-row">
-              <div>
-                <strong>{blueprint.title}</strong>
-                <span>{blueprint.websiteUrl ?? 'No source URL'}</span>
-              </div>
-              <Badge tone="muted">{blueprint.createdAt}</Badge>
-            </div>
-          ))
+          <StackList
+            items={items.map((blueprint) => ({
+              title: blueprint.title,
+              detail: blueprint.websiteUrl ?? 'No source URL',
+              badge: { label: blueprint.createdAt, tone: 'muted' },
+            }))}
+          />
         ) : (
-          <div className="ops-empty-state">No blueprints saved.</div>
+          <EmptyState>No blueprints saved.</EmptyState>
         )}
       </CardContent>
     </Card>
@@ -332,14 +399,13 @@ export function OrganizationLoadSection({
   const items = typeof limit === 'number' ? organizations.slice(0, limit) : organizations;
 
   return (
-    <Card className="dashboard-data-panel">
-      <CardHeader className="dashboard-table-header">
-        <div>
-          <span className="eyebrow-text">Capacity</span>
-          <CardTitle className="dashboard-side-title">Agent load by account</CardTitle>
-        </div>
+    <Card className="border border-border/80 bg-card/80 py-0 shadow-none">
+      <CardHeader className="border-b border-border/70 pb-4">
+        <SectionEyebrow>Capacity</SectionEyebrow>
+        <CardTitle>Agent load by account</CardTitle>
+        <CardDescription>Relative live-assistant distribution across the current customer base.</CardDescription>
       </CardHeader>
-      <CardContent>
+      <CardContent className="px-4 py-4">
         <OrganizationLoadChart organizations={items} />
       </CardContent>
     </Card>

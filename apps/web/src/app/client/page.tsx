@@ -29,7 +29,7 @@ export default async function ClientPage() {
 
       <ClientMetricsGrid metrics={data.metrics} />
 
-      <div className="command-content-grid">
+      <div className="grid gap-6 xl:grid-cols-[minmax(0,1.55fr)_minmax(320px,0.75fr)]">
         <ClientAgentsSection
           agents={data.agents}
           organizationName={data.organizationName}
@@ -38,7 +38,7 @@ export default async function ClientPage() {
           actionLabel="View all"
         />
 
-        <aside className="command-side-stack">
+        <aside className="grid gap-6">
           <ClientWorkspaceSummarySection data={data} />
           <ClientRecentCallsSection recentCalls={data.recentCalls} limit={5} actionHref="/client/calls" actionLabel="Open calls" />
         </aside>
