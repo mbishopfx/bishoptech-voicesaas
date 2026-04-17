@@ -1,12 +1,5 @@
 import { AppShell } from '@/components/app-shell';
-import {
-  AdminControlDeckSection,
-  AdminBlueprintHistorySection,
-  AdminMetricsGrid,
-  AdminRecentCallsSection,
-  OrganizationLoadSection,
-  OrganizationRosterSection,
-} from '@/components/admin-dashboard-sections';
+import { AdminCommandCenter } from '@/components/admin-command-center';
 import { requirePlatformAdmin } from '@/lib/auth';
 import { getAdminDashboardData } from '@/lib/dashboard-data';
 
@@ -17,26 +10,15 @@ export default async function AdminPage() {
   const data = await getAdminDashboardData(viewer);
 
   return (
-    <AppShell current="admin" viewer={viewer} activeNav="dashboard" headerMode="hidden">
-      <AdminControlDeckSection metrics={data.metrics} organizations={data.organizations} recentCalls={data.recentCalls} />
-
-      <AdminMetricsGrid metrics={data.metrics} />
-
-      <div className="grid gap-6 xl:grid-cols-[minmax(0,1.55fr)_minmax(320px,0.75fr)]">
-        <OrganizationRosterSection organizations={data.organizations} limit={6} actionHref="/admin/organizations" actionLabel="View all" />
-
-        <aside className="grid gap-6">
-          <AdminRecentCallsSection recentCalls={data.recentCalls} limit={5} actionHref="/admin/calls" actionLabel="Open calls" />
-          <AdminBlueprintHistorySection
-            recentBlueprints={data.recentBlueprints}
-            limit={5}
-            actionHref="/admin/demo-lab"
-            actionLabel="Open demo lab"
-          />
-        </aside>
-      </div>
-
-      <OrganizationLoadSection organizations={data.organizations} limit={7} />
+    <AppShell
+      current="admin"
+      viewer={viewer}
+      activeNav="dashboard"
+      eyebrow="Operator Command Center"
+      title="VoiceOps Command Center"
+      description="Provision refined vertical stacks, reserve demo numbers, recover failed lead data, and keep the Vapi-backed portfolio operational from one surface."
+    >
+      <AdminCommandCenter data={data} />
     </AppShell>
   );
 }

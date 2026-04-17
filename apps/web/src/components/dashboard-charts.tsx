@@ -81,32 +81,32 @@ export function PulseAreaChart({ recentCalls }: { recentCalls: RecentCall[] }) {
         <AreaChart data={data.length ? data : fallback} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
           <defs>
             <linearGradient id="pulse-duration" x1="0" y1="0" x2="0" y2="1">
-              <stop offset="5%" stopColor="#62d8ff" stopOpacity={0.28} />
-              <stop offset="95%" stopColor="#62d8ff" stopOpacity={0} />
+              <stop offset="5%" stopColor="#d2b774" stopOpacity={0.28} />
+              <stop offset="95%" stopColor="#d2b774" stopOpacity={0} />
             </linearGradient>
             <linearGradient id="pulse-quality" x1="0" y1="0" x2="0" y2="1">
-              <stop offset="5%" stopColor="#8cf6d4" stopOpacity={0.18} />
-              <stop offset="95%" stopColor="#8cf6d4" stopOpacity={0} />
+              <stop offset="5%" stopColor="#8cb9a0" stopOpacity={0.18} />
+              <stop offset="95%" stopColor="#8cb9a0" stopOpacity={0} />
             </linearGradient>
           </defs>
-          <CartesianGrid stroke="rgba(120, 244, 255, 0.08)" vertical={false} />
-          <XAxis dataKey="label" tickLine={false} axisLine={false} tick={{ fill: 'rgba(176,190,209,0.72)', fontSize: 12 }} />
+          <CartesianGrid stroke="rgba(243, 227, 177, 0.08)" vertical={false} />
+          <XAxis dataKey="label" tickLine={false} axisLine={false} tick={{ fill: 'rgba(219,205,185,0.72)', fontSize: 12 }} />
           <YAxis hide />
           <Tooltip
-            cursor={{ stroke: 'rgba(120, 244, 255, 0.18)', strokeWidth: 1 }}
+            cursor={{ stroke: 'rgba(243, 227, 177, 0.18)', strokeWidth: 1 }}
             contentStyle={{
-              background: 'rgba(8, 14, 20, 0.96)',
-              border: '1px solid rgba(120, 244, 255, 0.14)',
+              background: 'rgba(25, 21, 17, 0.96)',
+              border: '1px solid rgba(243, 227, 177, 0.14)',
               borderRadius: '14px',
-              color: '#f3f7fb',
+              color: '#f2e8d9',
             }}
-            labelStyle={{ color: 'rgba(176,190,209,0.72)' }}
+            labelStyle={{ color: 'rgba(219,205,185,0.72)' }}
             isAnimationActive={false}
           />
           <Area
             type="monotone"
             dataKey="quality"
-            stroke="#8cf6d4"
+            stroke="#8cb9a0"
             strokeWidth={1.4}
             fill="url(#pulse-quality)"
             isAnimationActive={false}
@@ -114,7 +114,7 @@ export function PulseAreaChart({ recentCalls }: { recentCalls: RecentCall[] }) {
           <Area
             type="monotone"
             dataKey="duration"
-            stroke="#62d8ff"
+            stroke="#d2b774"
             strokeWidth={2}
             fill="url(#pulse-duration)"
             isAnimationActive={false}
@@ -136,21 +136,21 @@ export function OrganizationLoadChart({ organizations }: { organizations: Organi
     <div className="chart-shell compact">
       <ResponsiveContainer width="100%" height={248}>
         <BarChart data={data} margin={{ top: 8, right: 8, left: -20, bottom: 0 }}>
-          <CartesianGrid stroke="rgba(120, 244, 255, 0.08)" vertical={false} />
-          <XAxis dataKey="name" tickLine={false} axisLine={false} tick={{ fill: 'rgba(176,190,209,0.72)', fontSize: 11 }} />
+          <CartesianGrid stroke="rgba(243, 227, 177, 0.08)" vertical={false} />
+          <XAxis dataKey="name" tickLine={false} axisLine={false} tick={{ fill: 'rgba(219,205,185,0.72)', fontSize: 11 }} />
           <YAxis hide />
           <Tooltip
             contentStyle={{
-              background: 'rgba(8, 14, 20, 0.96)',
-              border: '1px solid rgba(120, 244, 255, 0.14)',
+              background: 'rgba(25, 21, 17, 0.96)',
+              border: '1px solid rgba(243, 227, 177, 0.14)',
               borderRadius: '14px',
-              color: '#f3f7fb',
+              color: '#f2e8d9',
             }}
             isAnimationActive={false}
           />
           <Bar dataKey="liveAgents" radius={[8, 8, 0, 0]} isAnimationActive={false}>
             {data.map((entry) => (
-              <Cell key={entry.name} fill="#62d8ff" />
+              <Cell key={entry.name} fill="#d2b774" />
             ))}
           </Bar>
         </BarChart>
@@ -182,19 +182,19 @@ export function OutcomeBarChart({ recentCalls }: { recentCalls: RecentCall[] }) 
     <div className="chart-shell compact">
       <ResponsiveContainer width="100%" height={220}>
         <BarChart data={grouped.length ? grouped : fallback} margin={{ top: 8, right: 8, left: -20, bottom: 0 }}>
-          <CartesianGrid stroke="rgba(120, 244, 255, 0.08)" vertical={false} />
-          <XAxis dataKey="outcome" tickLine={false} axisLine={false} tick={{ fill: 'rgba(176,190,209,0.72)', fontSize: 11 }} />
+          <CartesianGrid stroke="rgba(243, 227, 177, 0.08)" vertical={false} />
+          <XAxis dataKey="outcome" tickLine={false} axisLine={false} tick={{ fill: 'rgba(219,205,185,0.72)', fontSize: 11 }} />
           <YAxis hide />
           <Tooltip
             contentStyle={{
-              background: 'rgba(8, 14, 20, 0.96)',
-              border: '1px solid rgba(120, 244, 255, 0.14)',
+              background: 'rgba(25, 21, 17, 0.96)',
+              border: '1px solid rgba(243, 227, 177, 0.14)',
               borderRadius: '14px',
-              color: '#f3f7fb',
+              color: '#f2e8d9',
             }}
             isAnimationActive={false}
           />
-          <Bar dataKey="total" radius={[8, 8, 0, 0]} fill="#8f7dff" isAnimationActive={false} />
+          <Bar dataKey="total" radius={[8, 8, 0, 0]} fill="#8cb9a0" isAnimationActive={false} />
         </BarChart>
       </ResponsiveContainer>
     </div>

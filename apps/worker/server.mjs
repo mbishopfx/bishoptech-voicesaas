@@ -20,6 +20,7 @@ const webhookSecret = process.env.VAPI_WEBHOOK_SECRET || '';
 const queueState = {
   isDraining: false,
   processedCampaigns: 0,
+  processedLeadJobs: 0,
   failedCampaigns: 0,
   receivedWebhooks: 0,
   lastLoopAt: null,
@@ -109,6 +110,11 @@ function resolveOrganizationId(payload) {
   return candidates.find((candidate) => typeof candidate === 'string' && candidate.length > 0) || null;
 }
 
+function isMissingRelationError(error) {
+  const message = error?.message || '';
+  return /relation .* does not exist|Could not find the table|schema cache/i.test(message);
+}
+
 function resolveEventType(payload) {
   return payload?.type || payload?.event || payload?.message?.type || 'unknown';
 }
@@ -123,6 +129,80 @@ function resolveExternalId(payload) {
   ];
 
   return candidates.find((candidate) => typeof candidate === 'string' && candidate.length > 0) || null;
+}
+
+function resolveTranscript(payload) {
+  const candidates = [
+    payload?.transcript,
+    payload?.call?.transcript,
+    payload?.call?.analysis?.transcript,
+    payload?.message?.transcript,
+    payload?.messages,
+    payload?.conversation,
+  ];
+
+  for (const candidate of candidates) {
+    if (typeof candidate === 'string' && candidate.trim()) {
+      return candidate.trim();
+    }
+
+    if (Array.isArray(candidate)) {
+      const joined = candidate
+        .map((entry) => {
+          if (typeof entry === 'string') {
+            return entry;
+          }
+
+          if (entry && typeof entry === 'object') {
+            return entry.text || entry.message || entry.content || '';
+          }
+
+          return '';
+        })
+        .filter(Boolean)
+        .join('\n');
+
+      if (joined.trim()) {
+        return joined.trim();
+      }
+    }
+  }
+
+  return '';
+}
+
+function buildFallbackLeadRecovery(job) {
+  const transcript = typeof job.payload?.transcript === 'string' ? job.payload.transcript : '';
+  const summary = typeof job.payload?.summary === 'string' ? job.payload.summary : '';
+  const phoneMatch = transcript.match(/(?:phone|number|callback)[^+\d]*(\+?[\d\-\(\)\s]{7,})/i);
+  const emailMatch = transcript.match(/([A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,})/i);
+  const nameMatch = transcript.match(/(?:my name is|this is|i am)\s+([A-Z][A-Za-z]+(?:\s+[A-Z][A-Za-z]+)?)/i);
+  const confidence = phoneMatch || emailMatch ? 0.72 : 0.56;
+
+  return {
+    provider: 'fallback',
+    status: confidence >= 0.65 ? 'partial' : 'needs-review',
+    confidence,
+    missing_fields: emailMatch ? [] : ['Email'],
+    extracted_lead: {
+      name: nameMatch?.[1] || 'Unknown caller',
+      phone: phoneMatch?.[1] || null,
+      email: emailMatch?.[1] || null,
+      summary: summary || transcript.slice(0, 220),
+    },
+    notes: [
+      'Worker fallback recovery created from transcript heuristics.',
+    ],
+  };
+}
+
+async function safeInsertTable(table, payload) {
+  const client = ensureSupabase();
+  const result = await client.from(table).insert(payload);
+
+  if (result.error && !isMissingRelationError(result.error)) {
+    throw new Error(result.error.message);
+  }
 }
 
 async function vapiFetch(path, init = {}, idempotencyKey, apiKey = vapiApiKey) {
@@ -374,6 +454,53 @@ async function processCampaignLaunchJob(job) {
   }
 }
 
+async function processLeadRecoveryJob(job) {
+  const client = ensureSupabase();
+  const payload = job.payload || {};
+  const recovery = buildFallbackLeadRecovery(job);
+
+  await safeInsertTable('lead_recovery_runs', {
+    organization_id: payload.organizationId || null,
+    call_id: payload.callId || null,
+    icp_pack_id: payload.icpPackId || null,
+    provider: recovery.provider,
+    status: recovery.status,
+    confidence: recovery.confidence,
+    missing_fields: recovery.missing_fields,
+    extracted_lead: recovery.extracted_lead,
+    notes: recovery.notes,
+  });
+
+  await safeInsertTable('lead_capture_attempts', {
+    organization_id: payload.organizationId || null,
+    call_id: payload.callId || null,
+    icp_pack_id: payload.icpPackId || null,
+    source: 'transcript-recovery',
+    status: recovery.status === 'needs-review' ? 'partial' : 'captured',
+    confidence: recovery.confidence,
+    missing_fields: recovery.missing_fields,
+  });
+
+  if (payload.eventIngestId) {
+    const update = await client
+      .from('worker_event_ingests')
+      .update({
+        payload: {
+          ...(payload.rawPayload || {}),
+          leadRecovery: {
+            status: recovery.status,
+            confidence: recovery.confidence,
+          },
+        },
+      })
+      .eq('id', payload.eventIngestId);
+
+    if (update.error && !isMissingRelationError(update.error)) {
+      throw new Error(update.error.message);
+    }
+  }
+}
+
 async function drainQueue(queueName = 'campaign-dispatch') {
   if (queueState.isDraining || !supabase) {
     return { accepted: false, reason: queueState.isDraining ? 'already-draining' : 'supabase-missing' };
@@ -391,6 +518,9 @@ async function drainQueue(queueName = 'campaign-dispatch') {
           if (job.job_type === 'campaign.launch') {
             await processCampaignLaunchJob(job);
             queueState.processedCampaigns += 1;
+          } else if (job.job_type === 'lead.recover') {
+            await processLeadRecoveryJob(job);
+            queueState.processedLeadJobs += 1;
           }
 
           await markJobCompleted(job.id);
@@ -428,12 +558,12 @@ function scheduleQueueDrain() {
   }
 
   setInterval(() => {
-    void drainQueue().catch((error) => {
+    void Promise.all([drainQueue('campaign-dispatch'), drainQueue('lead-ops')]).catch((error) => {
       queueState.lastError = error instanceof Error ? error.message : String(error);
     });
   }, pollIntervalMs);
 
-  void drainQueue().catch((error) => {
+  void Promise.all([drainQueue('campaign-dispatch'), drainQueue('lead-ops')]).catch((error) => {
     queueState.lastError = error instanceof Error ? error.message : String(error);
   });
 }
@@ -480,8 +610,10 @@ const server = createServer(async (request, response) => {
     try {
       const client = ensureSupabase();
       const payload = await readJsonBody(request);
+      const eventIngestId = randomUUID();
       const insert = await client.from('worker_event_ingests').upsert(
         {
+          id: eventIngestId,
           organization_id: resolveOrganizationId(payload),
           provider: 'vapi',
           event_type: resolveEventType(payload),
@@ -499,6 +631,36 @@ const server = createServer(async (request, response) => {
       }
 
       queueState.receivedWebhooks += 1;
+
+      const transcript = resolveTranscript(payload);
+
+      if (transcript) {
+        const jobInsert = await client.from('worker_jobs').upsert(
+          {
+            queue_name: 'lead-ops',
+            job_type: 'lead.recover',
+            organization_id: resolveOrganizationId(payload),
+            payload: {
+              organizationId: resolveOrganizationId(payload),
+              callId: resolveExternalId(payload),
+              transcript,
+              summary: payload?.summary || payload?.call?.summary || '',
+              icpPackId:
+                payload?.metadata?.icpPackId ||
+                payload?.call?.assistant?.metadata?.icpPackId ||
+                null,
+              eventIngestId,
+              rawPayload: payload,
+            },
+            idempotency_key: `lead-recover-${resolveExternalId(payload) || eventIngestId}`,
+          },
+          { onConflict: 'idempotency_key', ignoreDuplicates: false },
+        );
+
+        if (jobInsert.error && !isMissingRelationError(jobInsert.error)) {
+          throw new Error(jobInsert.error.message);
+        }
+      }
 
       return json(response, 202, {
         accepted: true,

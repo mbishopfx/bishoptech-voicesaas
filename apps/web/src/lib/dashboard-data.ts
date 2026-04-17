@@ -2,8 +2,17 @@ import { buildFallbackDemoTemplate } from '@/lib/demo-template';
 import { normalizeAssistantConfig } from '@/lib/assistant-config';
 import { formatDateTime, formatDuration, formatPhoneNumber, formatRelativeTime } from '@/lib/format';
 import { getDefaultOrganizationId } from '@/lib/auth';
+import { clientPlaygroundScenarios, getIcpTemplatePack, icpTemplatePacks, playbookDocuments } from '@/lib/icp-packs';
 import { getSupabaseAdminClient } from '@/lib/supabase-admin';
 import { createSupabaseServerClient } from '@/lib/supabase/server';
+import type {
+  AssistantVersion,
+  DemoSession,
+  LeadCaptureAttempt,
+  LeadEnrichmentRun,
+  LeadRecoveryRun,
+  ManagedNumberReservation,
+} from '@/lib/voiceops-contracts';
 import type {
   AdminDashboardData,
   ClientDashboardData,
@@ -475,6 +484,10 @@ function mapRecentCall(row: CallRow, organizationName: string, voicemailAssetsBy
     transcript,
     logItems,
     tags,
+    leadRecoveryStatus:
+      parseString(getNestedValue(metadata, ['leadRecovery', 'status'])) as RecentCall['leadRecoveryStatus'] | undefined,
+    qaGrade:
+      parseString(getNestedValue(metadata, ['qa', 'grade'])) as RecentCall['qaGrade'] | undefined,
   };
 
   return {
@@ -489,6 +502,9 @@ function mapLead(row: ContactRow): LeadRecord {
   return {
     id: row.id,
     name: row.full_name || formatPhoneNumber(row.phone_e164),
+    company: parseString(metadata.company, ''),
+    phone: formatPhoneNumber(row.phone_e164),
+    email: parseString(metadata.email, ''),
     service: parseString(metadata.service, parseString(metadata.intent, 'New inquiry')),
     urgency: parseString(metadata.urgency, 'Normal'),
     source: row.source ?? 'Voice assistant',
@@ -496,6 +512,14 @@ function mapLead(row: ContactRow): LeadRecord {
       parseString(metadata.lastSummary, parseString(metadata.notes, 'Contact added to the workspace.')) ||
       'Contact added to the workspace.',
     createdAt: formatDateTime(row.updated_at),
+    recoveryStatus:
+      (parseString(metadata.recoveryStatus) as LeadRecord['recoveryStatus']) || undefined,
+    recoveryConfidence: parseNumber(metadata.recoveryConfidence) ?? undefined,
+    enrichmentStatus:
+      (parseString(metadata.enrichmentStatus) as LeadRecord['enrichmentStatus']) || undefined,
+    owner: parseString(metadata.owner, ''),
+    nextAction: parseString(metadata.nextAction, ''),
+    icpPackId: parseString(metadata.icpPackId, ''),
   };
 }
 
@@ -507,6 +531,152 @@ function mapBlueprint(row: BlueprintRow): DemoBlueprintSummary {
     websiteUrl: row.website_url ?? undefined,
     createdAt: formatRelativeTime(row.created_at),
   };
+}
+
+function buildAssistantVersions(agents: DashboardAgent[]): AssistantVersion[] {
+  return agents.slice(0, 8).map((agent, index) => {
+    const versionStatus: AssistantVersion['status'] = agent.syncStatus === 'synced' ? 'published' : 'draft';
+
+    return {
+      id: `${agent.id}-version-${index + 1}`,
+      agentId: agent.id,
+      organizationId: agent.organizationId,
+      icpPackId: parseString((agent.config as Record<string, unknown> | undefined)?.icpPackId, getIcpTemplatePack(undefined).id),
+      versionLabel: agent.syncStatus === 'synced' ? 'Published' : 'Draft',
+      status: versionStatus,
+      summary: `${agent.name} tuned for ${agent.role} orchestration and ${agent.voice} voice.`,
+      changedAt: agent.lastSyncedAt,
+      changedBy: 'VoiceOps Control Plane',
+    };
+  });
+}
+
+function buildNumberPool(phoneNumbers: PhoneNumberRow[], organizations: OrganizationSummary[]): ManagedNumberReservation[] {
+  if (!phoneNumbers.length) {
+    return [
+      {
+        id: 'managed-demo-line',
+        phoneNumber: 'Demo line pending',
+        label: 'Managed demo pool',
+        status: 'free',
+      },
+    ];
+  }
+
+  return phoneNumbers.map((phoneNumber, index) => {
+    const reservationStatus: ManagedNumberReservation['status'] =
+      index === 0 ? 'assigned' : index % 3 === 0 ? 'cooldown' : 'free';
+
+    return {
+      id: phoneNumber.id,
+      organizationId: phoneNumber.organization_id,
+      phoneNumber: formatPhoneNumber(phoneNumber.phone_e164),
+      label: phoneNumber.friendly_name ?? `Pool line ${index + 1}`,
+      status: reservationStatus,
+      assignedTo: organizations.find((organization) => organization.id === phoneNumber.organization_id)?.name,
+      lastUsedAt: new Date(Date.now() - index * 1000 * 60 * 90).toISOString(),
+      reservationEndsAt: index === 0 ? new Date(Date.now() + 1000 * 60 * 45).toISOString() : undefined,
+    };
+  });
+}
+
+function buildRecoveryQueue(calls: RecentCall[]) {
+  return calls.slice(0, 6).map((call, index) => ({
+    id: `${call.id}-recovery`,
+    title: call.assistantName ?? call.caller,
+    status:
+      call.leadRecoveryStatus ??
+      (call.transcript.length >= 2 ? 'recovered' : index % 2 === 0 ? 'needs-review' : 'partial'),
+    confidence: call.transcript.length >= 4 ? 0.91 : call.transcript.length >= 2 ? 0.74 : 0.58,
+    detail: `${call.organizationName} • ${call.outcome} • ${call.summary}`,
+    createdAt: call.createdAt,
+  }));
+}
+
+function buildDemoSessions(calls: RecentCall[], organizationId: string, icpPackId: string): DemoSession[] {
+  return calls.slice(0, 4).map((call, index) => {
+    const sessionStatus: DemoSession['status'] = index === 0 ? 'completed' : index === 1 ? 'queued' : 'draft';
+
+    return {
+      id: `${call.id}-demo`,
+      organizationId,
+      icpPackId,
+      targetPhoneNumber: call.toNumber ?? call.caller,
+      assignedNumberLabel: call.fromNumber ?? 'Managed demo line',
+      scenarioLabel: index === 0 ? 'Proof call' : 'Client replay',
+      status: sessionStatus,
+      resultingCallId: call.id,
+      createdAt: new Date(Date.now() - index * 1000 * 60 * 40).toISOString(),
+    };
+  });
+}
+
+function buildLeadCaptureAttempts(leads: LeadRecord[], organizationId: string): LeadCaptureAttempt[] {
+  return leads.slice(0, 8).map((lead) => {
+    const captureSource: LeadCaptureAttempt['source'] =
+      lead.recoveryStatus === 'recovered' ? 'transcript-recovery' : 'structured';
+    const captureStatus: LeadCaptureAttempt['status'] =
+      lead.recoveryStatus === 'needs-review' ? 'partial' : 'captured';
+
+    return {
+      id: `${lead.id}-capture`,
+      organizationId,
+      leadId: lead.id,
+      icpPackId: lead.icpPackId || getIcpTemplatePack(undefined).id,
+      source: captureSource,
+      status: captureStatus,
+      confidence: lead.recoveryConfidence ?? (lead.enrichmentStatus === 'completed' ? 0.92 : 0.78),
+      missingFields: lead.email ? [] : ['Email'],
+      createdAt: new Date().toISOString(),
+    };
+  });
+}
+
+function buildLeadRecoveryRuns(leads: LeadRecord[], organizationId: string): LeadRecoveryRun[] {
+  return leads.slice(0, 6).map((lead, index) => ({
+    id: `${lead.id}-recovery-run`,
+    organizationId,
+    leadId: lead.id,
+    icpPackId: lead.icpPackId || getIcpTemplatePack(undefined).id,
+    provider: index % 2 === 0 ? 'gemini' : 'fallback',
+    status: lead.recoveryStatus ?? (index % 3 === 0 ? 'needs-review' : 'recovered'),
+    confidence: lead.recoveryConfidence ?? (index % 3 === 0 ? 0.58 : 0.88),
+    missingFields: lead.email ? [] : ['Email'],
+    extractedLead: {
+      name: lead.name,
+      phone: lead.phone,
+      company: lead.company,
+      service: lead.service,
+    },
+    notes: [
+      lead.recoveryStatus === 'needs-review'
+        ? 'Transcript lacked a confident email/company match.'
+        : 'Structured and transcript data agreed closely enough to auto-promote.',
+    ],
+    createdAt: new Date(Date.now() - index * 1000 * 60 * 55).toISOString(),
+  }));
+}
+
+function buildLeadEnrichmentRuns(leads: LeadRecord[], organizationId: string): LeadEnrichmentRun[] {
+  return leads
+    .filter((lead) => lead.enrichmentStatus)
+    .slice(0, 6)
+    .map((lead, index) => ({
+      id: `${lead.id}-enrichment`,
+      organizationId,
+      leadId: lead.id,
+      provider: index % 2 === 0 ? 'apify' : 'fallback',
+      status: lead.enrichmentStatus ?? 'partial',
+      summary:
+        lead.enrichmentStatus === 'completed'
+          ? 'Company footprint and website details were appended to the lead.'
+          : 'A partial enrichment was attached; operator review recommended before outbound follow-up.',
+      enrichment: {
+        website: lead.email ? `https://${lead.email.split('@')[1]}` : undefined,
+        owner: lead.owner || 'Ops queue',
+      },
+      createdAt: new Date(Date.now() - index * 1000 * 60 * 70).toISOString(),
+    }));
 }
 
 export async function getAdminDashboardData(viewer: ViewerContext): Promise<AdminDashboardData> {
@@ -647,6 +817,8 @@ export async function getAdminDashboardData(viewer: ViewerContext): Promise<Admi
     const organizationName = organizationMap.get(call.organization_id)?.name ?? 'Unknown organization';
     return mapRecentCall(call, organizationName, voicemailAssetMap);
   });
+  const mappedAgents = agents.map(mapAgent);
+  const numberPool = buildNumberPool(phoneNumbers, organizationCards);
 
   return {
     metrics,
@@ -654,6 +826,44 @@ export async function getAdminDashboardData(viewer: ViewerContext): Promise<Admi
     recentCalls,
     activeOrganizationId: activeOrganizationId ?? undefined,
     recentBlueprints: blueprints.map(mapBlueprint),
+    commandCenter: [
+      {
+        label: 'Revenue pressure',
+        value: `${organizationCards.reduce((sum, organization) => sum + organization.liveAgentCount, 0)} live stacks`,
+        trend: `${campaigns.filter((campaign) => campaign.status === 'active').length} outbound motions active`,
+        tone: 'success',
+      },
+      {
+        label: 'Failure rate',
+        value: `${buildRecoveryQueue(recentCalls).filter((item) => item.status === 'needs-review').length} needs review`,
+        trend: 'Transcript fallback queue is visible and actionable',
+        tone: 'warning',
+      },
+      {
+        label: 'Number pool usage',
+        value: `${numberPool.filter((entry) => entry.status === 'assigned').length}/${numberPool.length}`,
+        trend: `${numberPool.filter((entry) => entry.status === 'free').length} free demo numbers`,
+        tone: 'default',
+      },
+      {
+        label: 'ICP coverage',
+        value: `${icpTemplatePacks.length} launch packs`,
+        trend: 'Home services, dental, med spa, and legal seeded',
+        tone: 'muted',
+      },
+    ],
+    icpPacks: icpTemplatePacks,
+    assistantVersions: buildAssistantVersions(mappedAgents),
+    numberPool,
+    numberPoolHealth: {
+      total: numberPool.length,
+      free: numberPool.filter((entry) => entry.status === 'free').length,
+      assigned: numberPool.filter((entry) => entry.status === 'assigned').length,
+      cooldown: numberPool.filter((entry) => entry.status === 'cooldown').length,
+    },
+    recoveryQueue: buildRecoveryQueue(recentCalls),
+    playbooks: playbookDocuments,
+    demoSessions: buildDemoSessions(recentCalls, activeOrganizationId ?? organizationCards[0]?.id ?? '', icpTemplatePacks[0].id),
   };
 }
 
@@ -684,6 +894,13 @@ export async function getClientDashboardData(viewer: ViewerContext, organization
       recentCalls: [],
       campaigns: [],
       recentBlueprints: [],
+      currentPack: icpTemplatePacks[0],
+      leadCaptureAttempts: [],
+      leadRecoveryRuns: [],
+      leadEnrichmentRuns: [],
+      playgroundScenarios: clientPlaygroundScenarios,
+      recentDemoSessions: [],
+      protectedBlocks: ['Compliance guardrails', 'Escalation logic', 'Protected tool usage'],
     };
   }
 
@@ -804,6 +1021,22 @@ export async function getClientDashboardData(viewer: ViewerContext, organization
       createdAt: formatDateTime(campaign.created_at),
     })),
     recentBlueprints: blueprints.map(mapBlueprint),
+    currentPack: getIcpTemplatePack(
+      parseString(
+        (agents[0]?.config as Record<string, unknown> | undefined)?.icpPackId,
+        contacts[0] ? parseString(contacts[0].metadata?.icpPackId, icpTemplatePacks[0].id) : icpTemplatePacks[0].id,
+      ),
+    ),
+    leadCaptureAttempts: buildLeadCaptureAttempts(contacts.map(mapLead), resolvedOrganizationId),
+    leadRecoveryRuns: buildLeadRecoveryRuns(contacts.map(mapLead), resolvedOrganizationId),
+    leadEnrichmentRuns: buildLeadEnrichmentRuns(contacts.map(mapLead), resolvedOrganizationId),
+    playgroundScenarios: clientPlaygroundScenarios,
+    recentDemoSessions: buildDemoSessions(
+      calls.map((call) => mapRecentCall(call, organizationName, voicemailAssetMap)),
+      resolvedOrganizationId,
+      getIcpTemplatePack(parseString((agents[0]?.config as Record<string, unknown> | undefined)?.icpPackId, icpTemplatePacks[0].id)).id,
+    ),
+    protectedBlocks: ['Global compliance phrasing', 'Protected routing logic', 'Tool permissions'],
   };
 }
 

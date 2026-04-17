@@ -26,6 +26,8 @@ const envSchema = z.object({
   XAI_API_KEY: z.string().optional(),
   XAI_MODEL: z.string().default('grok-4-latest'),
   RAILWAY_WORKER_BASE_URL: z.string().url().optional(),
+  APIFY_API_TOKEN: z.string().optional(),
+  APIFY_LEAD_ENRICH_ACTOR_ID: z.string().optional(),
 });
 
 const parsedEnv = envSchema.parse({
@@ -52,6 +54,8 @@ const parsedEnv = envSchema.parse({
   XAI_API_KEY: process.env.XAI_API_KEY || undefined,
   XAI_MODEL: process.env.XAI_MODEL ?? 'grok-4-latest',
   RAILWAY_WORKER_BASE_URL: process.env.RAILWAY_WORKER_BASE_URL || undefined,
+  APIFY_API_TOKEN: process.env.APIFY_API_TOKEN || undefined,
+  APIFY_LEAD_ENRICH_ACTOR_ID: process.env.APIFY_LEAD_ENRICH_ACTOR_ID || undefined,
 });
 
 export const appConfig = {
@@ -91,6 +95,10 @@ export const appConfig = {
   worker: {
     baseUrl: parsedEnv.RAILWAY_WORKER_BASE_URL,
   },
+  apify: {
+    apiToken: parsedEnv.APIFY_API_TOKEN,
+    leadActorId: parsedEnv.APIFY_LEAD_ENRICH_ACTOR_ID,
+  },
 } as const;
 
 export function getIntegrationAvailability(): IntegrationAvailability[] {
@@ -129,6 +137,13 @@ export function getIntegrationAvailability(): IntegrationAvailability[] {
       detail: appConfig.vapi.apiKey && appConfig.vapi.outboundPhoneNumberId
         ? 'CSV-driven outbound campaigns can launch from the dedicated outbound number.'
         : 'Set VAPI_OUTBOUND_PHONE_NUMBER_ID to run blast campaigns from the client portal.',
+    },
+    {
+      label: 'Single-lead enrichment',
+      ready: Boolean(appConfig.apify.apiToken && appConfig.apify.leadActorId),
+      detail: appConfig.apify.apiToken && appConfig.apify.leadActorId
+        ? 'Apify single-lead enrichment is configured for cost-controlled enrichment runs.'
+        : 'Set APIFY_API_TOKEN and APIFY_LEAD_ENRICH_ACTOR_ID to enable one-click lead enrichment.',
     },
   ];
 }

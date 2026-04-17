@@ -1,13 +1,5 @@
 import { AppShell } from '@/components/app-shell';
-import {
-  ClientAgentsSection,
-  ClientCampaignsSection,
-  ClientControlDeckSection,
-  ClientMetricsGrid,
-  ClientOutcomeChartSection,
-  ClientRecentCallsSection,
-  ClientWorkspaceSummarySection,
-} from '@/components/client-dashboard-sections';
+import { ClientCommandCenter } from '@/components/client-command-center';
 import { requireViewer } from '@/lib/auth';
 import { getClientDashboardData } from '@/lib/dashboard-data';
 
@@ -22,30 +14,11 @@ export default async function ClientPage() {
       current="client"
       viewer={viewer}
       activeNav="dashboard"
-      headerMode="hidden"
-      actions={null}
+      eyebrow="Client Operations Console"
+      title="Client Operations Console"
+      description="See exactly what the assistant stack is doing: recovered leads, call quality, enrichment status, and live playground confidence without touching protected operator settings."
     >
-      <ClientControlDeckSection data={data} />
-
-      <ClientMetricsGrid metrics={data.metrics} />
-
-      <div className="grid gap-6 xl:grid-cols-[minmax(0,1.55fr)_minmax(320px,0.75fr)]">
-        <ClientAgentsSection
-          agents={data.agents}
-          organizationName={data.organizationName}
-          limit={4}
-          actionHref="/client/agents"
-          actionLabel="View all"
-        />
-
-        <aside className="grid gap-6">
-          <ClientWorkspaceSummarySection data={data} />
-          <ClientRecentCallsSection recentCalls={data.recentCalls} limit={5} actionHref="/client/calls" actionLabel="Open calls" />
-        </aside>
-      </div>
-
-      <ClientOutcomeChartSection recentCalls={data.recentCalls} />
-      <ClientCampaignsSection campaigns={data.campaigns} limit={5} actionHref="/client/campaigns" actionLabel="Manage campaigns" />
+      <ClientCommandCenter data={data} />
     </AppShell>
   );
 }

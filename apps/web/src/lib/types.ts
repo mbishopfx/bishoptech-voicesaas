@@ -1,4 +1,17 @@
 import type { AssistantConfigSnapshot } from '@/lib/assistant-config';
+import type {
+  AssistantVersion,
+  CallQaGrade,
+  ClientPlaygroundScenario,
+  DemoSession,
+  ICPTemplatePack,
+  LeadCaptureAttempt,
+  LeadEnrichmentRun,
+  LeadRecoveryRun,
+  ManagedNumberReservation,
+  NumberPoolHealth,
+  PlaybookDocument,
+} from '@/lib/voiceops-contracts';
 
 export type MetricTone = 'neutral' | 'positive' | 'warning';
 export type AgentRole = 'inbound' | 'outbound' | 'specialist';
@@ -106,17 +119,28 @@ export type RecentCall = {
   }>;
   tags: string[];
   exportText: string;
+  leadRecoveryStatus?: LeadRecoveryRun['status'];
+  qaGrade?: CallQaGrade['scoreLabel'];
 };
 
 export type LeadRecord = {
   id: string;
   name: string;
+  company?: string;
+  phone?: string;
+  email?: string;
   service: string;
   urgency: string;
   source: string;
   transcriptExcerpt: string;
   audioUrl?: string;
   createdAt: string;
+  recoveryStatus?: LeadRecoveryRun['status'];
+  recoveryConfidence?: number;
+  enrichmentStatus?: LeadEnrichmentRun['status'];
+  owner?: string;
+  nextAction?: string;
+  icpPackId?: string;
 };
 
 export type DemoBlueprintSummary = {
@@ -263,12 +287,36 @@ export type BlastCampaignResult = {
   warnings: string[];
 };
 
+export type OpsSnapshotCard = {
+  label: string;
+  value: string;
+  trend: string;
+  tone?: 'default' | 'success' | 'warning' | 'muted';
+};
+
+export type RecoveryQueueItem = {
+  id: string;
+  title: string;
+  status: LeadRecoveryRun['status'];
+  confidence: number;
+  detail: string;
+  createdAt: string;
+};
+
 export type AdminDashboardData = {
   metrics: MetricCard[];
   organizations: OrganizationSummary[];
   recentCalls: RecentCall[];
   activeOrganizationId?: string;
   recentBlueprints: DemoBlueprintSummary[];
+  commandCenter: OpsSnapshotCard[];
+  icpPacks: ICPTemplatePack[];
+  assistantVersions: AssistantVersion[];
+  numberPool: ManagedNumberReservation[];
+  numberPoolHealth: NumberPoolHealth;
+  recoveryQueue: RecoveryQueueItem[];
+  playbooks: PlaybookDocument[];
+  demoSessions: DemoSession[];
 };
 
 export type ClientDashboardData = {
@@ -293,4 +341,11 @@ export type ClientDashboardData = {
     createdAt: string;
   }>;
   recentBlueprints: DemoBlueprintSummary[];
+  currentPack: ICPTemplatePack;
+  leadCaptureAttempts: LeadCaptureAttempt[];
+  leadRecoveryRuns: LeadRecoveryRun[];
+  leadEnrichmentRuns: LeadEnrichmentRun[];
+  playgroundScenarios: ClientPlaygroundScenario[];
+  recentDemoSessions: DemoSession[];
+  protectedBlocks: string[];
 };
