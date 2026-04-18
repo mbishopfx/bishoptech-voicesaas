@@ -32,7 +32,7 @@ function SectionHeader({
         <p className="max-w-3xl text-sm leading-6 text-muted-foreground">{description}</p>
       </div>
       {actionHref && actionLabel ? (
-        <Button asChild variant="outline" className="rounded-xl">
+        <Button asChild variant="outline">
           <Link href={actionHref as Route}>
             {actionLabel}
             <ArrowRight className="size-4" />
@@ -48,7 +48,7 @@ export function ClientCommandCenter({ data }: { data: ClientDashboardData }) {
     <div className="space-y-8">
       <section className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
         {data.metrics.map((metric) => (
-          <Card key={metric.label} className="rounded-2xl border-border bg-card shadow-none">
+          <Card key={metric.label} className="border-border bg-card shadow-none">
             <CardContent className="space-y-2 px-5 py-5">
               <p className="text-[0.68rem] uppercase tracking-[0.22em] text-muted-foreground">{metric.label}</p>
               <div className="text-2xl font-semibold tracking-[-0.04em]">{metric.value}</div>
@@ -59,7 +59,7 @@ export function ClientCommandCenter({ data }: { data: ClientDashboardData }) {
       </section>
 
       <section className="grid gap-4 xl:grid-cols-[minmax(0,1.55fr)_minmax(320px,0.9fr)]">
-        <Card className="rounded-3xl border-border bg-card shadow-none">
+        <Card className="border-border bg-card shadow-none">
           <CardHeader className="border-b border-border">
             <div className="flex items-center justify-between gap-3">
               <div>
@@ -77,19 +77,19 @@ export function ClientCommandCenter({ data }: { data: ClientDashboardData }) {
             </div>
           </CardHeader>
           <CardContent className="space-y-5 px-5 py-5">
-            <div className="rounded-2xl border border-border bg-background px-3 py-3">
+            <div className="rounded-md border border-border bg-background px-3 py-3">
               <PulseAreaChart recentCalls={data.recentCalls} />
             </div>
             <div className="grid gap-3 md:grid-cols-3">
-              <div className="rounded-2xl border border-border bg-background px-4 py-4">
+              <div className="rounded-md border border-border bg-background px-4 py-4">
                 <p className="text-xs uppercase tracking-[0.18em] text-muted-foreground">Lead recovery</p>
                 <p className="mt-2 text-xl font-semibold">{data.leadRecoveryRuns.filter((item) => item.status !== 'failed').length}</p>
               </div>
-              <div className="rounded-2xl border border-border bg-background px-4 py-4">
+              <div className="rounded-md border border-border bg-background px-4 py-4">
                 <p className="text-xs uppercase tracking-[0.18em] text-muted-foreground">Single-lead enrichments</p>
                 <p className="mt-2 text-xl font-semibold">{data.leadEnrichmentRuns.length}</p>
               </div>
-              <div className="rounded-2xl border border-border bg-background px-4 py-4">
+              <div className="rounded-md border border-border bg-background px-4 py-4">
                 <p className="text-xs uppercase tracking-[0.18em] text-muted-foreground">Playground sessions</p>
                 <p className="mt-2 text-xl font-semibold">{data.recentDemoSessions.length}</p>
               </div>
@@ -97,13 +97,13 @@ export function ClientCommandCenter({ data }: { data: ClientDashboardData }) {
           </CardContent>
         </Card>
 
-        <Card className="rounded-3xl border-border bg-card shadow-none">
+        <Card className="border-border bg-card shadow-none">
           <CardHeader className="border-b border-border">
             <CardTitle className="text-xl tracking-[-0.03em]">Guardrails</CardTitle>
             <CardDescription>What you can control directly, and what remains operator-protected.</CardDescription>
           </CardHeader>
           <CardContent className="space-y-3 px-5 py-5">
-            <div className="rounded-2xl border border-border bg-background px-4 py-4">
+            <div className="rounded-md border border-border bg-background px-4 py-4">
               <div className="flex items-center gap-2">
                 <ShieldCheck className="size-4 text-amber-200" />
                 <p className="font-medium">Editable now</p>
@@ -111,7 +111,7 @@ export function ClientCommandCenter({ data }: { data: ClientDashboardData }) {
               <p className="mt-2 text-sm leading-6 text-muted-foreground">Business context, tone, FAQ blocks, qualification fields, approved routing toggles, and test scenarios.</p>
             </div>
             {data.protectedBlocks.map((block) => (
-              <div key={block} className="rounded-2xl border border-border bg-background px-4 py-3 text-sm text-muted-foreground">
+              <div key={block} className="rounded-md border border-border bg-background px-4 py-3 text-sm text-muted-foreground">
                 {block}
               </div>
             ))}
@@ -130,7 +130,7 @@ export function ClientCommandCenter({ data }: { data: ClientDashboardData }) {
           />
           <div className="grid gap-4">
             {data.agents.map((agent) => (
-              <Card key={agent.id} className="rounded-3xl border-border bg-card shadow-none">
+              <Card key={agent.id} className="border-border bg-card shadow-none">
                 <CardContent className="px-5 py-5">
                   <div className="flex items-start justify-between gap-3">
                     <div>
@@ -145,15 +145,15 @@ export function ClientCommandCenter({ data }: { data: ClientDashboardData }) {
                     </Badge>
                   </div>
                   <div className="mt-4 grid gap-3 md:grid-cols-3">
-                    <div className="rounded-2xl border border-border bg-background px-4 py-3 text-sm">
+                    <div className="rounded-md border border-border bg-background px-4 py-3 text-sm">
                       <span className="text-xs uppercase tracking-[0.18em] text-muted-foreground">Voice</span>
                       <p className="mt-1 font-medium">{agent.voice}</p>
                     </div>
-                    <div className="rounded-2xl border border-border bg-background px-4 py-3 text-sm">
+                    <div className="rounded-md border border-border bg-background px-4 py-3 text-sm">
                       <span className="text-xs uppercase tracking-[0.18em] text-muted-foreground">Model</span>
                       <p className="mt-1 font-medium">{agent.model}</p>
                     </div>
-                    <div className="rounded-2xl border border-border bg-background px-4 py-3 text-sm">
+                    <div className="rounded-md border border-border bg-background px-4 py-3 text-sm">
                       <span className="text-xs uppercase tracking-[0.18em] text-muted-foreground">Last sync</span>
                       <p className="mt-1 font-medium">{agent.lastSyncedAt}</p>
                     </div>
@@ -164,7 +164,7 @@ export function ClientCommandCenter({ data }: { data: ClientDashboardData }) {
           </div>
         </div>
 
-        <Card className="rounded-3xl border-border bg-card shadow-none">
+        <Card className="border-border bg-card shadow-none">
           <CardHeader className="border-b border-border">
             <div className="flex items-center gap-2">
               <Sparkles className="size-4 text-amber-200" />
@@ -175,7 +175,7 @@ export function ClientCommandCenter({ data }: { data: ClientDashboardData }) {
             <p className="text-sm leading-6 text-muted-foreground">{data.currentPack.positioning}</p>
             <div className="grid gap-3">
               {data.currentPack.leadSchema.requiredFields.map((field) => (
-                <div key={field.key} className="rounded-2xl border border-border bg-background px-4 py-3">
+                <div key={field.key} className="rounded-md border border-border bg-background px-4 py-3">
                   <p className="font-medium">{field.label}</p>
                   <p className="mt-1 text-xs leading-5 text-muted-foreground">{field.description}</p>
                 </div>
@@ -193,7 +193,7 @@ export function ClientCommandCenter({ data }: { data: ClientDashboardData }) {
           actionHref="/client/leads"
           actionLabel="Open lead pipeline"
         />
-        <Card className="rounded-3xl border-border bg-card shadow-none">
+        <Card className="border-border bg-card shadow-none">
           <CardContent className="px-0 py-0">
             <TableWrap>
               <Table>
@@ -243,15 +243,15 @@ export function ClientCommandCenter({ data }: { data: ClientDashboardData }) {
             actionHref="/client/calls"
             actionLabel="Open call explorer"
           />
-          <Card className="rounded-3xl border-border bg-card shadow-none">
-            <CardContent className="rounded-2xl px-4 py-4">
+          <Card className="border-border bg-card shadow-none">
+            <CardContent className="px-4 py-4">
               <OutcomeBarChart recentCalls={data.recentCalls} />
             </CardContent>
           </Card>
         </div>
         <div className="space-y-4">
           {data.recentCalls.slice(0, 4).map((call) => (
-            <Card key={call.id} className="rounded-3xl border-border bg-card shadow-none">
+            <Card key={call.id} className="border-border bg-card shadow-none">
               <CardContent className="px-5 py-5">
                 <div className="flex items-center justify-between gap-3">
                   <div>
@@ -275,14 +275,14 @@ export function ClientCommandCenter({ data }: { data: ClientDashboardData }) {
           description="Run a guided test call to yourself, validate the current pack, and use replayable results to request revisions with proof."
         />
         <div className="grid gap-4 xl:grid-cols-[minmax(0,1.1fr)_minmax(320px,0.9fr)]">
-          <Card className="rounded-3xl border-border bg-card shadow-none">
+          <Card className="border-border bg-card shadow-none">
             <CardHeader className="border-b border-border">
               <CardTitle className="text-xl tracking-[-0.03em]">Scenario presets</CardTitle>
               <CardDescription>Each preset is aligned to the active ICP pack and exposes the signals the team expects to capture.</CardDescription>
             </CardHeader>
             <CardContent className="grid gap-3 px-5 py-5">
               {data.playgroundScenarios.slice(0, 4).map((scenario) => (
-                <div key={scenario.id} className="rounded-2xl border border-border bg-background px-4 py-4">
+                <div key={scenario.id} className="rounded-md border border-border bg-background px-4 py-4">
                   <div className="flex items-center justify-between gap-3">
                     <div>
                       <p className="font-medium">{scenario.label}</p>
@@ -295,7 +295,7 @@ export function ClientCommandCenter({ data }: { data: ClientDashboardData }) {
             </CardContent>
           </Card>
 
-          <Card className="rounded-3xl border-border bg-card shadow-none">
+          <Card className="border-border bg-card shadow-none">
             <CardHeader className="border-b border-border">
               <div className="flex items-center gap-2">
                 <FlaskConical className="size-4 text-amber-200" />
@@ -304,7 +304,7 @@ export function ClientCommandCenter({ data }: { data: ClientDashboardData }) {
             </CardHeader>
             <CardContent className="space-y-3 px-5 py-5">
               {data.recentDemoSessions.map((session) => (
-                <div key={session.id} className="rounded-2xl border border-border bg-background px-4 py-4">
+                <div key={session.id} className="rounded-md border border-border bg-background px-4 py-4">
                   <div className="flex items-center justify-between gap-3">
                     <div>
                       <p className="font-medium">{session.scenarioLabel}</p>

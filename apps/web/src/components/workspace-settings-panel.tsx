@@ -78,13 +78,11 @@ function SettingKpi({
   description: string;
 }) {
   return (
-    <Card className="border border-border/80 bg-card/80 py-0 shadow-none">
-      <CardContent className="space-y-1 px-4 py-4">
-        <p className="text-[0.68rem] uppercase tracking-[0.18em] text-muted-foreground">{label}</p>
-        <div className="text-2xl font-semibold tracking-[-0.04em] text-foreground">{value}</div>
-        <p className="text-xs leading-5 text-muted-foreground">{description}</p>
-      </CardContent>
-    </Card>
+    <div className="space-y-1 px-4 py-4">
+      <p className="text-[0.68rem] uppercase tracking-[0.18em] text-muted-foreground">{label}</p>
+      <div className="text-xl font-semibold tracking-[-0.04em] text-foreground">{value}</div>
+      <p className="text-xs leading-5 text-muted-foreground">{description}</p>
+    </div>
   );
 }
 
@@ -147,19 +145,21 @@ export function WorkspaceSettingsPanel({
       : 'Managed Vapi keeps onboarding simple and rolls usage under BishopTech operations.';
 
   return (
-    <section className="space-y-4">
-      <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
-        <SettingKpi label="Workspace" value={organizationName} description={organizationSlug} />
-        <SettingKpi label="Plan" value={planName ?? 'Managed'} description="Commercial plan attached to this workspace." />
-        <SettingKpi label="Timezone" value={timezone} description="Primary operating timezone used for scheduling and timestamps." />
-        <SettingKpi
-          label="Vapi mode"
-          value={mode === 'byo' ? 'BYO' : 'Managed'}
-          description={credentialMode === 'byo' ? 'Customer key currently attached.' : 'Platform-managed credential in use.'}
-        />
-      </div>
+    <section className="space-y-6">
+      <Card className="border-border/80 bg-card/80 py-0 shadow-none">
+        <CardContent className="grid divide-y divide-border/70 px-0 py-0 md:grid-cols-2 md:divide-x md:divide-y-0 xl:grid-cols-4">
+          <SettingKpi label="Workspace" value={organizationName} description={organizationSlug} />
+          <SettingKpi label="Plan" value={planName ?? 'Managed'} description="Commercial plan attached to this workspace." />
+          <SettingKpi label="Timezone" value={timezone} description="Primary operating timezone used for scheduling and timestamps." />
+          <SettingKpi
+            label="Vapi mode"
+            value={mode === 'byo' ? 'BYO' : 'Managed'}
+            description={credentialMode === 'byo' ? 'Customer key currently attached.' : 'Platform-managed credential in use.'}
+          />
+        </CardContent>
+      </Card>
 
-      <div className="grid gap-4 xl:grid-cols-[minmax(0,1.05fr)_360px]">
+      <div className="grid gap-4 xl:grid-cols-[minmax(0,1.15fr)_340px]">
         <Card className="border border-border/80 bg-card/85 py-0 shadow-none">
           <CardHeader className="gap-4 border-b border-border/70 pb-5">
             <div className="space-y-2">
@@ -177,7 +177,7 @@ export function WorkspaceSettingsPanel({
               </div>
             </div>
           </CardHeader>
-          <CardContent className="space-y-4 px-4 py-4">
+          <CardContent className="space-y-5 px-4 py-4">
             {notice ? (
               <Alert className="border-emerald-500/20 bg-emerald-500/6 text-emerald-100">
                 <AlertTitle>Workspace updated</AlertTitle>
@@ -195,7 +195,7 @@ export function WorkspaceSettingsPanel({
               <label className="space-y-2">
                 <FieldLabel>Account mode</FieldLabel>
                 <Select value={mode} disabled={!canEdit || isPending} onValueChange={(value) => setMode(value as VapiAccountMode)}>
-                  <SelectTrigger className="h-10 w-full rounded-lg border-border/80 bg-background">
+                  <SelectTrigger className="h-10 w-full border-border/80 bg-background">
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
@@ -207,17 +207,17 @@ export function WorkspaceSettingsPanel({
 
               <label className="space-y-2">
                 <FieldLabel>Managed label</FieldLabel>
-                <Input value={vapiManagedLabel ?? 'Managed by BishopTech'} disabled readOnly className="h-10 rounded-lg border-border/80 bg-background" />
+                <Input value={vapiManagedLabel ?? 'Managed by BishopTech'} disabled readOnly className="h-10 border-border/80 bg-background" />
               </label>
 
               <label className="space-y-2">
                 <FieldLabel>Current key</FieldLabel>
-                <Input value={vapiApiKeyLabel ?? 'No BYO key connected'} disabled readOnly className="h-10 rounded-lg border-border/80 bg-background" />
+                <Input value={vapiApiKeyLabel ?? 'No BYO key connected'} disabled readOnly className="h-10 border-border/80 bg-background" />
               </label>
 
               <label className="space-y-2">
                 <FieldLabel>Stored key id</FieldLabel>
-                <Input value={storedApiKeyId ?? 'No stored key'} disabled readOnly className="h-10 rounded-lg border-border/80 bg-background" />
+                <Input value={storedApiKeyId ?? 'No stored key'} disabled readOnly className="h-10 border-border/80 bg-background" />
               </label>
 
               <label className="space-y-2 md:col-span-2">
@@ -227,7 +227,7 @@ export function WorkspaceSettingsPanel({
                   placeholder={`${organizationName} Vapi key`}
                   disabled={!canEdit || isPending || mode !== 'byo'}
                   onChange={(event) => setApiKeyLabel(event.target.value)}
-                  className="h-10 rounded-lg border-border/80 bg-background"
+                  className="h-10 border-border/80 bg-background"
                 />
               </label>
 
@@ -240,21 +240,39 @@ export function WorkspaceSettingsPanel({
                     disabled={!canEdit || isPending}
                     type="password"
                     onChange={(event) => setApiKey(event.target.value)}
-                    className="h-10 rounded-lg border-border/80 bg-background"
+                    className="h-10 border-border/80 bg-background"
                   />
                 </label>
               ) : null}
             </div>
 
+            <div className="grid gap-0 rounded-md border border-border/80 bg-background/40">
+              <div className="grid gap-2 border-b border-border/80 px-4 py-4 md:grid-cols-[180px_minmax(0,1fr)] md:items-start">
+                <div>
+                  <p className="text-sm font-medium text-foreground">Mode summary</p>
+                  <p className="mt-1 text-xs leading-5 text-muted-foreground">How this workspace is currently operating.</p>
+                </div>
+                <p className="text-sm leading-6 text-muted-foreground">{ownershipCopy}</p>
+              </div>
+              <div className="grid gap-2 px-4 py-4 md:grid-cols-[180px_minmax(0,1fr)] md:items-start">
+                <div>
+                  <p className="text-sm font-medium text-foreground">Assistant control</p>
+                  <p className="mt-1 text-xs leading-5 text-muted-foreground">What stays stable after the account mode changes.</p>
+                </div>
+                <p className="text-sm leading-6 text-muted-foreground">
+                  Agents still support tone, tools, knowledge base, routing, and publish or sync control from the editor.
+                </p>
+              </div>
+            </div>
+
             <div className="flex flex-wrap items-center gap-3">
-              <Button type="button" className="rounded-md" disabled={!canEdit || isPending} onClick={handleSave}>
+              <Button type="button" disabled={!canEdit || isPending} onClick={handleSave}>
                 <ShieldCheck data-icon="inline-start" />
                 {isPending ? 'Saving...' : 'Save settings'}
               </Button>
               <Button
                 type="button"
                 variant="outline"
-                className="rounded-md"
                 disabled={isPending}
                 onClick={() => {
                   setMode(accountMode);
@@ -282,22 +300,24 @@ export function WorkspaceSettingsPanel({
           <Card className="border border-border/80 bg-card/80 py-0 shadow-none">
             <CardHeader className="border-b border-border/70 pb-4">
               <div className="space-y-2">
-                <p className="text-[0.68rem] uppercase tracking-[0.22em] text-muted-foreground">Commercial model</p>
+                <p className="text-[0.68rem] uppercase tracking-[0.22em] text-muted-foreground">Workspace guide</p>
                 <CardTitle>Managed vs BYO</CardTitle>
               </div>
             </CardHeader>
-            <CardContent className="space-y-3 px-4 py-4 text-sm leading-6 text-muted-foreground">
-              <div className="rounded-lg border border-border/70 bg-muted/20 px-3 py-3">
-                <p className="font-medium text-foreground">Managed Vapi</p>
-                <p>Fastest onboarding path. BishopTech carries the platform overhead and standardizes the stack.</p>
-              </div>
-              <div className="rounded-lg border border-border/70 bg-muted/20 px-3 py-3">
-                <p className="font-medium text-foreground">BYO Vapi</p>
-                <p>Lower monthly pricing. The customer controls the Vapi account, usage, and billing relationship.</p>
-              </div>
-              <div className="rounded-lg border border-border/70 bg-muted/20 px-3 py-3">
-                <p className="font-medium text-foreground">Switching later</p>
-                <p>Mode changes stay inside the platform, so agent editing and publish/sync behavior stays consistent.</p>
+            <CardContent className="px-0 py-0 text-sm leading-6 text-muted-foreground">
+              <div className="divide-y divide-border/70">
+                <div className="px-4 py-4">
+                  <p className="font-medium text-foreground">Managed Vapi</p>
+                  <p className="mt-1">Fastest onboarding path. BishopTech carries the platform overhead and standardizes the stack.</p>
+                </div>
+                <div className="px-4 py-4">
+                  <p className="font-medium text-foreground">BYO Vapi</p>
+                  <p className="mt-1">Lower monthly pricing. The customer controls the Vapi account, usage, and billing relationship.</p>
+                </div>
+                <div className="px-4 py-4">
+                  <p className="font-medium text-foreground">Switching later</p>
+                  <p className="mt-1">Mode changes stay inside the platform, so agent editing and publish or sync behavior stays consistent.</p>
+                </div>
               </div>
             </CardContent>
           </Card>
@@ -315,23 +335,25 @@ export function WorkspaceSettingsPanel({
                 </Badge>
               </CardAction>
             </CardHeader>
-            <CardContent className="space-y-3 px-4 py-4">
-              <div className="flex items-start gap-3 rounded-lg border border-border/70 bg-muted/20 px-3 py-3">
-                <KeyRound className="mt-0.5 size-4 text-muted-foreground" />
-                <div className="space-y-1">
-                  <p className="text-sm font-medium text-foreground">Credential mode</p>
-                  <p className="text-sm leading-6 text-muted-foreground">
-                    {credentialMode === 'byo' ? 'Customer-managed Vapi key attached.' : 'Platform-managed Vapi key in use.'}
-                  </p>
+            <CardContent className="px-0 py-0">
+              <div className="divide-y divide-border/70">
+                <div className="flex items-start gap-3 px-4 py-4">
+                  <KeyRound className="mt-0.5 size-4 text-muted-foreground" />
+                  <div className="space-y-1">
+                    <p className="text-sm font-medium text-foreground">Credential mode</p>
+                    <p className="text-sm leading-6 text-muted-foreground">
+                      {credentialMode === 'byo' ? 'Customer-managed Vapi key attached.' : 'Platform-managed Vapi key in use.'}
+                    </p>
+                  </div>
                 </div>
-              </div>
-              <div className="flex items-start gap-3 rounded-lg border border-border/70 bg-muted/20 px-3 py-3">
-                <ShieldCheck className="mt-0.5 size-4 text-muted-foreground" />
-                <div className="space-y-1">
-                  <p className="text-sm font-medium text-foreground">Assistant control</p>
-                  <p className="text-sm leading-6 text-muted-foreground">
-                    Agents still support tone, tools, knowledge base, routing, and publish/sync control from the editor.
-                  </p>
+                <div className="flex items-start gap-3 px-4 py-4">
+                  <ShieldCheck className="mt-0.5 size-4 text-muted-foreground" />
+                  <div className="space-y-1">
+                    <p className="text-sm font-medium text-foreground">Assistant control</p>
+                    <p className="text-sm leading-6 text-muted-foreground">
+                      Agents still support tone, tools, knowledge base, routing, and publish or sync control from the editor.
+                    </p>
+                  </div>
                 </div>
               </div>
             </CardContent>

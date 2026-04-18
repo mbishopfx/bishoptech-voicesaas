@@ -114,7 +114,7 @@ function StackList({
       {items.map((item, index) => (
         <div
           key={`${item.title}-${index}`}
-          className="flex items-start justify-between gap-3 rounded-lg border border-border/80 bg-muted/20 px-3 py-3"
+          className="flex items-start justify-between gap-3 border border-border/80 bg-muted/20 px-3 py-3"
         >
           <div className="min-w-0 space-y-1">
             <div className="truncate text-sm font-medium text-foreground">{item.title}</div>
@@ -361,7 +361,7 @@ export function ClientWorkspaceSummarySection({
           </div>
         ))}
         {showSettingsLink ? (
-          <Button asChild variant="outline" size="sm" className="mt-2 w-full justify-between rounded-md border-border/80 bg-transparent">
+          <Button asChild variant="outline" size="sm" className="mt-2 w-full justify-between border-border/80 bg-transparent">
             <Link href="/client/settings">
               Workspace settings
               <Settings2 data-icon="inline-end" />

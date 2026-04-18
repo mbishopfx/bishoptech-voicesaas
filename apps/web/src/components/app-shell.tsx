@@ -121,14 +121,14 @@ export function AppShell({
   return (
     <div className="min-h-screen bg-background text-foreground">
       <div className="mx-auto grid min-h-screen max-w-[1720px] grid-cols-1 xl:grid-cols-[260px_minmax(0,1fr)_320px]">
-        <aside className="border-b border-border bg-[#12110f] px-5 py-5 xl:border-b-0 xl:border-r">
+        <aside className="border-b border-border bg-[#13110f] px-5 py-5 xl:border-b-0 xl:border-r">
           <div className="space-y-5 xl:sticky xl:top-0 xl:py-2">
             <Link
               href={(current === 'admin' ? '/admin' : current === 'client' ? '/client' : '/help') as Route}
-              className="block rounded-2xl border border-border bg-card"
+              className="block border-b border-border pb-4"
             >
               <div className="flex items-start gap-3 px-4 py-4">
-                <div className="flex size-11 items-center justify-center rounded-xl border border-border bg-background">
+                <div className="flex size-11 items-center justify-center rounded-md border border-border bg-background">
                   <ShieldCheck className="size-4 text-amber-200" />
                 </div>
                 <div className="space-y-1">
@@ -139,33 +139,31 @@ export function AppShell({
               </div>
             </Link>
 
-            <Card className="rounded-2xl border-border bg-card shadow-none">
-              <CardContent className="space-y-3 px-4 py-4">
-                <div className="flex items-center justify-between gap-3">
-                  <div>
-                    <p className="text-sm font-semibold">{viewerName(viewer)}</p>
-                    <p className="text-xs text-muted-foreground">{viewer.email}</p>
-                  </div>
-                  <div className="flex size-10 items-center justify-center rounded-xl border border-border bg-background text-sm font-semibold">
-                    {initials(viewer)}
-                  </div>
+            <div className="border-b border-border pb-5">
+              <div className="flex items-center justify-between gap-3 px-1">
+                <div>
+                  <p className="text-sm font-semibold">{viewerName(viewer)}</p>
+                  <p className="text-xs text-muted-foreground">{viewer.email}</p>
                 </div>
-                <div className="flex flex-wrap items-center gap-2">
-                  <Badge tone={viewer.isPlatformAdmin ? 'cyan' : 'muted'}>{viewerRole(viewer)}</Badge>
-                  <Badge tone={availability.every((item) => item.ready) ? 'success' : 'warning'}>{readiness} ready</Badge>
+                <div className="flex size-9 items-center justify-center rounded-md border border-border bg-background text-sm font-semibold">
+                  {initials(viewer)}
                 </div>
-              </CardContent>
-            </Card>
+              </div>
+              <div className="mt-3 flex flex-wrap items-center gap-2 px-1">
+                <Badge tone={viewer.isPlatformAdmin ? 'cyan' : 'muted'}>{viewerRole(viewer)}</Badge>
+                <Badge tone={availability.every((item) => item.ready) ? 'success' : 'warning'}>{readiness} ready</Badge>
+              </div>
+            </div>
 
             <nav className="space-y-1">
               {nav.map((item) => {
                 const Icon = item.icon;
                 const active = activeNav === item.key;
                 const className = cn(
-                  'flex items-center gap-3 rounded-xl border px-3 py-3 text-sm transition-colors',
+                  'flex items-center gap-3 rounded-md border px-3 py-2.5 text-sm transition-colors',
                   active
-                    ? 'border-amber-500/25 bg-amber-500/10 text-foreground'
-                    : 'border-transparent text-muted-foreground hover:border-border hover:bg-card hover:text-foreground',
+                    ? 'border-border bg-card text-foreground'
+                    : 'border-transparent text-muted-foreground hover:bg-card hover:text-foreground',
                 );
 
                 return item.href.startsWith('#') ? (
@@ -183,14 +181,14 @@ export function AppShell({
             </nav>
 
             <div className="grid gap-2 sm:grid-cols-2 xl:grid-cols-1">
-              <Button asChild variant="outline" className="justify-start rounded-xl">
+              <Button asChild variant="outline" className="justify-start">
                 <Link href="/help">
                   <BookOpen className="size-4" />
                   Playbooks
                 </Link>
               </Button>
               <form action={logoutAction}>
-                <Button type="submit" variant="outline" className="w-full justify-start rounded-xl">
+                <Button type="submit" variant="outline" className="w-full justify-start">
                   <LogOut className="size-4" />
                   Logout
                 </Button>
@@ -200,7 +198,7 @@ export function AppShell({
         </aside>
 
         <main className="min-w-0 border-b border-border xl:border-b-0 xl:border-r">
-          <header className="sticky top-0 z-20 border-b border-border bg-background/95 px-5 py-4 backdrop-blur">
+          <header className="sticky top-0 z-20 border-b border-border bg-background/95 px-5 py-4">
             <div className="flex flex-col gap-4 xl:flex-row xl:items-end xl:justify-between">
               <div className="space-y-2">
                 <div className="flex flex-wrap items-center gap-2">
@@ -230,7 +228,7 @@ export function AppShell({
                     readOnly
                     value=""
                     placeholder="Search calls, leads, revisions"
-                    className="h-10 rounded-xl bg-card pl-9"
+                    className="h-9 bg-card pl-9"
                   />
                 </div>
                 {actions ? <div className="flex flex-wrap items-center gap-2">{actions}</div> : null}
@@ -238,40 +236,42 @@ export function AppShell({
             </div>
           </header>
 
-          <div className="space-y-6 px-5 py-5">{children}</div>
+          <div className="space-y-8 px-5 py-5">{children}</div>
         </main>
 
         <aside className="hidden bg-[#171513] px-5 py-5 xl:block">
           <div className="sticky top-0 space-y-4 py-2">
-            <Card className="rounded-2xl border-border bg-card shadow-none">
+            <Card className="border-border bg-card shadow-none">
               <CardContent className="space-y-3 px-4 py-4">
                 <div>
                   <p className="text-[0.68rem] uppercase tracking-[0.22em] text-muted-foreground">Utility Rail</p>
                   <h3 className="mt-2 text-base font-semibold tracking-[-0.03em]">Ops signals</h3>
                 </div>
-                {availability.map((item) => (
-                  <div key={item.label} className="rounded-xl border border-border bg-background px-3 py-3">
-                    <div className="flex items-center justify-between gap-3">
-                      <span className="text-sm font-medium">{item.label}</span>
-                      <span className={cn('size-2 rounded-full', item.ready ? 'bg-emerald-400' : 'bg-amber-400')} />
+                <div className="divide-y divide-border rounded-md border border-border bg-background">
+                  {availability.map((item) => (
+                    <div key={item.label} className="px-3 py-3">
+                      <div className="flex items-center justify-between gap-3">
+                        <span className="text-sm font-medium">{item.label}</span>
+                        <span className={cn('size-2 rounded-full', item.ready ? 'bg-emerald-400' : 'bg-amber-400')} />
+                      </div>
+                      <p className="mt-2 text-xs leading-5 text-muted-foreground">{item.detail}</p>
                     </div>
-                    <p className="mt-2 text-xs leading-5 text-muted-foreground">{item.detail}</p>
-                  </div>
-                ))}
+                  ))}
+                </div>
               </CardContent>
             </Card>
 
-            <Card className="rounded-2xl border-border bg-card shadow-none">
+            <Card className="border-border bg-card shadow-none">
               <CardContent className="space-y-3 px-4 py-4">
                 <div className="flex items-center gap-2">
                   <RadioTower className="size-4 text-amber-200" />
                   <span className="text-sm font-semibold">Command rules</span>
                 </div>
-                <ul className="space-y-2 text-sm text-muted-foreground">
-                  <li>Managed demos should reserve a free number before any live test call.</li>
-                  <li>Client edits stay inside approved business/tone/FAQ blocks only.</li>
-                  <li>Any failed structured capture must flow into transcript recovery or QA review.</li>
-                </ul>
+                <div className="divide-y divide-border rounded-md border border-border bg-background text-sm text-muted-foreground">
+                  <p className="px-3 py-3">Managed demos should reserve a free number before any live test call.</p>
+                  <p className="px-3 py-3">Client edits stay inside approved business, tone, and FAQ blocks only.</p>
+                  <p className="px-3 py-3">Any failed structured capture must flow into transcript recovery or QA review.</p>
+                </div>
               </CardContent>
             </Card>
           </div>
