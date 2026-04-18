@@ -33,12 +33,12 @@ function buildPayload(name: string, role: AgentRole, systemPrompt: string): Vapi
   const businessName = name
     .replace(/ Inbound Concierge$/, '')
     .replace(/ Outbound Campaign Agent$/, '')
-    .replace(/ Specialist Handoff Agent$/, '');
+    .replace(/ Campaign Broadcast Agent$/, '');
 
   return {
     name,
     firstMessage:
-      role === 'outbound'
+      role === 'outbound' || role === 'campaign'
         ? `Hi, this is the outreach assistant for ${businessName}. I wanted to quickly follow up with you today.`
         : `Thanks for calling ${businessName}. How can I help today?`,
     model: {
@@ -71,7 +71,7 @@ export function buildClientAssistantDefinitions(input: ClientStackInput): BuiltA
   const names = {
     inbound: `${input.businessName} Inbound Concierge`,
     outbound: `${input.businessName} Outbound Campaign Agent`,
-    specialist: `${input.businessName} Specialist Handoff Agent`,
+    campaign: `${input.businessName} Campaign Broadcast Agent`,
   } as const;
 
   const inboundPrompt = [
@@ -84,17 +84,18 @@ export function buildClientAssistantDefinitions(input: ClientStackInput): BuiltA
 
   const outboundPrompt = [
     context,
-    'Role: outbound campaign agent.',
-    'This assistant is used for blast campaigns, follow-up calls, reminders, and reactivation lists.',
-    'Keep the opening concise, identify the business immediately, and state the reason for the call clearly.',
-    'Collect opt-out and callback intent without sounding robotic.',
+    'Role: outbound follow-up agent.',
+    'This assistant is used for warm follow-ups, reminders, reactivation callbacks, and one-to-one outbound touchpoints.',
+    'Keep the opening concise, identify the business immediately, and confirm the purpose of the call early.',
+    'Collect callback intent, booking intent, and opt-out intent without sounding robotic.',
   ].join('\n\n');
 
-  const specialistPrompt = [
+  const campaignPrompt = [
     context,
-    'Role: specialist AI handoff agent.',
-    'Take over when the inbound assistant hits a complex objection, advanced service question, or high-intent sales conversation.',
-    'Use a more expert tone and deeper scoped knowledge than the inbound receptionist assistant.',
+    'Role: campaign broadcast agent.',
+    'This assistant powers list-based campaigns, promotions, reminders, reactivation, and script-driven outbound blasts.',
+    'The campaign script passed at launch should override the opening and CTA structure for each blast.',
+    'Keep responses short, compliant, and outcome-focused.',
   ].join('\n\n');
 
   return [
@@ -113,11 +114,11 @@ export function buildClientAssistantDefinitions(input: ClientStackInput): BuiltA
       payload: buildPayload(names.outbound, 'outbound', outboundPrompt),
     },
     {
-      role: 'specialist',
-      agentType: 'specialist',
-      name: names.specialist,
-      purpose: 'AI handoff target for advanced objections or higher-intent conversations.',
-      payload: buildPayload(names.specialist, 'specialist', specialistPrompt),
+      role: 'campaign',
+      agentType: 'campaign',
+      name: names.campaign,
+      purpose: 'Dedicated assistant ID for script-driven blast campaigns and outbound list sends.',
+      payload: buildPayload(names.campaign, 'campaign', campaignPrompt),
     },
   ];
 }

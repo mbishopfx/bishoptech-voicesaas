@@ -10,7 +10,7 @@ import { appConfig } from '@/lib/app-config';
 import { formatRelativeTime } from '@/lib/format';
 import { getSupabaseAdminClient } from '@/lib/supabase-admin';
 import type { DashboardAgent, OnboardingResult } from '@/lib/types';
-import { createAssistant, createSquad } from '@/lib/vapi';
+import { createAssistant } from '@/lib/vapi';
 import { resolveVapiCredentialsForOrganization } from '@/lib/vapi-credentials';
 
 export const runtime = 'nodejs';
@@ -216,22 +216,6 @@ export async function POST(request: Request) {
       });
     }
 
-    let squadId: string | undefined;
-
-    if (payload.orchestrationMode === 'multi') {
-      const inbound = createdAssistants.find((assistant) => assistant.role === 'inbound');
-      const specialist = createdAssistants.find((assistant) => assistant.role === 'specialist');
-
-      if (inbound && specialist) {
-        const squad = await createSquad({
-          name: `${payload.businessName} Routing Squad`,
-          members: [{ assistantId: inbound.vapiAssistantId }, { assistantId: specialist.vapiAssistantId }],
-        }, `${organizationSlug}-squad-${payload.contactEmail}`, credentials.apiKey);
-
-        squadId = squad.id;
-      }
-    }
-
     const agentInsert = await supabase
       .from('agents')
       .insert(
@@ -244,7 +228,6 @@ export async function POST(request: Request) {
           created_by: viewer.id,
           config: {
             ...assistant.config,
-            squadId,
           },
         })),
       )

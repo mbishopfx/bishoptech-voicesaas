@@ -1,6 +1,6 @@
 import { AppShell } from '@/components/app-shell';
 import { BlastCampaignStudio } from '@/components/blast-campaign-studio';
-import { ClientCampaignsSection } from '@/components/client-dashboard-sections';
+import { ClientCampaignsSection, ClientWorkspaceSummarySection } from '@/components/client-dashboard-sections';
 import { requireViewer } from '@/lib/auth';
 import { getClientDashboardData } from '@/lib/dashboard-data';
 
@@ -17,10 +17,17 @@ export default async function ClientCampaignsPage() {
       activeNav="campaigns"
       headerMode="compact"
       eyebrow="Campaigns"
-      title="Campaigns"
+      title="Campaign assistant"
     >
-      <ClientCampaignsSection campaigns={data.campaigns} />
-      <BlastCampaignStudio organizationId={data.organizationId} agents={data.agents} />
+      <div className="grid gap-6 xl:grid-cols-[minmax(0,1.6fr)_320px]">
+        <div className="space-y-6">
+          <ClientCampaignsSection campaigns={data.campaigns} />
+          <BlastCampaignStudio organizationId={data.organizationId} agents={data.agents} />
+        </div>
+        <aside className="space-y-6">
+          <ClientWorkspaceSummarySection data={data} />
+        </aside>
+      </div>
     </AppShell>
   );
 }

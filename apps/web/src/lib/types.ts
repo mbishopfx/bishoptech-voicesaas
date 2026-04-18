@@ -14,7 +14,7 @@ import type {
 } from '@/lib/voiceops-contracts';
 
 export type MetricTone = 'neutral' | 'positive' | 'warning';
-export type AgentRole = 'inbound' | 'outbound' | 'specialist';
+export type AgentRole = 'inbound' | 'outbound' | 'campaign' | 'specialist';
 export type OrchestrationMode = 'inbound' | 'outbound' | 'multi';
 export type OrganizationRole = 'owner' | 'admin' | 'manager' | 'agent' | 'viewer';
 

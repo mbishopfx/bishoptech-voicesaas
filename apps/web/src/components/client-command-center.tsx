@@ -1,4 +1,4 @@
-import { Bot, FlaskConical, ShieldCheck, Sparkles } from 'lucide-react';
+import { Bot, FileAudio2, PhoneCall } from 'lucide-react';
 
 import { OutcomeBarChart, PulseAreaChart } from '@/components/dashboard-charts';
 import { Badge } from '@/components/ui/badge';
@@ -8,9 +8,32 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import type { ClientDashboardData } from '@/lib/types';
 
 function MetricCards({ data }: { data: ClientDashboardData }) {
+  const cards = [
+    {
+      label: 'Lead captures',
+      value: String(data.leads.length),
+      delta: data.leads[0] ? `Last updated ${data.leads[0].createdAt}` : 'No captured leads',
+    },
+    {
+      label: 'Assistants',
+      value: String(data.agents.length),
+      delta: `${data.agents.filter((agent) => agent.vapiAssistantId).length} provisioned IDs`,
+    },
+    {
+      label: 'Call logs',
+      value: String(data.recentCalls.length),
+      delta: data.recentCalls[0] ? `Last call ${data.recentCalls[0].createdAt}` : 'No recent calls',
+    },
+    {
+      label: 'Campaigns',
+      value: String(data.campaigns.length),
+      delta: `${data.campaigns.filter((campaign) => campaign.status === 'active').length} active`,
+    },
+  ];
+
   return (
     <section className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
-      {data.metrics.map((metric) => (
+      {cards.map((metric) => (
         <Card key={metric.label}>
           <CardHeader className="pb-2">
             <CardDescription className="text-[0.68rem] uppercase tracking-[0.18em]">{metric.label}</CardDescription>
@@ -48,8 +71,7 @@ function PanelList({
 }
 
 export function ClientCommandCenter({ data }: { data: ClientDashboardData }) {
-  const recoveredLeadCount = data.leadRecoveryRuns.filter((item) => item.status !== 'failed').length;
-  const latestAgent = data.agents[0];
+  const assistantRows = ['inbound', 'outbound', 'campaign'].map((role) => data.agents.find((agent) => agent.role === role));
 
   return (
     <div className="space-y-6">
@@ -58,48 +80,35 @@ export function ClientCommandCenter({ data }: { data: ClientDashboardData }) {
       <Tabs defaultValue="overview" className="space-y-4">
         <TabsList variant="line">
           <TabsTrigger value="overview">Overview</TabsTrigger>
-          <TabsTrigger value="studio">Agent Studio</TabsTrigger>
-          <TabsTrigger value="pipeline">Lead Pipeline</TabsTrigger>
-          <TabsTrigger value="calls">Call Explorer</TabsTrigger>
-          <TabsTrigger value="playground">Playground</TabsTrigger>
+          <TabsTrigger value="assistants">Assistants</TabsTrigger>
+          <TabsTrigger value="leads">Lead captures</TabsTrigger>
+          <TabsTrigger value="logs">Logs</TabsTrigger>
         </TabsList>
 
         <TabsContent value="overview" className="space-y-4">
           <div className="grid gap-4 xl:grid-cols-[minmax(0,1.9fr)_360px]">
             <Card>
               <CardHeader className="border-b">
-                <div className="flex flex-wrap items-start justify-between gap-3">
-                  <div>
-                    <CardTitle>{data.organizationName}</CardTitle>
-                    <CardDescription>
-                      Pipeline health, recovered calls, and operator-controlled assistant status in one client-facing workspace.
-                    </CardDescription>
-                  </div>
-                  <div className="flex flex-wrap gap-2">
-                    <Badge tone={data.vapiAccountMode === 'byo' ? 'warning' : 'success'}>
-                      {data.vapiAccountMode === 'byo' ? 'BYO Vapi' : 'Managed Vapi'}
-                    </Badge>
-                    <Badge tone="cyan">{data.currentPack.label}</Badge>
-                  </div>
-                </div>
+                <CardTitle>{data.organizationName}</CardTitle>
+                <CardDescription>Assistants, leads, calls, and campaign status.</CardDescription>
               </CardHeader>
               <CardContent className="space-y-4">
                 <PulseAreaChart recentCalls={data.recentCalls} />
                 <div className="grid gap-4 md:grid-cols-3">
                   <div>
-                    <p className="text-xs uppercase tracking-[0.18em] text-muted-foreground">Lead recovery</p>
-                    <p className="mt-2 text-2xl font-semibold">{recoveredLeadCount}</p>
-                    <p className="text-sm text-muted-foreground">Structured fallback runs recorded</p>
+                    <p className="text-xs uppercase tracking-[0.18em] text-muted-foreground">Mode</p>
+                    <p className="mt-2 text-2xl font-semibold">{data.vapiAccountMode === 'byo' ? 'BYO' : 'Managed'}</p>
+                    <p className="text-sm text-muted-foreground">Current Vapi ownership</p>
                   </div>
                   <div>
-                    <p className="text-xs uppercase tracking-[0.18em] text-muted-foreground">Enrichment jobs</p>
-                    <p className="mt-2 text-2xl font-semibold">{data.leadEnrichmentRuns.length}</p>
-                    <p className="text-sm text-muted-foreground">Single-lead scans completed or queued</p>
+                    <p className="text-xs uppercase tracking-[0.18em] text-muted-foreground">Numbers</p>
+                    <p className="mt-2 text-2xl font-semibold">{data.phoneNumbers.length}</p>
+                    <p className="text-sm text-muted-foreground">Connected phone lines</p>
                   </div>
                   <div>
-                    <p className="text-xs uppercase tracking-[0.18em] text-muted-foreground">Playground sessions</p>
-                    <p className="mt-2 text-2xl font-semibold">{data.recentDemoSessions.length}</p>
-                    <p className="text-sm text-muted-foreground">Client-run validation calls</p>
+                    <p className="text-xs uppercase tracking-[0.18em] text-muted-foreground">Pack</p>
+                    <p className="mt-2 text-2xl font-semibold">{data.currentPack.label}</p>
+                    <p className="text-sm text-muted-foreground">Current workflow template</p>
                   </div>
                 </div>
               </CardContent>
@@ -107,27 +116,15 @@ export function ClientCommandCenter({ data }: { data: ClientDashboardData }) {
 
             <Card>
               <CardHeader className="border-b">
-                <CardTitle className="flex items-center gap-2 text-base">
-                  <ShieldCheck className="size-4" />
-                  Guardrails
-                </CardTitle>
-                <CardDescription>Editable vs operator-protected system controls.</CardDescription>
+                <CardTitle className="text-base">Assistant IDs</CardTitle>
+                <CardDescription>Provisioned assistant profiles for this workspace.</CardDescription>
               </CardHeader>
               <CardContent>
                 <PanelList
-                  items={[
-                    {
-                      title: 'Editable now',
-                      description:
-                        'Business context, tone, FAQ blocks, qualification fields, approved routing toggles, and test scenarios.',
-                      badge: { label: 'Client-safe', tone: 'success' },
-                    },
-                    ...data.protectedBlocks.map((block) => ({
-                      title: block,
-                      description: 'Protected by platform policy and operator review.',
-                      badge: { label: 'Protected', tone: 'muted' as const },
-                    })),
-                  ]}
+                  items={assistantRows.map((agent, index) => ({
+                    title: agent ? `${agent.role} assistant` : ['inbound', 'outbound', 'campaign'][index],
+                    description: agent?.vapiAssistantId ?? 'Not provisioned yet',
+                  }))}
                 />
               </CardContent>
             </Card>
@@ -136,15 +133,14 @@ export function ClientCommandCenter({ data }: { data: ClientDashboardData }) {
           <div className="grid gap-4 xl:grid-cols-[minmax(0,1.35fr)_minmax(320px,0.9fr)]">
             <Card>
               <CardHeader className="border-b">
-                <CardTitle className="text-base">Recent queue</CardTitle>
-                <CardDescription>Latest calls and lead outcomes across the workspace.</CardDescription>
+                <CardTitle className="text-base">Recent calls</CardTitle>
+                <CardDescription>Latest logged call activity.</CardDescription>
               </CardHeader>
               <CardContent>
                 <PanelList
                   items={data.recentCalls.slice(0, 5).map((call) => ({
                     title: call.caller,
-                    description: `${call.direction} • ${call.createdAt} • ${call.summary}`,
-                    badge: { label: call.outcome, tone: 'muted' },
+                    description: `${call.createdAt} • ${call.summary}`,
                   }))}
                 />
               </CardContent>
@@ -153,34 +149,30 @@ export function ClientCommandCenter({ data }: { data: ClientDashboardData }) {
             <Card>
               <CardHeader className="border-b">
                 <CardTitle className="flex items-center gap-2 text-base">
-                  <Sparkles className="size-4" />
-                  Active pack
+                  <FileAudio2 className="size-4" />
+                  Exports
                 </CardTitle>
-                <CardDescription>Lead schema and ICP signals driving the workspace.</CardDescription>
+                <CardDescription>Audio and transcript exports live in call logs.</CardDescription>
               </CardHeader>
               <CardContent className="space-y-4">
-                <div>
-                  <p className="text-sm text-muted-foreground">{data.currentPack.positioning}</p>
-                </div>
-                <div className="space-y-3">
-                  {data.currentPack.leadSchema.requiredFields.map((field) => (
-                    <div key={field.key}>
-                      <p className="font-medium">{field.label}</p>
-                      <p className="text-sm text-muted-foreground">{field.description}</p>
-                    </div>
-                  ))}
-                </div>
+                <PanelList
+                  items={[
+                    { title: 'Audio files', description: 'Download WAV or MP3 from individual call records when available.' },
+                    { title: 'Transcripts', description: 'Export transcripts directly from the call log viewer.' },
+                    { title: 'Structured data', description: 'Lead captures and recovery state stay attached to each call and contact.' },
+                  ]}
+                />
               </CardContent>
             </Card>
           </div>
         </TabsContent>
 
-        <TabsContent value="studio" className="space-y-4">
+        <TabsContent value="assistants" className="space-y-4">
           <div className="grid gap-4 xl:grid-cols-[minmax(0,1.6fr)_360px]">
             <Card>
               <CardHeader className="border-b">
-                <CardTitle>Assistant stack</CardTitle>
-                <CardDescription>Prompt, voice, model, and sync status surfaced like an actual operating dashboard.</CardDescription>
+                <CardTitle>Assistant IDs</CardTitle>
+                <CardDescription>Inbound, outbound, and campaign profiles.</CardDescription>
               </CardHeader>
               <CardContent className="px-0">
                 <TableWrap>
@@ -188,10 +180,10 @@ export function ClientCommandCenter({ data }: { data: ClientDashboardData }) {
                     <TableHeader>
                       <TableRow>
                         <TableHead className="px-4">Assistant</TableHead>
+                        <TableHead>ID</TableHead>
                         <TableHead>Role</TableHead>
                         <TableHead>Voice</TableHead>
                         <TableHead>Model</TableHead>
-                        <TableHead>Sync</TableHead>
                       </TableRow>
                     </TableHeader>
                     <TableBody>
@@ -203,14 +195,10 @@ export function ClientCommandCenter({ data }: { data: ClientDashboardData }) {
                               <p className="text-xs text-muted-foreground">{agent.purpose}</p>
                             </div>
                           </TableCell>
+                          <TableCell className="font-mono text-xs">{agent.vapiAssistantId ?? 'pending'}</TableCell>
                           <TableCell>{agent.role}</TableCell>
                           <TableCell>{agent.voice}</TableCell>
                           <TableCell>{agent.model}</TableCell>
-                          <TableCell>
-                            <Badge tone={agent.syncStatus === 'synced' ? 'success' : agent.syncStatus === 'error' ? 'warning' : 'muted'}>
-                              {agent.syncStatus ?? 'unknown'}
-                            </Badge>
-                          </TableCell>
                         </TableRow>
                       ))}
                     </TableBody>
@@ -223,40 +211,28 @@ export function ClientCommandCenter({ data }: { data: ClientDashboardData }) {
               <CardHeader className="border-b">
                 <CardTitle className="flex items-center gap-2 text-base">
                   <Bot className="size-4" />
-                  Current live agent
+                  Primary profiles
                 </CardTitle>
-                <CardDescription>Primary client-facing assistant details.</CardDescription>
+                <CardDescription>Role-specific assistant assignment.</CardDescription>
               </CardHeader>
               <CardContent className="space-y-4">
-                <div>
-                  <p className="font-medium">{latestAgent?.name ?? 'No live assistant'}</p>
-                  <p className="text-sm text-muted-foreground">{latestAgent?.purpose ?? 'Assign an agent to begin.'}</p>
-                </div>
-                <div className="grid gap-3">
-                  <div>
-                    <p className="text-xs uppercase tracking-[0.18em] text-muted-foreground">Voice</p>
-                    <p className="mt-1 font-medium">{latestAgent?.voice ?? 'Pending'}</p>
-                  </div>
-                  <div>
-                    <p className="text-xs uppercase tracking-[0.18em] text-muted-foreground">Model</p>
-                    <p className="mt-1 font-medium">{latestAgent?.model ?? 'Pending'}</p>
-                  </div>
-                  <div>
-                    <p className="text-xs uppercase tracking-[0.18em] text-muted-foreground">Last sync</p>
-                    <p className="mt-1 font-medium">{latestAgent?.lastSyncedAt ?? 'Not synced yet'}</p>
-                  </div>
-                </div>
+                <PanelList
+                  items={assistantRows.map((agent, index) => ({
+                    title: agent?.name ?? ['Inbound', 'Outbound', 'Campaign'][index],
+                    description: agent?.vapiAssistantId ?? 'Not provisioned yet',
+                  }))}
+                />
               </CardContent>
             </Card>
           </div>
         </TabsContent>
 
-        <TabsContent value="pipeline" className="space-y-4">
+        <TabsContent value="leads" className="space-y-4">
           <div className="grid gap-4 xl:grid-cols-[minmax(0,1.7fr)_320px]">
             <Card>
               <CardHeader className="border-b">
-                <CardTitle>Recovered and enriched leads</CardTitle>
-                <CardDescription>Transcript-backed lead records with recovery and enrichment state.</CardDescription>
+                <CardTitle>Lead captures</CardTitle>
+                <CardDescription>Recovered contacts with capture status and next action.</CardDescription>
               </CardHeader>
               <CardContent className="px-0">
                 <TableWrap>
@@ -301,26 +277,23 @@ export function ClientCommandCenter({ data }: { data: ClientDashboardData }) {
 
             <Card>
               <CardHeader className="border-b">
-                <CardTitle className="text-base">Pipeline signals</CardTitle>
-                <CardDescription>Counts the client can actually act on.</CardDescription>
+                <CardTitle className="text-base">Lead status</CardTitle>
+                <CardDescription>Capture and enrichment totals.</CardDescription>
               </CardHeader>
               <CardContent>
                 <PanelList
                   items={[
                     {
                       title: 'Recovered leads',
-                      description: `${recoveredLeadCount} fallback runs preserved actionable lead data.`,
-                      badge: { label: `${recoveredLeadCount}`, tone: 'success' },
+                      description: `${data.leadRecoveryRuns.filter((item) => item.status !== 'failed').length} fallback runs preserved lead data.`,
                     },
                     {
                       title: 'Enrichment runs',
                       description: `${data.leadEnrichmentRuns.length} manual scans recorded from the lead table.`,
-                      badge: { label: `${data.leadEnrichmentRuns.length}`, tone: 'cyan' },
                     },
                     {
                       title: 'Phone numbers',
                       description: `${data.phoneNumbers.length} active numbers attached to the workspace.`,
-                      badge: { label: `${data.phoneNumbers.length}`, tone: 'muted' },
                     },
                   ]}
                 />
@@ -329,12 +302,12 @@ export function ClientCommandCenter({ data }: { data: ClientDashboardData }) {
           </div>
         </TabsContent>
 
-        <TabsContent value="calls" className="space-y-4">
+        <TabsContent value="logs" className="space-y-4">
           <div className="grid gap-4 xl:grid-cols-[minmax(0,1.4fr)_minmax(320px,1fr)]">
             <Card>
               <CardHeader className="border-b">
-                <CardTitle>Call outcomes</CardTitle>
-                <CardDescription>Outcome distribution across the recent call window.</CardDescription>
+                <CardTitle>Call logs</CardTitle>
+                <CardDescription>Recent log outcomes and export-ready records.</CardDescription>
               </CardHeader>
               <CardContent>
                 <OutcomeBarChart recentCalls={data.recentCalls} />
@@ -343,57 +316,17 @@ export function ClientCommandCenter({ data }: { data: ClientDashboardData }) {
 
             <Card>
               <CardHeader className="border-b">
-                <CardTitle className="text-base">Recent call review</CardTitle>
-                <CardDescription>Summaries with transcript-backed context.</CardDescription>
+                <CardTitle className="flex items-center gap-2 text-base">
+                  <PhoneCall className="size-4" />
+                  Recent logs
+                </CardTitle>
+                <CardDescription>Open the call log page to export transcript or audio.</CardDescription>
               </CardHeader>
               <CardContent>
                 <PanelList
                   items={data.recentCalls.slice(0, 6).map((call) => ({
                     title: call.caller,
-                    description: `${call.summary} • ${call.createdAt}`,
-                    badge: { label: call.outcome, tone: 'muted' },
-                  }))}
-                />
-              </CardContent>
-            </Card>
-          </div>
-        </TabsContent>
-
-        <TabsContent value="playground" className="space-y-4">
-          <div className="grid gap-4 xl:grid-cols-[minmax(0,1.5fr)_360px]">
-            <Card>
-              <CardHeader className="border-b">
-                <CardTitle>Scenario presets</CardTitle>
-                <CardDescription>Guided self-test flows aligned to the current ICP pack.</CardDescription>
-              </CardHeader>
-              <CardContent>
-                <PanelList
-                  items={data.playgroundScenarios.map((scenario) => ({
-                    title: scenario.label,
-                    description: scenario.description,
-                    badge: { label: `${scenario.expectedSignals.length} signals`, tone: 'cyan' },
-                  }))}
-                />
-              </CardContent>
-            </Card>
-
-            <Card>
-              <CardHeader className="border-b">
-                <CardTitle className="flex items-center gap-2 text-base">
-                  <FlaskConical className="size-4" />
-                  Recent sessions
-                </CardTitle>
-                <CardDescription>Replayable client test calls.</CardDescription>
-              </CardHeader>
-              <CardContent>
-                <PanelList
-                  items={data.recentDemoSessions.map((session) => ({
-                    title: session.scenarioLabel,
-                    description: `${session.targetPhoneNumber} • ${session.createdAt}`,
-                    badge: {
-                      label: session.status,
-                      tone: session.status === 'completed' ? 'success' : session.status === 'queued' ? 'warning' : 'muted',
-                    },
+                    description: `${call.createdAt} • ${call.outcome}`,
                   }))}
                 />
               </CardContent>

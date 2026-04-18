@@ -254,8 +254,8 @@ export function ClientAgentsSection({
     <Card className="py-0">
       <CardHeader className="border-b pb-4">
         <SectionEyebrow>Agents</SectionEyebrow>
-        <CardTitle>Assistant stack</CardTitle>
-        <CardDescription>Versioned assistants, sync state, and publish control in one table-first surface.</CardDescription>
+        <CardTitle>Assistants</CardTitle>
+        <CardDescription>Provisioned assistant profiles and IDs.</CardDescription>
         <SectionAction href={actionHref} label={actionLabel} />
       </CardHeader>
       <CardContent className="px-0 py-0">
@@ -264,10 +264,10 @@ export function ClientAgentsSection({
             <TableHeader>
               <TableRow>
                 <TableHead className="px-4">Name</TableHead>
+                <TableHead>Assistant ID</TableHead>
                 <TableHead>Role</TableHead>
                 <TableHead>Voice</TableHead>
                 <TableHead>Model</TableHead>
-                <TableHead>Sync</TableHead>
                 <TableHead className="px-4 text-right">Actions</TableHead>
               </TableRow>
             </TableHeader>
@@ -281,25 +281,10 @@ export function ClientAgentsSection({
                         <div className="text-xs text-muted-foreground">{agent.lastSyncedAt}</div>
                       </div>
                     </TableCell>
+                    <TableCell className="font-mono text-xs">{agent.vapiAssistantId ?? 'pending'}</TableCell>
                     <TableCell>{agent.role}</TableCell>
                     <TableCell>{agent.voice}</TableCell>
                     <TableCell>{agent.model}</TableCell>
-                    <TableCell>
-                      <div className="flex flex-wrap gap-2">
-                        <Badge tone={agent.status === 'live' ? 'success' : 'muted'}>{agent.status}</Badge>
-                        <Badge
-                          tone={
-                            agent.syncStatus === 'synced'
-                              ? 'success'
-                              : agent.syncStatus === 'error'
-                                ? 'warning'
-                                : 'muted'
-                          }
-                        >
-                          {agent.syncStatus ?? 'unknown'}
-                        </Badge>
-                      </div>
-                    </TableCell>
                     <TableCell className="px-4 text-right">
                       <Button asChild variant="ghost" size="sm">
                         <Link href={`/client/agents/${agent.id}` as Route}>Open</Link>
@@ -559,11 +544,11 @@ export function ClientCampaignsSection({
   const items = typeof limit === 'number' ? campaigns.slice(0, limit) : campaigns;
 
   return (
-    <Card className="border border-border/80 bg-card/80 py-0 shadow-none">
-      <CardHeader className="border-b border-border/70 pb-4">
+    <Card className="py-0">
+      <CardHeader className="border-b pb-4">
         <SectionEyebrow>Campaigns</SectionEyebrow>
-        <CardTitle>Outbound queue</CardTitle>
-        <CardDescription>Sequenced outbound activity and campaign state.</CardDescription>
+        <CardTitle>Campaign runs</CardTitle>
+        <CardDescription>Queued and active campaign activity.</CardDescription>
         <SectionAction href={actionHref} label={actionLabel} />
       </CardHeader>
       <CardContent className="px-4 py-4">
@@ -572,7 +557,6 @@ export function ClientCampaignsSection({
             items={items.map((campaign) => ({
               title: campaign.name,
               detail: campaign.createdAt,
-              badge: { label: campaign.status, tone: 'muted' },
             }))}
           />
         ) : (

@@ -62,8 +62,8 @@ function EmptyState({ children }: { children: string }) {
 }
 
 export function BlastCampaignStudio({ organizationId, agents }: BlastCampaignStudioProps) {
-  const availableAgents = agents.filter((agent) => agent.role === 'outbound');
-  const agentPool = availableAgents.length ? availableAgents : agents;
+  const availableAgents = agents.filter((agent) => agent.role === 'campaign' || agent.role === 'specialist');
+  const agentPool = availableAgents;
   const initialAgentId = agentPool[0]?.id ?? '';
   const fileInputRef = useRef<HTMLInputElement | null>(null);
 
@@ -79,12 +79,12 @@ export function BlastCampaignStudio({ organizationId, agents }: BlastCampaignStu
   const preview = useMemo(() => parseBlastCsv(csvText), [csvText]);
 
   return (
-    <section className="space-y-4">
+    <section className="space-y-6">
       <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
         <StudioKpi
           label="Assigned agent"
           value={selectedAssistant?.name ?? 'None'}
-          description={selectedAssistant ? `${selectedAssistant.voice} • ${selectedAssistant.model}` : 'Assign an outbound-capable agent first.'}
+          description={selectedAssistant ? `${selectedAssistant.voice} • ${selectedAssistant.model}` : 'Assign a campaign assistant first.'}
         />
         <StudioKpi
           label="Accepted"
@@ -99,23 +99,20 @@ export function BlastCampaignStudio({ organizationId, agents }: BlastCampaignStu
         <StudioKpi
           label="Mode"
           value={result?.mode ?? 'draft'}
-          description="Campaign stays local until you explicitly queue it."
+          description="Queues after validation."
         />
       </div>
 
       <div className="grid gap-4 xl:grid-cols-[minmax(0,1.2fr)_380px]">
-        <Card className="border border-border/80 bg-card/85 py-0 shadow-none">
-          <CardHeader className="border-b border-border/70 pb-5">
+        <Card className="py-0">
+          <CardHeader className="border-b pb-5">
             <div className="space-y-2">
               <p className="text-[0.68rem] uppercase tracking-[0.22em] text-muted-foreground">Outbound campaign</p>
-              <CardTitle>Queue a blast campaign</CardTitle>
-              <CardDescription className="max-w-3xl text-sm leading-6">
-                Use one controlled surface for script entry, recipient validation, and outbound queue creation. The worker handles dispatch after acceptance.
-              </CardDescription>
+              <CardTitle>Campaign assistant</CardTitle>
+              <CardDescription className="max-w-3xl text-sm leading-6">Use the dedicated campaign assistant ID for script-based broadcasts.</CardDescription>
             </div>
-            <CardAction className="flex flex-wrap gap-2">
-              {selectedAssistant ? <Badge tone="cyan">{selectedAssistant.voice}</Badge> : null}
-              {selectedAssistant ? <Badge tone="muted">{selectedAssistant.model}</Badge> : null}
+            <CardAction className="text-xs font-mono text-muted-foreground">
+              {selectedAssistant?.vapiAssistantId ?? 'No assistant ID'}
             </CardAction>
           </CardHeader>
           <CardContent className="space-y-5 px-4 py-4">
@@ -126,15 +123,15 @@ export function BlastCampaignStudio({ organizationId, agents }: BlastCampaignStu
                   value={campaignName}
                   placeholder="Spring reactivation sweep"
                   onChange={(event) => setCampaignName(event.target.value)}
-                  className="h-10 rounded-lg border-border/80 bg-background"
+                  className="h-10 border-border/80 bg-background"
                 />
               </label>
 
               <label className="space-y-2">
-                <span className="text-xs uppercase tracking-[0.16em] text-muted-foreground">Outbound agent</span>
+                <span className="text-xs uppercase tracking-[0.16em] text-muted-foreground">Campaign assistant</span>
                 <Select value={selectedAssistantId} onValueChange={setSelectedAssistantId} disabled={!agentPool.length}>
-                  <SelectTrigger className="h-10 w-full rounded-lg border-border/80 bg-background">
-                    <SelectValue placeholder="Select an outbound agent" />
+                  <SelectTrigger className="h-10 w-full border-border/80 bg-background">
+                    <SelectValue placeholder="Select a campaign assistant" />
                   </SelectTrigger>
                   <SelectContent>
                     {agentPool.map((agent) => (
@@ -152,9 +149,9 @@ export function BlastCampaignStudio({ organizationId, agents }: BlastCampaignStu
               <Textarea
                 rows={5}
                 value={script}
-                placeholder="Introduce the business, explain the reason for the call, and ask whether they want a callback or booking."
+                placeholder="Write the campaign script. This becomes the launch template for the campaign assistant."
                 onChange={(event) => setScript(event.target.value)}
-                className="min-h-[136px] rounded-lg border-border/80 bg-background"
+                className="min-h-[136px] border-border/80 bg-background"
               />
             </label>
 
@@ -165,11 +162,11 @@ export function BlastCampaignStudio({ organizationId, agents }: BlastCampaignStu
                 value={csvText}
                 placeholder={'name,phone\nJane Smith,(214) 555-0147\nMarcus Lee,972-555-0112'}
                 onChange={(event) => setCsvText(event.target.value)}
-                className="min-h-[260px] rounded-lg border-border/80 bg-background font-mono text-[0.82rem]"
+                className="min-h-[260px] border-border/80 bg-background font-mono text-[0.82rem]"
               />
             </label>
 
-            <div className="flex flex-wrap items-center gap-3 rounded-lg border border-border/70 bg-muted/20 px-4 py-3">
+            <div className="flex flex-wrap items-center gap-3 rounded-md border border-border/70 bg-muted/20 px-4 py-3">
               <input
                 ref={fileInputRef}
                 type="file"
@@ -189,11 +186,11 @@ export function BlastCampaignStudio({ organizationId, agents }: BlastCampaignStu
                 }}
               />
 
-              <Button type="button" variant="outline" className="rounded-md" onClick={() => fileInputRef.current?.click()}>
+              <Button type="button" variant="outline" onClick={() => fileInputRef.current?.click()}>
                 <Upload data-icon="inline-start" />
                 Upload CSV
               </Button>
-              <Button type="button" variant="ghost" className="rounded-md" onClick={() => setCsvText('')}>
+              <Button type="button" variant="ghost" onClick={() => setCsvText('')}>
                 Clear CSV
               </Button>
               <div className="text-xs leading-5 text-muted-foreground">
@@ -208,7 +205,7 @@ export function BlastCampaignStudio({ organizationId, agents }: BlastCampaignStu
                 disabled={isPending || !selectedAssistant}
                 onClick={() => {
                   if (!selectedAssistant) {
-                    setError('This organization does not have an outbound-capable agent yet.');
+                    setError('This organization does not have a campaign assistant yet.');
                     return;
                   }
 
@@ -242,7 +239,7 @@ export function BlastCampaignStudio({ organizationId, agents }: BlastCampaignStu
               </Button>
 
               <div className="text-xs leading-5 text-muted-foreground">
-                The job is accepted first. Dispatch happens asynchronously through the worker queue.
+                The script is applied to the campaign assistant template at launch.
               </div>
             </div>
 
@@ -268,8 +265,8 @@ export function BlastCampaignStudio({ organizationId, agents }: BlastCampaignStu
         </Card>
 
         <div className="grid gap-4">
-          <Card className="border border-border/80 bg-card/80 py-0 shadow-none">
-            <CardHeader className="border-b border-border/70 pb-4">
+          <Card className="py-0">
+            <CardHeader className="border-b pb-4">
               <div className="space-y-2">
                 <p className="text-[0.68rem] uppercase tracking-[0.22em] text-muted-foreground">Launch checks</p>
                 <CardTitle>Preflight</CardTitle>
@@ -277,16 +274,16 @@ export function BlastCampaignStudio({ organizationId, agents }: BlastCampaignStu
               </div>
             </CardHeader>
             <CardContent className="space-y-3 px-4 py-4">
-              <div className="flex items-start justify-between gap-3 rounded-lg border border-border/70 bg-muted/20 px-3 py-3">
+              <div className="flex items-start justify-between gap-3 rounded-md border border-border/70 bg-muted/20 px-3 py-3">
                 <div>
-                  <div className="text-sm font-medium text-foreground">Assigned caller</div>
+                  <div className="text-sm font-medium text-foreground">Campaign assistant</div>
                   <div className="text-xs leading-5 text-muted-foreground">
-                    {selectedAssistant ? `${selectedAssistant.name} is attached to this campaign.` : 'No outbound agent is currently available.'}
+                    {selectedAssistant ? `${selectedAssistant.name} is attached to this campaign.` : 'No campaign assistant is currently available.'}
                   </div>
                 </div>
                 <Badge tone={selectedAssistant ? 'success' : 'warning'}>{selectedAssistant ? 'Ready' : 'Blocked'}</Badge>
               </div>
-              <div className="flex items-start justify-between gap-3 rounded-lg border border-border/70 bg-muted/20 px-3 py-3">
+              <div className="flex items-start justify-between gap-3 rounded-md border border-border/70 bg-muted/20 px-3 py-3">
                 <div>
                   <div className="text-sm font-medium text-foreground">Recipient list</div>
                   <div className="text-xs leading-5 text-muted-foreground">
@@ -299,13 +296,13 @@ export function BlastCampaignStudio({ organizationId, agents }: BlastCampaignStu
                   {preview.validRecipients.length ? 'Ready' : 'Blocked'}
                 </Badge>
               </div>
-              <div className="flex items-start justify-between gap-3 rounded-lg border border-border/70 bg-muted/20 px-3 py-3">
+              <div className="flex items-start justify-between gap-3 rounded-md border border-border/70 bg-muted/20 px-3 py-3">
                 <div>
                   <div className="text-sm font-medium text-foreground">Script coverage</div>
                   <div className="text-xs leading-5 text-muted-foreground">
                     {script.trim()
-                      ? 'A custom outbound prompt is attached to this queue.'
-                      : 'Add a campaign script so the assistant has a clear opening and CTA.'}
+                      ? 'A campaign script is attached to the launch template.'
+                      : 'Add a campaign script so the assistant has an opening and CTA.'}
                   </div>
                 </div>
                 <Badge tone={script.trim() ? 'success' : 'warning'}>{script.trim() ? 'Ready' : 'Needs copy'}</Badge>
@@ -313,8 +310,8 @@ export function BlastCampaignStudio({ organizationId, agents }: BlastCampaignStu
             </CardContent>
           </Card>
 
-          <Card className="border border-border/80 bg-card/80 py-0 shadow-none">
-            <CardHeader className="border-b border-border/70 pb-4">
+          <Card className="py-0">
+            <CardHeader className="border-b pb-4">
               <div className="space-y-2">
                 <p className="text-[0.68rem] uppercase tracking-[0.22em] text-muted-foreground">Recipient preview</p>
                 <CardTitle>Normalized rows</CardTitle>
@@ -332,7 +329,7 @@ export function BlastCampaignStudio({ organizationId, agents }: BlastCampaignStu
                 <ScrollArea className="h-[340px]">
                   <Table>
                     <TableHeader>
-                      <TableRow className="border-border/70 bg-muted/15">
+                      <TableRow>
                         <TableHead className="px-4">Recipient</TableHead>
                         <TableHead>Phone</TableHead>
                         <TableHead className="px-4 text-right">Row</TableHead>
@@ -340,7 +337,7 @@ export function BlastCampaignStudio({ organizationId, agents }: BlastCampaignStu
                     </TableHeader>
                     <TableBody>
                       {preview.validRecipients.map((recipient) => (
-                        <TableRow key={`${recipient.phoneNumber}-${recipient.rowNumber}`} className="border-border/70">
+                        <TableRow key={`${recipient.phoneNumber}-${recipient.rowNumber}`}>
                           <TableCell className="px-4 py-3">
                             <div className="flex items-center gap-2">
                               <Users className="size-4 text-muted-foreground" />

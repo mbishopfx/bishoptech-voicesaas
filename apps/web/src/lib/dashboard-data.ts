@@ -357,8 +357,12 @@ function parseAgentRole(agentType: string): DashboardAgent['role'] {
     return 'outbound';
   }
 
+  if (agentType === 'campaign') {
+    return 'campaign';
+  }
+
   if (agentType === 'specialist') {
-    return 'specialist';
+    return 'campaign';
   }
 
   return 'inbound';
@@ -372,11 +376,15 @@ function buildAgentPurpose(agentType: string, config?: Record<string, unknown> |
   }
 
   if (agentType === 'outbound') {
-    return 'Outbound follow-up, blast campaigns, reminders, and reactivation.';
+    return 'Outbound follow-up, reminders, and direct callback flows.';
+  }
+
+  if (agentType === 'campaign') {
+    return 'Dedicated blast campaign assistant with script-driven outbound prompts.';
   }
 
   if (agentType === 'specialist') {
-    return 'Specialist handoff for deeper objections, advanced questions, and high-intent calls.';
+    return 'Dedicated blast campaign assistant with script-driven outbound prompts.';
   }
 
   return 'Inbound call handling, lead capture, FAQs, and booking qualification.';

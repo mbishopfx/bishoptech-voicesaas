@@ -334,7 +334,7 @@ async function processCampaignLaunchJob(job) {
   }
 
   if (agentResult.error || !agentResult.data) {
-    throw new Error(agentResult.error?.message || 'Source outbound agent could not be loaded.');
+    throw new Error(agentResult.error?.message || 'Source campaign assistant could not be loaded.');
   }
 
   const recipients = (recipientsResult.data || []).filter((recipient) => recipient.phone_number);
@@ -359,7 +359,7 @@ async function processCampaignLaunchJob(job) {
     {
       method: 'POST',
       body: JSON.stringify({
-        name: `${campaignName} Broadcast Agent`,
+        name: `${campaignName} Campaign Agent`,
         firstMessage: script,
         model: {
           provider: defaults.modelProvider,
@@ -368,7 +368,7 @@ async function processCampaignLaunchJob(job) {
             {
               role: 'system',
               content: [
-                'You are a dedicated outbound broadcast agent.',
+                'You are a dedicated campaign broadcast agent.',
                 'Introduce the business immediately, explain the reason for the outreach, and respect opt-out signals.',
                 `Campaign script: ${script}`,
                 `Source organization agent: ${agentResult.data.name}`,

@@ -53,16 +53,20 @@ export async function POST(request: Request) {
     const supabase = getSupabaseAdminClient();
     const agentResult = await supabase
       .from('agents')
-      .select('id, organization_id, name, vapi_assistant_id, config')
+      .select('id, organization_id, name, vapi_assistant_id, config, agent_type')
       .eq('id', payload.assistantId)
       .eq('organization_id', payload.organizationId)
       .maybeSingle();
 
     if (agentResult.error || !agentResult.data) {
-      throw new Error(agentResult.error?.message ?? 'The selected outbound agent could not be found.');
+      throw new Error(agentResult.error?.message ?? 'The selected campaign assistant could not be found.');
     }
 
-    const outboundAgent = agentResult.data;
+    if (!['campaign', 'specialist'].includes(String(agentResult.data.agent_type))) {
+      throw new Error('Campaign launches must use the dedicated campaign assistant.');
+    }
+
+    const campaignAssistant = agentResult.data;
     const resolvedPhoneNumberId = payload.phoneNumberId ?? appConfig.vapi.outboundPhoneNumberId;
     const credentials = await resolveVapiCredentialsForOrganization(payload.organizationId);
 
@@ -118,8 +122,8 @@ export async function POST(request: Request) {
         organizationId: payload.organizationId,
         campaignName: payload.campaignName,
         sourceAgentId: payload.assistantId,
-        sourceAgentName: outboundAgent.name,
-        sourceVapiAssistantId: outboundAgent.vapi_assistant_id ?? null,
+        sourceAgentName: campaignAssistant.name,
+        sourceVapiAssistantId: campaignAssistant.vapi_assistant_id ?? null,
         script: payload.script,
         phoneNumberId: resolvedPhoneNumberId,
         voiceLabel: payload.voiceLabel ?? null,
@@ -132,6 +136,7 @@ export async function POST(request: Request) {
     return NextResponse.json({
       mode: 'queued',
       campaignId: campaignInsert.data.id,
+      assistantId: payload.assistantId,
       campaignName: payload.campaignName,
       recipientsAccepted: preview.validRecipients.length,
       recipientsRejected: preview.rejectedRows.length,

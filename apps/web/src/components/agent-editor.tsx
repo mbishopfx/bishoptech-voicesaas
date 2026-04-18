@@ -301,6 +301,20 @@ export function AgentEditor({ agent, organizationName, canEdit }: AgentEditorPro
           </div>
         </CardHeader>
         <CardContent className="space-y-3 px-4 py-4">
+          <div className="grid gap-3 md:grid-cols-3">
+            <div>
+              <p className="text-xs uppercase tracking-[0.16em] text-muted-foreground">Assistant ID</p>
+              <p className="mt-1 font-mono text-sm text-foreground">{agent.vapiAssistantId ?? 'Not provisioned yet'}</p>
+            </div>
+            <div>
+              <p className="text-xs uppercase tracking-[0.16em] text-muted-foreground">Role</p>
+              <p className="mt-1 text-sm font-medium text-foreground">{agent.role}</p>
+            </div>
+            <div>
+              <p className="text-xs uppercase tracking-[0.16em] text-muted-foreground">Sync</p>
+              <p className="mt-1 text-sm font-medium text-foreground">{syncStatus}</p>
+            </div>
+          </div>
           {lastError ? (
             <Alert variant="destructive" className="border-destructive/30 bg-destructive/5">
               <AlertTitle>Last sync error</AlertTitle>

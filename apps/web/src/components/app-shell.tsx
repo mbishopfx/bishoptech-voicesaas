@@ -310,7 +310,7 @@ export function AppShell({
       </Sidebar>
 
       <SidebarInset>
-        <header className="sticky top-0 z-20 flex h-14 items-center gap-2 border-b bg-background/95 px-4 backdrop-blur supports-[backdrop-filter]:bg-background/80 lg:px-6">
+        <header className="sticky top-0 z-20 flex h-16 items-center gap-3 border-b bg-background/95 px-5 backdrop-blur supports-[backdrop-filter]:bg-background/80 lg:px-8">
           <SidebarTrigger className="-ml-1" />
           <Separator orientation="vertical" className="mr-2 h-4" />
           <Breadcrumb>
@@ -331,28 +331,21 @@ export function AppShell({
           <div className="ml-auto flex items-center gap-2">
             <div className="relative hidden w-full max-w-sm items-center md:flex">
               <Search className="pointer-events-none absolute left-3 size-4 text-muted-foreground" />
-              <Input readOnly value="" placeholder="Search calls, leads, assistants" className="pl-9" />
+              <Input readOnly value="" placeholder="Search calls, leads, assistants" className="h-10 pl-9" />
             </div>
           </div>
         </header>
 
-        <div className="flex flex-1 flex-col gap-6 p-4 lg:p-6">
+        <div className="flex flex-1 flex-col gap-8 p-5 lg:p-8">
           {headerMode !== 'hidden' ? (
-            <section className="flex flex-col gap-4 border-b pb-6 md:flex-row md:items-start md:justify-between">
+            <section className="flex flex-col gap-5 border-b pb-8 md:flex-row md:items-start md:justify-between">
               <div className="space-y-3">
-                <div className="flex flex-wrap items-center gap-2">
-                  <Badge tone="muted">
-                    {eyebrow ?? (current === 'admin' ? 'Operator workspace' : current === 'client' ? 'Client workspace' : 'Knowledge center')}
-                  </Badge>
-                  <Badge tone={current === 'admin' ? 'cyan' : current === 'client' ? 'success' : 'muted'}>
-                    {current === 'admin' ? 'Managed Vapi first' : current === 'client' ? 'Guardrailed editing' : 'Docs + runbooks'}
-                  </Badge>
-                </div>
+                {eyebrow ? <p className="text-xs uppercase tracking-[0.18em] text-muted-foreground">{eyebrow}</p> : null}
                 <div className="space-y-1">
                   <h1 className={cn('font-semibold tracking-tight', headerMode === 'compact' ? 'text-2xl' : 'text-3xl')}>
                     {pageTitle}
                   </h1>
-                  {description ? <p className="max-w-3xl text-sm text-muted-foreground">{description}</p> : null}
+                  {description ? <p className="max-w-3xl text-sm leading-6 text-muted-foreground">{description}</p> : null}
                 </div>
               </div>
               {actions ? <div className="flex shrink-0 flex-wrap items-center gap-2">{actions}</div> : null}
