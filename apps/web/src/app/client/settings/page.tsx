@@ -23,12 +23,12 @@ export default async function ClientSettingsPage() {
       eyebrow="Settings"
       title="Workspace settings"
       actions={
-        <Button asChild variant="outline" className="rounded-md">
+        <Button asChild variant="outline">
           <Link href="/client/agents">Back to agents</Link>
         </Button>
       }
     >
-      <div className="command-content-grid">
+      <div className="grid gap-6 xl:grid-cols-[minmax(0,1fr)_320px]">
         <WorkspaceSettingsPanel
           organizationId={data.organizationId}
           organizationName={data.organizationName}
@@ -43,7 +43,7 @@ export default async function ClientSettingsPage() {
           canEdit={canEdit}
         />
 
-        <aside className="command-side-stack">
+        <aside className="space-y-6">
           <ClientWorkspaceSummarySection data={data} showSettingsLink={false} />
         </aside>
       </div>

@@ -65,7 +65,7 @@ function CallKpi({
 
 function EmptyState({ children }: { children: string }) {
   return (
-    <div className="rounded-lg border border-dashed border-border/70 bg-muted/20 px-4 py-8 text-sm text-muted-foreground">
+    <div className="rounded-md border border-dashed border-border/70 bg-muted/20 px-4 py-8 text-sm text-muted-foreground">
       {children}
     </div>
   );
@@ -110,7 +110,7 @@ export function CallCommandCenter({ recentCalls, mode }: CallCommandCenterProps)
   const callsWithRecording = recentCalls.filter((call) => call.recordingUrl).length;
 
   return (
-    <section className="space-y-4">
+    <section className="space-y-6">
       <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
         <CallKpi
           label="Call volume"
@@ -135,8 +135,8 @@ export function CallCommandCenter({ recentCalls, mode }: CallCommandCenterProps)
       </div>
 
       <div className="grid gap-4 xl:grid-cols-[360px_minmax(0,1fr)]">
-        <Card className="border border-border/80 bg-card/85 py-0 shadow-none">
-          <CardHeader className="border-b border-border/70 pb-4">
+        <Card className="py-0">
+          <CardHeader className="border-b pb-4">
             <div className="space-y-2">
               <p className="text-[0.68rem] uppercase tracking-[0.22em] text-muted-foreground">Recent calls</p>
               <CardTitle>Queue</CardTitle>
@@ -154,7 +154,7 @@ export function CallCommandCenter({ recentCalls, mode }: CallCommandCenterProps)
                 value={query}
                 onChange={(event) => setQuery(event.target.value)}
                 placeholder={mode === 'admin' ? 'Search by org, caller, assistant, or number' : 'Search caller, outcome, or number'}
-                className="h-10 rounded-lg border-border/80 bg-background pl-9"
+                className="h-10 border-border/80 bg-background pl-9"
               />
             </div>
 
@@ -171,7 +171,7 @@ export function CallCommandCenter({ recentCalls, mode }: CallCommandCenterProps)
                         type="button"
                         onClick={() => setSelectedId(call.id)}
                         className={cn(
-                          'w-full rounded-lg border px-3 py-3 text-left transition-colors',
+                          'w-full rounded-md border px-3 py-3 text-left transition-colors',
                           isSelected
                             ? 'border-primary/40 bg-primary/10 text-foreground'
                             : 'border-border/80 bg-muted/15 text-muted-foreground hover:border-border hover:bg-muted/30 hover:text-foreground',
@@ -211,8 +211,8 @@ export function CallCommandCenter({ recentCalls, mode }: CallCommandCenterProps)
 
         {selectedCall ? (
           <div className="grid gap-4">
-            <Card className="border border-border/80 bg-card/85 py-0 shadow-none">
-              <CardHeader className="gap-4 border-b border-border/70 pb-5">
+            <Card className="py-0">
+              <CardHeader className="gap-4 border-b pb-5">
                 <div className="space-y-2">
                   <div className="flex flex-wrap items-center gap-2">
                     <Badge tone="muted">{selectedCall.organizationName}</Badge>
@@ -232,7 +232,6 @@ export function CallCommandCenter({ recentCalls, mode }: CallCommandCenterProps)
                   <Button
                     variant="outline"
                     size="sm"
-                    className="rounded-md"
                     type="button"
                     onClick={() =>
                       downloadFile(
@@ -248,7 +247,6 @@ export function CallCommandCenter({ recentCalls, mode }: CallCommandCenterProps)
                   <Button
                     variant="outline"
                     size="sm"
-                    className="rounded-md"
                     type="button"
                     onClick={() =>
                       downloadFile(
@@ -262,7 +260,7 @@ export function CallCommandCenter({ recentCalls, mode }: CallCommandCenterProps)
                     Export JSON
                   </Button>
                   {selectedCall.recordingUrl ? (
-                    <Button asChild variant="outline" size="sm" className="rounded-md">
+                    <Button asChild variant="outline" size="sm">
                       <a href={selectedCall.recordingUrl} target="_blank" rel="noreferrer">
                         <ExternalLink data-icon="inline-start" />
                         {selectedCall.recordingLabel ?? 'Open recording'}
@@ -273,27 +271,27 @@ export function CallCommandCenter({ recentCalls, mode }: CallCommandCenterProps)
               </CardHeader>
               <CardContent className="space-y-4 px-4 py-4">
                 <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-3">
-                  <div className="rounded-lg border border-border/70 bg-muted/20 px-4 py-3">
+                  <div className="rounded-md border border-border/70 bg-muted/20 px-4 py-3">
                     <div className="text-[0.68rem] uppercase tracking-[0.16em] text-muted-foreground">From</div>
                     <div className="mt-2 text-sm font-medium text-foreground">{selectedCall.fromNumber ?? 'Unknown'}</div>
                   </div>
-                  <div className="rounded-lg border border-border/70 bg-muted/20 px-4 py-3">
+                  <div className="rounded-md border border-border/70 bg-muted/20 px-4 py-3">
                     <div className="text-[0.68rem] uppercase tracking-[0.16em] text-muted-foreground">To</div>
                     <div className="mt-2 text-sm font-medium text-foreground">{selectedCall.toNumber ?? 'Unknown'}</div>
                   </div>
-                  <div className="rounded-lg border border-border/70 bg-muted/20 px-4 py-3">
+                  <div className="rounded-md border border-border/70 bg-muted/20 px-4 py-3">
                     <div className="text-[0.68rem] uppercase tracking-[0.16em] text-muted-foreground">Assistant</div>
                     <div className="mt-2 text-sm font-medium text-foreground">{selectedCall.assistantName ?? 'Not logged'}</div>
                   </div>
-                  <div className="rounded-lg border border-border/70 bg-muted/20 px-4 py-3">
+                  <div className="rounded-md border border-border/70 bg-muted/20 px-4 py-3">
                     <div className="text-[0.68rem] uppercase tracking-[0.16em] text-muted-foreground">Model</div>
                     <div className="mt-2 text-sm font-medium text-foreground">{selectedCall.modelName ?? 'Not logged'}</div>
                   </div>
-                  <div className="rounded-lg border border-border/70 bg-muted/20 px-4 py-3">
+                  <div className="rounded-md border border-border/70 bg-muted/20 px-4 py-3">
                     <div className="text-[0.68rem] uppercase tracking-[0.16em] text-muted-foreground">Started</div>
                     <div className="mt-2 text-sm font-medium text-foreground">{selectedCall.startedAt ?? selectedCall.createdAt}</div>
                   </div>
-                  <div className="rounded-lg border border-border/70 bg-muted/20 px-4 py-3">
+                  <div className="rounded-md border border-border/70 bg-muted/20 px-4 py-3">
                     <div className="text-[0.68rem] uppercase tracking-[0.16em] text-muted-foreground">Outcome</div>
                     <div className="mt-2 text-sm font-medium text-foreground">{selectedCall.outcome}</div>
                   </div>
@@ -315,8 +313,8 @@ export function CallCommandCenter({ recentCalls, mode }: CallCommandCenterProps)
             </Card>
 
             <div className="grid gap-4 2xl:grid-cols-[minmax(0,1.15fr)_360px]">
-              <Card className="border border-border/80 bg-card/80 py-0 shadow-none">
-                <CardHeader className="border-b border-border/70 pb-4">
+              <Card className="py-0">
+                <CardHeader className="border-b pb-4">
                   <div className="space-y-2">
                     <p className="text-[0.68rem] uppercase tracking-[0.22em] text-muted-foreground">Conversation</p>
                     <CardTitle>Transcript</CardTitle>
@@ -331,7 +329,7 @@ export function CallCommandCenter({ recentCalls, mode }: CallCommandCenterProps)
                           <article
                             key={entry.id}
                             className={cn(
-                              'rounded-lg border px-4 py-3',
+                              'rounded-md border px-4 py-3',
                               entry.speaker === 'assistant'
                                 ? 'border-cyan-500/20 bg-cyan-500/6'
                                 : entry.speaker === 'system'
@@ -362,8 +360,8 @@ export function CallCommandCenter({ recentCalls, mode }: CallCommandCenterProps)
               </Card>
 
               <div className="grid gap-4">
-                <Card className="border border-border/80 bg-card/80 py-0 shadow-none">
-                  <CardHeader className="border-b border-border/70 pb-4">
+              <Card className="py-0">
+                <CardHeader className="border-b pb-4">
                     <div className="space-y-2">
                       <p className="text-[0.68rem] uppercase tracking-[0.22em] text-muted-foreground">Summary</p>
                       <CardTitle>Call summary</CardTitle>

@@ -323,8 +323,8 @@ export function AgentEditor({ agent, organizationName, canEdit }: AgentEditorPro
       </Card>
 
       <div className="grid gap-4 2xl:grid-cols-[minmax(0,1.15fr)_380px]">
-        <Card className="border border-border/80 bg-card/85 py-0 shadow-none">
-          <CardHeader className="border-b border-border/70 pb-5">
+        <Card className="py-0">
+          <CardHeader className="border-b pb-5">
             <div className="space-y-2">
               <p className="text-[0.68rem] uppercase tracking-[0.22em] text-muted-foreground">Draft payload</p>
               <CardTitle>Assistant controls</CardTitle>
@@ -336,7 +336,7 @@ export function AgentEditor({ agent, organizationName, canEdit }: AgentEditorPro
               <label className="space-y-2">
                 <FieldLabel>Account mode</FieldLabel>
                 <Select value={accountMode} disabled={!canEdit} onValueChange={(value) => setAccountMode(value as VapiAccountMode)}>
-                  <SelectTrigger className="h-10 w-full rounded-lg border-border/80 bg-background">
+                  <SelectTrigger className="h-10 w-full border-border/80 bg-background">
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
@@ -352,7 +352,7 @@ export function AgentEditor({ agent, organizationName, canEdit }: AgentEditorPro
                   value={draftPayload.name}
                   disabled={!canEdit}
                   onChange={(event) => updateDraft((current) => ({ ...current, name: event.target.value }))}
-                  className="h-10 rounded-lg border-border/80 bg-background"
+                  className="h-10 border-border/80 bg-background"
                 />
               </label>
 
@@ -362,7 +362,7 @@ export function AgentEditor({ agent, organizationName, canEdit }: AgentEditorPro
                   value={firstMessage}
                   disabled={!canEdit}
                   onChange={(event) => updateDraft((current) => setFirstMessage(current, event.target.value))}
-                  className="h-10 rounded-lg border-border/80 bg-background"
+                  className="h-10 border-border/80 bg-background"
                 />
               </label>
 
@@ -373,7 +373,7 @@ export function AgentEditor({ agent, organizationName, canEdit }: AgentEditorPro
                   value={systemPrompt}
                   disabled={!canEdit}
                   onChange={(event) => updateDraft((current) => setSystemMessage(current, event.target.value))}
-                  className="min-h-[240px] rounded-lg border-border/80 bg-background"
+                  className="min-h-[240px] border-border/80 bg-background"
                 />
               </label>
             </div>
@@ -387,7 +387,7 @@ export function AgentEditor({ agent, organizationName, canEdit }: AgentEditorPro
                   value={draftPayload.model.provider}
                   disabled={!canEdit}
                   onChange={(event) => updateDraft((current) => updateModelField(current, 'provider', event.target.value))}
-                  className="h-10 rounded-lg border-border/80 bg-background"
+                  className="h-10 border-border/80 bg-background"
                 />
               </label>
 
@@ -397,7 +397,7 @@ export function AgentEditor({ agent, organizationName, canEdit }: AgentEditorPro
                   value={draftPayload.model.model}
                   disabled={!canEdit}
                   onChange={(event) => updateDraft((current) => updateModelField(current, 'model', event.target.value))}
-                  className="h-10 rounded-lg border-border/80 bg-background"
+                  className="h-10 border-border/80 bg-background"
                 />
               </label>
 
@@ -408,7 +408,7 @@ export function AgentEditor({ agent, organizationName, canEdit }: AgentEditorPro
                   placeholder="query-tool-id, crm-search-tool"
                   disabled={!canEdit}
                   onChange={(event) => updateDraft((current) => setToolIds(current, event.target.value))}
-                  className="h-10 rounded-lg border-border/80 bg-background"
+                  className="h-10 border-border/80 bg-background"
                 />
               </label>
             </div>
@@ -422,7 +422,7 @@ export function AgentEditor({ agent, organizationName, canEdit }: AgentEditorPro
                   value={draftPayload.voice.provider}
                   disabled={!canEdit}
                   onChange={(event) => updateDraft((current) => updateVoiceField(current, 'provider', event.target.value))}
-                  className="h-10 rounded-lg border-border/80 bg-background"
+                  className="h-10 border-border/80 bg-background"
                 />
               </label>
 
@@ -432,7 +432,7 @@ export function AgentEditor({ agent, organizationName, canEdit }: AgentEditorPro
                   value={draftPayload.voice.voiceId}
                   disabled={!canEdit}
                   onChange={(event) => updateDraft((current) => updateVoiceField(current, 'voiceId', event.target.value))}
-                  className="h-10 rounded-lg border-border/80 bg-background"
+                  className="h-10 border-border/80 bg-background"
                 />
               </label>
 
@@ -444,7 +444,7 @@ export function AgentEditor({ agent, organizationName, canEdit }: AgentEditorPro
                   placeholder="openai:marin"
                   disabled={!canEdit}
                   onChange={(event) => updateDraft((current) => updateFallbackVoices(current, event.target.value))}
-                  className="rounded-lg border-border/80 bg-background font-mono text-[0.82rem]"
+                  className="border-border/80 bg-background font-mono text-[0.82rem]"
                 />
               </label>
             </div>
@@ -459,7 +459,7 @@ export function AgentEditor({ agent, organizationName, canEdit }: AgentEditorPro
                   placeholder="https://hooks.yourdomain.com/vapi"
                   disabled={!canEdit}
                   onChange={(event) => updateDraft((current) => updateServerPayload(current, event.target.value))}
-                  className="h-10 rounded-lg border-border/80 bg-background"
+                  className="h-10 border-border/80 bg-background"
                 />
               </label>
 
@@ -475,7 +475,7 @@ export function AgentEditor({ agent, organizationName, canEdit }: AgentEditorPro
                       handoffTargetAssistantId: event.target.value || undefined,
                     }))
                   }
-                  className="h-10 rounded-lg border-border/80 bg-background"
+                  className="h-10 border-border/80 bg-background"
                 />
               </label>
 
@@ -493,7 +493,7 @@ export function AgentEditor({ agent, organizationName, canEdit }: AgentEditorPro
                       })),
                     )
                   }
-                  className="h-10 rounded-lg border-border/80 bg-background"
+                  className="h-10 border-border/80 bg-background"
                 />
               </label>
 
@@ -511,7 +511,7 @@ export function AgentEditor({ agent, organizationName, canEdit }: AgentEditorPro
                       })),
                     )
                   }
-                  className="h-10 rounded-lg border-border/80 bg-background"
+                  className="h-10 border-border/80 bg-background"
                 />
               </label>
 
@@ -529,25 +529,25 @@ export function AgentEditor({ agent, organizationName, canEdit }: AgentEditorPro
                       })),
                     )
                   }
-                  className="rounded-lg border-border/80 bg-background"
+                  className="border-border/80 bg-background"
                 />
               </label>
             </div>
 
             <div className="flex flex-wrap items-center gap-3">
-              <Button type="button" className="rounded-md" disabled={!canEdit || isPending} onClick={() => submit('save')}>
+              <Button type="button" disabled={!canEdit || isPending} onClick={() => submit('save')}>
                 <Save data-icon="inline-start" />
                 {isPending ? 'Saving...' : 'Save draft'}
               </Button>
-              <Button type="button" variant="outline" className="rounded-md" disabled={!canEdit || isPending} onClick={() => submit('publish')}>
+              <Button type="button" variant="outline" disabled={!canEdit || isPending} onClick={() => submit('publish')}>
                 <Upload data-icon="inline-start" />
                 {isPending ? 'Publishing...' : 'Publish to Vapi'}
               </Button>
-              <Button type="button" variant="outline" className="rounded-md" disabled={!canEdit || isPending} onClick={() => submit('sync')}>
+              <Button type="button" variant="outline" disabled={!canEdit || isPending} onClick={() => submit('sync')}>
                 <RefreshCw data-icon="inline-start" />
                 {isPending ? 'Syncing...' : 'Sync from Vapi'}
               </Button>
-              <Button type="button" variant="ghost" className="rounded-md" disabled={!canEdit || isPending} onClick={() => submit('revert')}>
+              <Button type="button" variant="ghost" disabled={!canEdit || isPending} onClick={() => submit('revert')}>
                 Revert
               </Button>
             </div>
@@ -561,8 +561,8 @@ export function AgentEditor({ agent, organizationName, canEdit }: AgentEditorPro
         </Card>
 
         <div className="grid gap-4">
-          <Card className="border border-border/80 bg-card/80 py-0 shadow-none">
-            <CardHeader className="border-b border-border/70 pb-4">
+          <Card className="py-0">
+            <CardHeader className="border-b pb-4">
               <div className="space-y-2">
                 <p className="text-[0.68rem] uppercase tracking-[0.22em] text-muted-foreground">Advanced</p>
                 <CardTitle>Raw config</CardTitle>
@@ -575,9 +575,9 @@ export function AgentEditor({ agent, organizationName, canEdit }: AgentEditorPro
                 value={rawJson}
                 disabled={!canEdit}
                 onChange={(event) => setRawJson(event.target.value)}
-                className="min-h-[520px] rounded-lg border-border/80 bg-background font-mono text-[0.8rem]"
+                className="min-h-[520px] border-border/80 bg-background font-mono text-[0.8rem]"
               />
-              <Button type="button" variant="outline" className="rounded-md" disabled={!canEdit || isPending} onClick={applyRawJson}>
+              <Button type="button" variant="outline" disabled={!canEdit || isPending} onClick={applyRawJson}>
                 <FileJson data-icon="inline-start" />
                 Apply raw JSON
               </Button>
@@ -587,31 +587,31 @@ export function AgentEditor({ agent, organizationName, canEdit }: AgentEditorPro
             </CardContent>
           </Card>
 
-          <Card className="border border-border/80 bg-card/80 py-0 shadow-none">
-            <CardHeader className="border-b border-border/70 pb-4">
+          <Card className="py-0">
+            <CardHeader className="border-b pb-4">
               <div className="space-y-2">
                 <p className="text-[0.68rem] uppercase tracking-[0.22em] text-muted-foreground">Manual steps</p>
                 <CardTitle>Console-only work</CardTitle>
               </div>
             </CardHeader>
             <CardContent className="space-y-3 px-4 py-4 text-sm leading-6 text-muted-foreground">
-              <div className="rounded-lg border border-border/70 bg-muted/20 px-3 py-3">
+              <div className="rounded-md border border-border/70 bg-muted/20 px-3 py-3">
                 <p className="font-medium text-foreground">Phone numbers</p>
                 <p>Purchase or reassign numbers in Vapi when telephony review or compliance checks are required.</p>
               </div>
-              <div className="rounded-lg border border-border/70 bg-muted/20 px-3 py-3">
+              <div className="rounded-md border border-border/70 bg-muted/20 px-3 py-3">
                 <p className="font-medium text-foreground">Knowledge sources</p>
                 <p>Upload or verify provider-side source files when the knowledge connector requires a manual handoff.</p>
               </div>
-              <div className="rounded-lg border border-border/70 bg-muted/20 px-3 py-3">
+              <div className="rounded-md border border-border/70 bg-muted/20 px-3 py-3">
                 <p className="font-medium text-foreground">Fallback routing</p>
                 <p>Keep escalation targets and server URLs aligned with the live routing stack before publishing changes.</p>
               </div>
             </CardContent>
           </Card>
 
-          <Card className="border border-border/80 bg-card/80 py-0 shadow-none">
-            <CardHeader className="border-b border-border/70 pb-4">
+          <Card className="py-0">
+            <CardHeader className="border-b pb-4">
               <div className="space-y-2">
                 <p className="text-[0.68rem] uppercase tracking-[0.22em] text-muted-foreground">History</p>
                 <CardTitle>Revisions</CardTitle>
@@ -622,7 +622,7 @@ export function AgentEditor({ agent, organizationName, canEdit }: AgentEditorPro
                 <div className="space-y-2 pr-3">
                   {revisions.length ? (
                     revisions.map((revision) => (
-                      <div key={revision.id} className="rounded-lg border border-border/70 bg-muted/20 px-3 py-3">
+                      <div key={revision.id} className="rounded-md border border-border/70 bg-muted/20 px-3 py-3">
                         <div className="flex items-center justify-between gap-3">
                           <span className="text-sm font-medium text-foreground">
                             v{revision.version} · {revision.action}
@@ -633,7 +633,7 @@ export function AgentEditor({ agent, organizationName, canEdit }: AgentEditorPro
                       </div>
                     ))
                   ) : (
-                    <div className="rounded-lg border border-dashed border-border/70 bg-muted/20 px-4 py-8 text-sm text-muted-foreground">
+                    <div className="rounded-md border border-dashed border-border/70 bg-muted/20 px-4 py-8 text-sm text-muted-foreground">
                       No revisions recorded yet.
                     </div>
                   )}

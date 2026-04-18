@@ -251,18 +251,18 @@ export function ClientAgentsSection({
   const items = typeof limit === 'number' ? agents.slice(0, limit) : agents;
 
   return (
-    <Card className="border border-border/80 bg-card/80 py-0 shadow-none">
-      <CardHeader className="border-b border-border/70 pb-4">
+    <Card className="py-0">
+      <CardHeader className="border-b pb-4">
         <SectionEyebrow>Agents</SectionEyebrow>
         <CardTitle>Assistant stack</CardTitle>
-        <CardDescription>Edit prompt, voice, model, tools, and Vapi sync state from one surface.</CardDescription>
+        <CardDescription>Versioned assistants, sync state, and publish control in one table-first surface.</CardDescription>
         <SectionAction href={actionHref} label={actionLabel} />
       </CardHeader>
       <CardContent className="px-0 py-0">
         <TableWrap>
           <Table>
             <TableHeader>
-              <TableRow className="border-border/70 bg-muted/15">
+              <TableRow>
                 <TableHead className="px-4">Name</TableHead>
                 <TableHead>Role</TableHead>
                 <TableHead>Voice</TableHead>
@@ -274,7 +274,7 @@ export function ClientAgentsSection({
             <TableBody>
               {items.length ? (
                 items.map((agent) => (
-                  <TableRow key={agent.id} className="border-border/70">
+                  <TableRow key={agent.id}>
                     <TableCell className="px-4 py-3 align-top">
                       <div className="space-y-1">
                         <div className="font-medium text-foreground">{agent.name}</div>
@@ -301,7 +301,7 @@ export function ClientAgentsSection({
                       </div>
                     </TableCell>
                     <TableCell className="px-4 text-right">
-                      <Button asChild variant="ghost" size="sm" className="rounded-md">
+                      <Button asChild variant="ghost" size="sm">
                         <Link href={`/client/agents/${agent.id}` as Route}>Open</Link>
                       </Button>
                     </TableCell>
@@ -344,24 +344,23 @@ export function ClientWorkspaceSummarySection({
   ];
 
   return (
-    <Card className="border border-border/80 bg-card/80 py-0 shadow-none">
-      <CardHeader className="border-b border-border/70 pb-4">
+    <Card className="py-0">
+      <CardHeader className="border-b pb-4">
         <SectionEyebrow>Workspace</SectionEyebrow>
         <CardTitle>Environment</CardTitle>
         <CardDescription>Commercial mode, credentials, and operating context.</CardDescription>
       </CardHeader>
-      <CardContent className="space-y-3 px-4 py-4">
-        {workspaceRows.map((row, index) => (
-          <div key={row.label}>
-            {index ? <Separator className="mb-3 bg-border/70" /> : null}
-            <div className="flex items-start justify-between gap-3">
+      <CardContent className="space-y-4">
+        <div className="divide-y">
+          {workspaceRows.map((row) => (
+            <div key={row.label} className="flex items-start justify-between gap-3 py-3 first:pt-0 last:pb-0">
               <div className="text-sm text-muted-foreground">{row.label}</div>
               <div className="max-w-[65%] text-right text-sm font-medium text-foreground">{row.value}</div>
             </div>
-          </div>
-        ))}
+          ))}
+        </div>
         {showSettingsLink ? (
-          <Button asChild variant="outline" size="sm" className="mt-2 w-full justify-between border-border/80 bg-transparent">
+          <Button asChild variant="outline" size="sm" className="w-full justify-between border-border/80 bg-transparent">
             <Link href="/client/settings">
               Workspace settings
               <Settings2 data-icon="inline-end" />
@@ -413,27 +412,29 @@ export function ClientRecentCallsSection({
 
 export function ClientLeadsSection({ leads }: { leads: LeadRecord[] }) {
   return (
-    <Card className="border border-border/80 bg-card/80 py-0 shadow-none">
-      <CardHeader className="border-b border-border/70 pb-4">
+    <Card className="py-0">
+      <CardHeader className="border-b pb-4">
         <SectionEyebrow>Leads</SectionEyebrow>
-        <CardTitle>Captured contacts</CardTitle>
-        <CardDescription>Qualification signals and transcript context from voice interactions.</CardDescription>
+        <CardTitle>Recovered and enriched lead records</CardTitle>
+        <CardDescription>Every captured lead with transcript proof, recovery state, and next action.</CardDescription>
       </CardHeader>
       <CardContent className="px-0 py-0">
         <TableWrap>
           <Table>
             <TableHeader>
-              <TableRow className="border-border/70 bg-muted/15">
+              <TableRow>
                 <TableHead className="px-4">Lead</TableHead>
                 <TableHead>Intent</TableHead>
-                <TableHead>Urgency</TableHead>
+                <TableHead>Recovery</TableHead>
+                <TableHead>Enrichment</TableHead>
+                <TableHead>Next action</TableHead>
                 <TableHead className="px-4">Updated</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
               {leads.length ? (
                 leads.map((lead) => (
-                  <TableRow key={lead.id} className="border-border/70">
+                  <TableRow key={lead.id}>
                     <TableCell className="px-4 py-3 align-top">
                       <div className="space-y-1">
                         <div className="font-medium text-foreground">{lead.name}</div>
@@ -441,13 +442,23 @@ export function ClientLeadsSection({ leads }: { leads: LeadRecord[] }) {
                       </div>
                     </TableCell>
                     <TableCell>{lead.service}</TableCell>
-                    <TableCell>{lead.urgency}</TableCell>
+                    <TableCell>
+                      <Badge tone={lead.recoveryStatus === 'recovered' ? 'success' : lead.recoveryStatus === 'needs-review' ? 'warning' : 'muted'}>
+                        {lead.recoveryStatus ?? 'structured'}
+                      </Badge>
+                    </TableCell>
+                    <TableCell>
+                      <Badge tone={lead.enrichmentStatus === 'completed' ? 'success' : lead.enrichmentStatus === 'failed' ? 'warning' : 'muted'}>
+                        {lead.enrichmentStatus ?? 'not run'}
+                      </Badge>
+                    </TableCell>
+                    <TableCell>{lead.nextAction ?? lead.urgency}</TableCell>
                     <TableCell className="px-4">{lead.createdAt}</TableCell>
                   </TableRow>
                 ))
               ) : (
                 <TableRow>
-                  <TableCell colSpan={4} className="px-4 py-8">
+                  <TableCell colSpan={6} className="px-4 py-8">
                     <EmptyState>No leads captured.</EmptyState>
                   </TableCell>
                 </TableRow>

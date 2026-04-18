@@ -1,5 +1,5 @@
 import { AppShell } from '@/components/app-shell';
-import { ClientLeadsSection } from '@/components/client-dashboard-sections';
+import { ClientLeadsSection, ClientWorkspaceSummarySection } from '@/components/client-dashboard-sections';
 import { requireViewer } from '@/lib/auth';
 import { getClientDashboardData } from '@/lib/dashboard-data';
 
@@ -16,9 +16,14 @@ export default async function ClientLeadsPage() {
       activeNav="leads"
       headerMode="compact"
       eyebrow="Leads"
-      title="Leads"
+      title="Lead pipeline"
     >
-      <ClientLeadsSection leads={data.leads} />
+      <div className="grid gap-6 xl:grid-cols-[minmax(0,1.7fr)_320px]">
+        <ClientLeadsSection leads={data.leads} />
+        <aside className="space-y-6">
+          <ClientWorkspaceSummarySection data={data} />
+        </aside>
+      </div>
     </AppShell>
   );
 }

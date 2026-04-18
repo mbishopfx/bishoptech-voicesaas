@@ -18,9 +18,9 @@ export default async function ClientAgentsPage() {
       eyebrow="Agents"
       title="Agents"
     >
-      <div className="command-content-grid">
+      <div className="grid gap-6 xl:grid-cols-[minmax(0,1.65fr)_320px]">
         <ClientAgentsSection agents={data.agents} organizationName={data.organizationName} />
-        <aside className="command-side-stack">
+        <aside className="space-y-6">
           <ClientWorkspaceSummarySection data={data} />
         </aside>
       </div>

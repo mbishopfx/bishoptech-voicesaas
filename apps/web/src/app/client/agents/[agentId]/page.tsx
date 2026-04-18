@@ -39,14 +39,14 @@ export default async function ClientAgentPage({ params }: AgentPageProps) {
       eyebrow="Agents"
       title={selectedAgent.name}
       actions={
-        <Button asChild variant="outline" className="rounded-md">
+        <Button asChild variant="outline">
           <Link href="/client/agents">Back to agents</Link>
         </Button>
       }
     >
-      <div className="command-content-grid">
+      <div className="grid gap-6 xl:grid-cols-[minmax(0,1fr)_320px]">
         <AgentEditor agent={selectedAgent} organizationName={data.organizationName} canEdit={canEdit} />
-        <aside className="command-side-stack">
+        <aside className="space-y-6">
           <ClientWorkspaceSummarySection data={data} />
         </aside>
       </div>
