@@ -19,7 +19,7 @@ export default async function ClientCampaignsPage() {
       eyebrow="Campaigns"
       title="Campaign assistant"
     >
-      <div className="grid gap-6 xl:grid-cols-[minmax(0,1.6fr)_320px]">
+      <div className="grid gap-6 2xl:grid-cols-[minmax(0,1.6fr)_320px]">
         <div className="space-y-6">
           <ClientCampaignsSection campaigns={data.campaigns} />
           <BlastCampaignStudio organizationId={data.organizationId} agents={data.agents} />

@@ -26,7 +26,7 @@ export default async function ClientLeadsPage() {
         />
       }
     >
-      <div className="grid gap-6 xl:grid-cols-[minmax(0,1.7fr)_320px]">
+      <div className="grid gap-6 2xl:grid-cols-[minmax(0,1.7fr)_320px]">
         <ClientLeadsSection leads={data.leads} />
         <aside className="space-y-6">
           <ClientWorkspaceSummarySection data={data} />

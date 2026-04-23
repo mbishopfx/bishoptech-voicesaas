@@ -128,7 +128,7 @@ function StackList({
 }
 
 export function ClientMetricsGrid({ metrics }: { metrics: MetricCard[] }) {
-  return <section className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">{MetricStack({ metrics })}</section>;
+  return <section className="grid gap-4 sm:grid-cols-2 2xl:grid-cols-4">{MetricStack({ metrics })}</section>;
 }
 
 export function ClientControlDeckSection({
@@ -140,7 +140,7 @@ export function ClientControlDeckSection({
   const primaryAgent = data.agents[0];
 
   return (
-    <section className="grid gap-4 xl:grid-cols-[minmax(0,1.7fr)_minmax(320px,0.9fr)]">
+    <section className="grid gap-4 2xl:grid-cols-[minmax(0,1.7fr)_minmax(320px,0.9fr)]">
       <Card className="border border-border/80 bg-card/85 py-0 shadow-none">
         <CardHeader className="gap-3 border-b border-border/70 pb-5">
           <div className="space-y-2">
@@ -335,17 +335,22 @@ export function ClientWorkspaceSummarySection({
         <CardTitle>Environment</CardTitle>
         <CardDescription>Commercial mode, credentials, and operating context.</CardDescription>
       </CardHeader>
-      <CardContent className="space-y-4">
+      <CardContent className="space-y-5 px-5 py-5">
         <div className="divide-y">
           {workspaceRows.map((row) => (
-            <div key={row.label} className="flex items-start justify-between gap-3 py-3 first:pt-0 last:pb-0">
+            <div key={row.label} className="flex items-start justify-between gap-3 py-4 first:pt-0 last:pb-0">
               <div className="text-sm text-muted-foreground">{row.label}</div>
               <div className="max-w-[65%] text-right text-sm font-medium text-foreground">{row.value}</div>
             </div>
           ))}
         </div>
         {showSettingsLink ? (
-          <Button asChild variant="outline" size="sm" className="w-full justify-between border-border/80 bg-transparent">
+          <Button
+            asChild
+            variant="outline"
+            size="sm"
+            className="h-11 w-full justify-between rounded-[18px] border-border/80 bg-transparent px-4"
+          >
             <Link href="/client/settings">
               Workspace settings
               <Settings2 data-icon="inline-end" />

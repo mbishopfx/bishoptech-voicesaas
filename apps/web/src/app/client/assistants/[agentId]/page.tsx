@@ -49,7 +49,7 @@ export default async function ClientAssistantPage({ params }: ClientAssistantPag
       }
     >
       <div className="flex flex-col gap-6">
-        <div className="grid gap-6 xl:grid-cols-[minmax(0,1fr)_320px]">
+        <div className="grid gap-6 2xl:grid-cols-[minmax(0,1fr)_320px]">
           <AgentEditor agent={detail.agent} organizationName={workspace.organizationName} canEdit={canEdit} />
           <aside className="flex flex-col gap-6">
             <Card className="py-0">

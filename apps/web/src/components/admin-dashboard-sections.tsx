@@ -113,7 +113,7 @@ export function AdminControlDeckSection({
   const liveAgents = organizations.reduce((sum, organization) => sum + organization.liveAgentCount, 0);
 
   return (
-    <section className="grid gap-4 xl:grid-cols-[minmax(0,1.7fr)_minmax(320px,0.9fr)]">
+    <section className="grid gap-4 2xl:grid-cols-[minmax(0,1.7fr)_minmax(320px,0.9fr)]">
       <Card className="border border-border/80 bg-card/85 py-0 shadow-none">
         <CardHeader className="gap-3 border-b border-border/70 pb-5">
           <div className="space-y-2">
@@ -203,7 +203,7 @@ export function AdminControlDeckSection({
 
 export function AdminMetricsGrid({ metrics }: { metrics: MetricCard[] }) {
   return (
-    <section className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+    <section className="grid gap-4 sm:grid-cols-2 2xl:grid-cols-4">
       {metrics.map((metric, index) => {
         const Icon = metricIcons[index] ?? Bot;
 

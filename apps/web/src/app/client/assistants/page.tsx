@@ -18,7 +18,7 @@ export default async function ClientAssistantsPage() {
       eyebrow="Assistants"
       title="Assistants"
     >
-      <div className="grid gap-6 xl:grid-cols-[minmax(0,1.65fr)_320px]">
+      <div className="grid gap-6 2xl:grid-cols-[minmax(0,1.65fr)_320px]">
         <ClientAgentsSection agents={data.agents} organizationName={data.organizationName} />
         <aside className="space-y-6">
           <ClientWorkspaceSummarySection data={data} />

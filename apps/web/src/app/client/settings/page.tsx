@@ -28,7 +28,7 @@ export default async function ClientSettingsPage() {
         </Button>
       }
     >
-      <div className="grid gap-6 xl:grid-cols-[minmax(0,1fr)_320px]">
+      <div className="grid gap-6 2xl:grid-cols-[minmax(0,1fr)_320px]">
         <WorkspaceSettingsPanel
           organizationId={data.organizationId}
           organizationName={data.organizationName}

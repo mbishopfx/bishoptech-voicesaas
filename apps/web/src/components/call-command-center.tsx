@@ -111,7 +111,7 @@ export function CallCommandCenter({ recentCalls, mode }: CallCommandCenterProps)
 
   return (
     <section className="space-y-6">
-      <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
+      <div className="grid gap-4 md:grid-cols-2 2xl:grid-cols-4">
         <CallKpi
           label="Call volume"
           value={String(recentCalls.length)}
@@ -134,7 +134,7 @@ export function CallCommandCenter({ recentCalls, mode }: CallCommandCenterProps)
         />
       </div>
 
-      <div className="grid gap-4 xl:grid-cols-[360px_minmax(0,1fr)]">
+      <div className="grid gap-4 2xl:grid-cols-[340px_minmax(0,1fr)]">
         <Card className="py-0">
           <CardHeader className="border-b pb-4">
             <div className="space-y-2">
@@ -270,7 +270,7 @@ export function CallCommandCenter({ recentCalls, mode }: CallCommandCenterProps)
                 </CardAction>
               </CardHeader>
               <CardContent className="space-y-4 px-4 py-4">
-                <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-3">
+                <div className="grid gap-3 md:grid-cols-2 2xl:grid-cols-3">
                   <div className="rounded-md border border-border/70 bg-muted/20 px-4 py-3">
                     <div className="text-[0.68rem] uppercase tracking-[0.16em] text-muted-foreground">From</div>
                     <div className="mt-2 text-sm font-medium text-foreground">{selectedCall.fromNumber ?? 'Unknown'}</div>

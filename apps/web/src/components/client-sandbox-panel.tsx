@@ -154,7 +154,7 @@ export function ClientSandboxPanel({ organizationId, agents, publicKey, scenario
   }
 
   return (
-    <div className="grid gap-6 xl:grid-cols-[minmax(0,1.35fr)_360px]">
+    <div className="grid gap-6 2xl:grid-cols-[minmax(0,1.28fr)_360px]">
       <Card className="py-0">
         <CardHeader className="border-b pb-4">
           <div className="flex items-center justify-between gap-3">
@@ -232,7 +232,7 @@ export function ClientSandboxPanel({ organizationId, agents, publicKey, scenario
             <span className="text-sm text-muted-foreground">{statusLabel}</span>
           </div>
 
-          <div className="grid gap-4 xl:grid-cols-[minmax(0,1fr)_280px]">
+          <div className="grid gap-4 2xl:grid-cols-[minmax(0,1fr)_300px]">
             <div className="rounded-lg border border-border/70 bg-muted/20 p-4">
               <div className="mb-3 flex items-center gap-2 text-sm font-medium">
                 <Sparkles className="size-4" />

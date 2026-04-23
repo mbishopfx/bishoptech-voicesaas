@@ -3,6 +3,8 @@ import { Geist, Geist_Mono } from 'next/font/google';
 import type { ReactNode } from 'react';
 
 import '@/app/globals.css';
+import { ThemeProvider } from '@/components/theme-provider';
+import { Toaster } from '@/components/ui/sonner';
 import { TooltipProvider } from '@/components/ui/tooltip';
 import { appConfig } from '@/lib/app-config';
 import { cn } from '@/lib/utils';
@@ -18,9 +20,14 @@ export const metadata: Metadata = {
 
 export default function RootLayout({ children }: { children: ReactNode }) {
   return (
-    <html lang="en" className={cn(geist.variable, geistMono.variable, 'dark font-sans')}>
+    <html lang="en" suppressHydrationWarning className={cn(geist.variable, geistMono.variable, 'font-sans')}>
       <body className="bg-background text-foreground antialiased">
-        <TooltipProvider>{children}</TooltipProvider>
+        <ThemeProvider attribute="class" defaultTheme="system" enableSystem disableTransitionOnChange>
+          <TooltipProvider>
+            {children}
+            <Toaster />
+          </TooltipProvider>
+        </ThemeProvider>
       </body>
     </html>
   );

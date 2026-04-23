@@ -32,7 +32,7 @@ function MetricCards({ data }: { data: ClientDashboardData }) {
   ];
 
   return (
-    <section className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
+    <section className="grid gap-4 md:grid-cols-2 2xl:grid-cols-4">
       {cards.map((metric) => (
         <Card key={metric.label}>
           <CardHeader className="pb-2">
@@ -86,7 +86,7 @@ export function ClientCommandCenter({ data }: { data: ClientDashboardData }) {
         </TabsList>
 
         <TabsContent value="overview" className="space-y-4">
-          <div className="grid gap-4 xl:grid-cols-[minmax(0,1.9fr)_360px]">
+          <div className="grid gap-4 2xl:grid-cols-[minmax(0,1.9fr)_360px]">
             <Card>
               <CardHeader className="border-b">
                 <CardTitle>{data.organizationName}</CardTitle>
@@ -130,7 +130,7 @@ export function ClientCommandCenter({ data }: { data: ClientDashboardData }) {
             </Card>
           </div>
 
-          <div className="grid gap-4 xl:grid-cols-[minmax(0,1.35fr)_minmax(320px,0.9fr)]">
+          <div className="grid gap-4 2xl:grid-cols-[minmax(0,1.35fr)_minmax(320px,0.9fr)]">
             <Card>
               <CardHeader className="border-b">
                 <CardTitle className="text-base">Recent calls</CardTitle>
@@ -168,7 +168,7 @@ export function ClientCommandCenter({ data }: { data: ClientDashboardData }) {
         </TabsContent>
 
         <TabsContent value="assistants" className="space-y-4">
-          <div className="grid gap-4 xl:grid-cols-[minmax(0,1.6fr)_360px]">
+          <div className="grid gap-4 2xl:grid-cols-[minmax(0,1.6fr)_360px]">
             <Card>
               <CardHeader className="border-b">
                 <CardTitle>Assistant IDs</CardTitle>
@@ -228,7 +228,7 @@ export function ClientCommandCenter({ data }: { data: ClientDashboardData }) {
         </TabsContent>
 
         <TabsContent value="leads" className="space-y-4">
-          <div className="grid gap-4 xl:grid-cols-[minmax(0,1.7fr)_320px]">
+          <div className="grid gap-4 2xl:grid-cols-[minmax(0,1.7fr)_320px]">
             <Card>
               <CardHeader className="border-b">
                 <CardTitle>Lead captures</CardTitle>
@@ -303,7 +303,7 @@ export function ClientCommandCenter({ data }: { data: ClientDashboardData }) {
         </TabsContent>
 
         <TabsContent value="logs" className="space-y-4">
-          <div className="grid gap-4 xl:grid-cols-[minmax(0,1.4fr)_minmax(320px,1fr)]">
+          <div className="grid gap-4 2xl:grid-cols-[minmax(0,1.4fr)_minmax(320px,1fr)]">
             <Card>
               <CardHeader className="border-b">
                 <CardTitle>Call logs</CardTitle>

@@ -5,7 +5,7 @@ import { Slot } from "radix-ui"
 import { cn } from "@/lib/utils"
 
 const badgeVariants = cva(
-  "group/badge inline-flex h-5 w-fit shrink-0 items-center justify-center gap-1 overflow-hidden rounded-4xl border border-transparent px-2 py-0.5 text-xs font-medium whitespace-nowrap transition-all focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/50 has-data-[icon=inline-end]:pr-1.5 has-data-[icon=inline-start]:pl-1.5 aria-invalid:border-destructive aria-invalid:ring-destructive/20 dark:aria-invalid:ring-destructive/40 [&>svg]:pointer-events-none [&>svg]:size-3!",
+  "group/badge inline-flex h-7 w-fit shrink-0 items-center justify-center gap-1 overflow-hidden rounded-full border border-transparent px-3 py-0 text-[0.72rem] leading-none font-medium whitespace-nowrap transition-all focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/50 has-data-[icon=inline-end]:pr-2.5 has-data-[icon=inline-start]:pl-2.5 aria-invalid:border-destructive aria-invalid:ring-destructive/20 dark:aria-invalid:ring-destructive/40 [&>svg]:pointer-events-none [&>svg]:size-3!",
   {
     variants: {
       variant: {
@@ -55,10 +55,10 @@ function Badge({
       data-tone={tone}
       className={cn(
         badgeVariants({ variant: mappedVariant }),
-        tone === "success" && "border-emerald-700/15 bg-emerald-700/[0.08] text-emerald-800 dark:border-emerald-500/25 dark:bg-emerald-500/12 dark:text-emerald-200",
-        tone === "warning" && "border-amber-600/20 bg-amber-500/[0.10] text-amber-800 dark:border-amber-500/25 dark:bg-amber-500/12 dark:text-amber-200",
-        tone === "muted" && "border-border/80 bg-background/72 text-muted-foreground dark:border-white/10 dark:bg-white/[0.04] dark:text-zinc-300",
-        tone === "cyan" && "border-sky-700/15 bg-sky-600/[0.08] text-sky-800 dark:border-cyan-500/25 dark:bg-cyan-500/12 dark:text-cyan-200",
+        tone === "success" && "border-emerald-700/15 bg-emerald-700/[0.08] text-emerald-800 shadow-[inset_0_1px_0_rgba(255,255,255,0.55)] dark:border-emerald-500/25 dark:bg-emerald-500/12 dark:text-emerald-200 dark:shadow-none",
+        tone === "warning" && "border-amber-600/20 bg-amber-500/[0.10] text-amber-800 shadow-[inset_0_1px_0_rgba(255,255,255,0.55)] dark:border-amber-500/25 dark:bg-amber-500/12 dark:text-amber-200 dark:shadow-none",
+        tone === "muted" && "border-border/80 bg-background/82 text-muted-foreground shadow-[inset_0_1px_0_rgba(255,255,255,0.68)] dark:border-white/10 dark:bg-white/[0.05] dark:text-zinc-300 dark:shadow-none",
+        tone === "cyan" && "border-sky-700/15 bg-sky-600/[0.08] text-sky-800 shadow-[inset_0_1px_0_rgba(255,255,255,0.55)] dark:border-cyan-500/25 dark:bg-cyan-500/12 dark:text-cyan-200 dark:shadow-none",
         className
       )}
       {...props}
