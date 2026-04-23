@@ -176,6 +176,7 @@ export function AppShell({
     '--sidebar-width': '17.75rem',
     '--sidebar-width-icon': '4.5rem',
     '--shell-header-height': '5.5rem',
+    '--shell-frame-offset': 'calc(var(--shell-header-height) + 2rem)',
   } as CSSProperties;
 
   return (
@@ -221,13 +222,13 @@ export function AppShell({
           </div>
         </header>
 
-        <div className="flex min-h-[100dvh] pt-[calc(var(--shell-header-height)+1rem)]">
+        <div className="flex min-h-[100dvh] pt-[var(--shell-frame-offset)]">
           <Sidebar
             collapsible="icon"
             variant="inset"
-            className="top-[calc(var(--shell-header-height)+1rem)] bottom-6 h-auto border-none bg-transparent px-2 py-0 transition-[width,padding] duration-300 ease-[cubic-bezier(0.22,1,0.36,1)]"
+            className="top-[var(--shell-frame-offset)] bottom-6 h-auto border-none bg-transparent px-2 py-0 transition-[width,padding] duration-300 ease-[cubic-bezier(0.22,1,0.36,1)] group-data-[collapsible=icon]:px-1.5"
           >
-            <SidebarHeader className="gap-3 rounded-[30px] border border-sidebar-border/80 bg-sidebar/96 px-3 py-3 shadow-[0_24px_60px_-32px_rgba(15,23,42,0.28)]">
+            <SidebarHeader className="gap-3 rounded-[30px] border border-sidebar-border/80 bg-sidebar/96 px-3 py-3 shadow-[0_24px_60px_-32px_rgba(15,23,42,0.28)] group-data-[collapsible=icon]:items-center group-data-[collapsible=icon]:px-0 group-data-[collapsible=icon]:py-2">
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
                   <SidebarMenuButton
@@ -271,11 +272,11 @@ export function AppShell({
               </DropdownMenu>
             </SidebarHeader>
 
-            <SidebarContent className="gap-3 px-3 py-4">
+            <SidebarContent className="gap-3 px-3 py-4 group-data-[collapsible=icon]:items-center group-data-[collapsible=icon]:px-0 group-data-[collapsible=icon]:py-3">
               {navSections.map((section) => (
                 <SidebarGroup
                   key={section.label}
-                  className="rounded-[28px] border border-sidebar-border/75 bg-sidebar/95 p-3 shadow-[0_20px_48px_-32px_rgba(15,23,42,0.28)] group-data-[collapsible=icon]:border-transparent group-data-[collapsible=icon]:bg-transparent group-data-[collapsible=icon]:shadow-none"
+                  className="rounded-[28px] border border-sidebar-border/75 bg-sidebar/95 p-3 shadow-[0_20px_48px_-32px_rgba(15,23,42,0.28)] group-data-[collapsible=icon]:items-center group-data-[collapsible=icon]:border-transparent group-data-[collapsible=icon]:bg-transparent group-data-[collapsible=icon]:p-0 group-data-[collapsible=icon]:shadow-none"
                 >
                   <SidebarGroupLabel className="px-2 text-[0.68rem] uppercase tracking-[0.22em] text-sidebar-foreground/45">
                     {section.label}
@@ -307,7 +308,7 @@ export function AppShell({
               ))}
             </SidebarContent>
 
-            <SidebarFooter className="px-3 pb-3 pt-0">
+            <SidebarFooter className="px-3 pb-3 pt-0 group-data-[collapsible=icon]:items-center group-data-[collapsible=icon]:px-0">
               <SidebarMenu className="rounded-[28px] border border-sidebar-border/75 bg-sidebar/95 p-3 shadow-[0_20px_48px_-32px_rgba(15,23,42,0.28)] group-data-[collapsible=icon]:border-transparent group-data-[collapsible=icon]:bg-transparent group-data-[collapsible=icon]:p-0 group-data-[collapsible=icon]:shadow-none">
                 <SidebarMenuItem>
                   <DropdownMenu>
