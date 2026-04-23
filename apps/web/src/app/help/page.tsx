@@ -15,51 +15,56 @@ import { requireViewer } from '@/lib/auth';
 
 export const dynamic = 'force-dynamic';
 
-const promptStarters = [
-  'How should I configure after-hours missed-call recovery for this organization?',
-  'Which client-safe settings can be exposed without risking agent drift?',
-  'How should Vapi webhook payloads map to calls, contacts, and transcript assets?',
-  'What is the cleanest handoff path from a demo assistant into a production org?',
-];
-
-const operatingCards = [
+const clientSteps = [
   {
-    title: 'Kickoff call first',
-    body: 'Sell and scope through a real onboarding call so routing, lead criteria, number ownership, and reporting expectations are locked before setup.',
-    icon: RocketIcon,
+    title: 'Start on the overview page',
+    body: 'Use the overview page for a quick read on calls, new leads, assistant activity, and the current state of your workspace.',
+    icon: HomeIcon,
   },
   {
-    title: 'Client-safe controls only',
-    body: 'Expose testing, logs, transcripts, and structured outputs on client pages while keeping drift-prone provisioning actions in operator lanes.',
+    title: 'Review calls and leads',
+    body: 'Use Calls and Leads to see what happened, what was captured, and which conversations need follow-up from your team.',
+    icon: Component1Icon,
+  },
+  {
+    title: 'Test and request changes',
+    body: 'Use the Call Tester to listen to the experience, then submit a support request whenever you want changes or a working session.',
+    icon: MixerHorizontalIcon,
+  },
+];
+
+const clientRouteGuide = [
+  { label: 'Overview', detail: 'Your top-level snapshot for activity, leads, and assistant coverage.' },
+  { label: 'Assistants', detail: 'See the assistant experiences assigned to your workspace and review recent performance.' },
+  { label: 'Calls', detail: 'Read transcripts, review summaries, and export recordings or transcripts when needed.' },
+  { label: 'Leads', detail: 'Track newly captured contacts and see what follow-up is recommended next.' },
+  { label: 'Campaigns', detail: 'Review saved or active outreach campaigns connected to your workspace.' },
+  { label: 'Call Tester', detail: 'Run a browser-based test call to hear the current experience and capture feedback.' },
+  { label: 'Support Requests', detail: 'Submit questions, change requests, issues, or meeting requests to the team.' },
+  { label: 'Workspace Details', detail: 'Reference your current plan, timezone, phone coverage, and support resources.' },
+];
+
+const clientBestPractices = [
+  'Use call history before requesting changes so your feedback is tied to real examples.',
+  'Keep feedback specific: mention the scenario, the phrase that felt off, and the outcome you want instead.',
+  'Use support requests for updates rather than trying to manage the assistant configuration directly.',
+];
+
+const adminCards = [
+  {
+    title: 'Owner platform',
+    body: 'Use the admin workspace as the birds-eye surface for all clients, portfolio health, and open work.',
+    icon: HomeIcon,
+  },
+  {
+    title: 'Client-safe surfaces only',
+    body: 'Keep provisioning, credentials, and deep assistant controls out of the client workspace.',
     icon: MixerHorizontalIcon,
   },
   {
-    title: 'Versioned assistant stacks',
-    body: 'Inbound, outbound, and campaign assistants should stay explicit in the data model so publish and QA steps are predictable.',
-    icon: Component1Icon,
-  },
-];
-
-const routeRows = [
-  {
-    route: 'POST /api/demo-template',
-    audience: 'Admin and client-authenticated users',
-    detail: 'Generate and save a demo blueprint from website and GBP source material.',
-  },
-  {
-    route: 'POST /api/demo-call',
-    audience: 'Platform admin only',
-    detail: 'Create a Vapi assistant and launch the outbound demo call.',
-  },
-  {
-    route: 'POST /api/admin/onboard-client',
-    audience: 'Platform admin only',
-    detail: 'Create the client login, organization, memberships, and default assistant stack.',
-  },
-  {
-    route: 'POST /api/blast-campaign',
-    audience: 'Manage-org roles only',
-    detail: 'Normalize recipients, queue a campaign, and persist recipient rows for follow-up.',
+    title: 'Centralize guidance here',
+    body: 'Move durable how-to guidance into playbooks instead of leaving internal notes scattered through the app.',
+    icon: RocketIcon,
   },
 ];
 
@@ -67,34 +72,134 @@ export default async function HelpPage() {
   const viewer = await requireViewer();
   const workspaceHref = viewer.isPlatformAdmin ? '/admin' : '/client';
 
+  if (!viewer.isPlatformAdmin) {
+    return (
+      <AppShell
+        current="help"
+        viewer={viewer}
+        activeNav="playbooks"
+        eyebrow="Playbooks"
+        title="How to use your workspace"
+        description="Everything your team needs to navigate the platform, review activity, and request updates without digging through internal platform details."
+        actions={
+          <Button asChild size="lg">
+            <Link href={workspaceHref}>
+              <HomeIcon />
+              Back to workspace
+            </Link>
+          </Button>
+        }
+      >
+        <section className="grid gap-4 xl:grid-cols-[minmax(0,1.35fr)_minmax(320px,0.8fr)]">
+          <Card className="py-0">
+            <CardHeader className="border-b border-border/70 pb-4">
+              <Badge tone="muted" className="w-fit">Quick start</Badge>
+              <CardTitle className="text-[1.75rem] tracking-[-0.04em]">What to do first</CardTitle>
+              <CardDescription className="max-w-2xl leading-7">
+                These are the fastest ways to get value from the workspace without needing any internal platform knowledge.
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="grid gap-4 px-4 py-4 md:grid-cols-3">
+              {clientSteps.map((item) => {
+                const Icon = item.icon;
+
+                return (
+                  <div key={item.title} className="rounded-[24px] border border-border/70 bg-muted/30 px-4 py-4">
+                    <div className="mb-4 flex size-10 items-center justify-center rounded-2xl border border-border/70 bg-background/80 text-foreground">
+                      <Icon className="size-4" />
+                    </div>
+                    <h3 className="text-base font-semibold tracking-[-0.03em] text-foreground">{item.title}</h3>
+                    <p className="mt-2 text-sm leading-7 text-muted-foreground">{item.body}</p>
+                  </div>
+                );
+              })}
+            </CardContent>
+          </Card>
+
+          <Card className="py-0">
+            <CardHeader className="border-b border-border/70 pb-4">
+              <Badge tone="success" className="w-fit">Best practices</Badge>
+              <CardTitle>How to get the most from the platform</CardTitle>
+              <CardDescription>Keep feedback clear and keep the workspace focused on review, testing, and action.</CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-3 px-4 py-4">
+              {clientBestPractices.map((item) => (
+                <div key={item} className="rounded-[22px] border border-border/70 bg-background/75 px-4 py-4 text-sm leading-7 text-muted-foreground">
+                  {item}
+                </div>
+              ))}
+            </CardContent>
+          </Card>
+        </section>
+
+        <section className="grid gap-4 xl:grid-cols-[minmax(0,1fr)_420px]">
+          <Card className="py-0">
+            <CardHeader className="border-b border-border/70 pb-4">
+              <Badge tone="muted" className="w-fit">Navigation guide</Badge>
+              <CardTitle>Where to go for each task</CardTitle>
+              <CardDescription>Use the left menu as your main workspace map.</CardDescription>
+            </CardHeader>
+            <CardContent className="grid gap-3 px-4 py-4 md:grid-cols-2">
+              {clientRouteGuide.map((item) => (
+                <div key={item.label} className="rounded-[22px] border border-border/70 bg-muted/25 px-4 py-4">
+                  <p className="text-sm font-semibold text-foreground">{item.label}</p>
+                  <p className="mt-2 text-sm leading-7 text-muted-foreground">{item.detail}</p>
+                </div>
+              ))}
+            </CardContent>
+          </Card>
+
+          <Card className="py-0">
+            <CardHeader className="border-b border-border/70 pb-4">
+              <Badge tone="cyan" className="w-fit">Need help?</Badge>
+              <CardTitle>When to contact the team</CardTitle>
+              <CardDescription>Use a support request whenever you need changes or want something reviewed.</CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-3 px-4 py-4">
+              {[
+                'Use a question request when you need clarity on what the workspace is showing.',
+                'Use a revision request when the assistant wording, routing, or behavior needs to change.',
+                'Use a meeting request when you want to review performance or plan the next round of updates.',
+              ].map((item) => (
+                <div key={item} className="rounded-[22px] border border-border/70 bg-background/75 px-4 py-4 text-sm leading-7 text-muted-foreground">
+                  {item}
+                </div>
+              ))}
+            </CardContent>
+          </Card>
+        </section>
+      </AppShell>
+    );
+  }
+
   return (
     <AppShell
       current="help"
       viewer={viewer}
       activeNav="playbooks"
       eyebrow="Playbooks"
-      title="Operating notes, launch rules, and route contracts."
-      description="Use this surface as the shared memory for provisioning logic, client-safe controls, and the route behavior behind the platform."
+      title="Owner and team playbooks"
+      description="Use this space for the durable rules behind the platform, client-safe navigation, and the operating standards for the portfolio."
       actions={
         <Button asChild size="lg">
           <Link href={workspaceHref}>
             <HomeIcon />
-            Back to workspace
+            Back to owner platform
           </Link>
         </Button>
       }
     >
-      <section className="grid gap-4 xl:grid-cols-[minmax(0,1.4fr)_minmax(320px,0.8fr)]">
+      <section className="grid gap-4 xl:grid-cols-[minmax(0,1.35fr)_minmax(320px,0.8fr)]">
         <Card className="py-0">
           <CardHeader className="border-b border-border/70 pb-4">
-            <Badge tone="muted" className="w-fit">Operating model</Badge>
-            <CardTitle className="text-[1.75rem] tracking-[-0.04em]">How the platform is meant to be run</CardTitle>
+            <Badge tone="muted" className="w-fit">Operating principles</Badge>
+            <CardTitle className="text-[1.75rem] tracking-[-0.04em]">How the portfolio should be run</CardTitle>
             <CardDescription className="max-w-2xl leading-7">
-              These are the durable rules that keep onboarding, QA, publishing, and client visibility consistent across the portfolio.
+              Keep client workspaces clear, keep admin controls centralized, and keep long-form guidance in playbooks instead of in the product UI.
             </CardDescription>
           </CardHeader>
           <CardContent className="grid gap-4 px-4 py-4 md:grid-cols-3">
-            {operatingCards.map((item) => {
+            {adminCards.map((item) => {
               const Icon = item.icon;
 
               return (
@@ -112,56 +217,15 @@ export default async function HelpPage() {
 
         <Card className="py-0">
           <CardHeader className="border-b border-border/70 pb-4">
-            <Badge tone="cyan" className="w-fit">Pricing</Badge>
-            <CardTitle>Simple commercial model</CardTitle>
-            <CardDescription>Keep the public-facing story direct and the delivery model sustainable.</CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-4 px-4 py-4">
-            <div className="rounded-[24px] border border-border/70 bg-background/75 px-4 py-4">
-              <p className="text-[0.68rem] uppercase tracking-[0.18em] text-muted-foreground">Setup</p>
-              <p className="mt-2 text-xl font-semibold tracking-[-0.04em] text-foreground">One-time build fee</p>
-              <p className="mt-2 text-sm leading-7 text-muted-foreground">
-                Use the onboarding call to scope the real workflow before implementation starts.
-              </p>
-            </div>
-            <div className="rounded-[24px] border border-border/70 bg-background/75 px-4 py-4">
-              <p className="text-[0.68rem] uppercase tracking-[0.18em] text-muted-foreground">Management</p>
-              <p className="mt-2 text-xl font-semibold tracking-[-0.04em] text-foreground">$99 monthly</p>
-              <p className="mt-2 text-sm leading-7 text-muted-foreground">
-                Maintenance, tuning, weekly guidance, and platform access stay bundled instead of expanding into a bloated retainer.
-              </p>
-            </div>
-          </CardContent>
-        </Card>
-      </section>
-
-      <section className="grid gap-4 xl:grid-cols-[minmax(0,1fr)_420px]">
-        <Card className="py-0">
-          <CardHeader className="border-b border-border/70 pb-4">
-            <Badge tone="muted" className="w-fit">Prompt starters</Badge>
-            <CardTitle>Questions worth answering inside the copilot</CardTitle>
-            <CardDescription>Use these to seed rollout notes, assistant audits, and support handoff decisions.</CardDescription>
-          </CardHeader>
-          <CardContent className="grid gap-3 px-4 py-4 md:grid-cols-2">
-            {promptStarters.map((prompt) => (
-              <div key={prompt} className="rounded-[22px] border border-border/70 bg-muted/25 px-4 py-4">
-                <p className="text-sm font-medium leading-7 text-foreground">{prompt}</p>
-              </div>
-            ))}
-          </CardContent>
-        </Card>
-
-        <Card className="py-0">
-          <CardHeader className="border-b border-border/70 pb-4">
-            <Badge tone="success" className="w-fit">Navigation</Badge>
-            <CardTitle>Where to work</CardTitle>
-            <CardDescription>Use the same route language everywhere so support and operator flows stay obvious.</CardDescription>
+            <Badge tone="cyan" className="w-fit">Navigation</Badge>
+            <CardTitle>Three lanes only</CardTitle>
+            <CardDescription>Keep the information architecture obvious for both your team and your clients.</CardDescription>
           </CardHeader>
           <CardContent className="space-y-3 px-4 py-4">
             {[
-              { label: 'Admin', detail: 'Provisioning, inventory sync, onboarding, and demo tooling.' },
-              { label: 'Client', detail: 'Calls, leads, campaigns, transcripts, and testing-safe controls.' },
-              { label: 'Playbooks', detail: 'Route contracts, implementation notes, and launch guidance.' },
+              { label: 'Owner platform', detail: 'Cross-client portfolio visibility, onboarding, provisioning, and deep controls.' },
+              { label: 'Client workspace', detail: 'Calls, leads, campaigns, testing, requests, and account basics only.' },
+              { label: 'Playbooks', detail: 'How-to guidance, usage notes, and standards for both audiences.' },
             ].map((item) => (
               <div key={item.label} className="rounded-[22px] border border-border/70 bg-background/75 px-4 py-4">
                 <p className="text-sm font-semibold text-foreground">{item.label}</p>
@@ -176,31 +240,27 @@ export default async function HelpPage() {
         <CardHeader className="border-b border-border/70 pb-4">
           <div className="flex flex-wrap items-center justify-between gap-3">
             <div>
-              <Badge tone="muted" className="mb-3 w-fit">Route contracts</Badge>
-              <CardTitle>Current API behavior</CardTitle>
-              <CardDescription>These are the routes operators and client-safe tools depend on right now.</CardDescription>
+              <Badge tone="muted" className="mb-3 w-fit">Client playbooks</Badge>
+              <CardTitle>What belongs in client-facing documentation</CardTitle>
+              <CardDescription>Keep client documentation focused on navigation, review, testing, and support requests.</CardDescription>
             </div>
             <Button asChild variant="outline" size="sm">
               <Link href={workspaceHref}>
                 <ReaderIcon />
-                Open workspace
+                Open owner platform
               </Link>
             </Button>
           </div>
         </CardHeader>
         <CardContent className="space-y-3 px-4 py-4">
-          {routeRows.map((row) => (
-            <div
-              key={row.route}
-              className="grid gap-3 rounded-[24px] border border-border/70 bg-background/78 px-4 py-4 md:grid-cols-[minmax(0,1.25fr)_220px]"
-            >
-              <div>
-                <p className="text-sm font-semibold text-foreground">{row.route}</p>
-                <p className="mt-1 text-sm leading-7 text-muted-foreground">{row.detail}</p>
-              </div>
-              <div className="flex items-start md:justify-end">
-                <Badge tone="muted">{row.audience}</Badge>
-              </div>
+          {[
+            'How to review calls, transcripts, and recordings.',
+            'How to track new leads and follow-up recommendations.',
+            'How to test the experience in the call tester.',
+            'How to submit change requests, questions, and meeting requests.',
+          ].map((item) => (
+            <div key={item} className="rounded-[24px] border border-border/70 bg-background/78 px-4 py-4 text-sm leading-7 text-muted-foreground">
+              {item}
             </div>
           ))}
         </CardContent>

@@ -17,8 +17,8 @@ export default async function ClientTicketsPage() {
       viewer={viewer}
       activeNav="tickets"
       headerMode="compact"
-      eyebrow="Tickets"
-      title="Support tickets"
+      eyebrow="Requests"
+      title="Support requests"
     >
       <ClientTicketCenter organizationId={data.organizationId} agents={data.agents} initialTickets={tickets} />
     </AppShell>

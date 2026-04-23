@@ -85,7 +85,7 @@ function viewerName(viewer: ViewerContext) {
 
 function viewerRole(viewer: ViewerContext) {
   if (viewer.isPlatformAdmin) {
-    return 'Platform Admin';
+    return 'Owner';
   }
 
   return viewer.memberships[0]?.role ?? 'Viewer';
@@ -105,7 +105,7 @@ function getNavSections(current: AppShellProps['current'], viewer: ViewerContext
       {
         label: 'Platform',
         items: [
-          { key: 'dashboard', href: '/admin', label: 'Command center', icon: DashboardIcon },
+          { key: 'dashboard', href: '/admin', label: 'Portfolio overview', icon: DashboardIcon },
           { key: 'clients', href: '/admin/clients', label: 'Clients', icon: PersonIcon },
           { key: 'assistants', href: '/admin/assistants', label: 'Assistants', icon: Component1Icon },
           { key: 'calls', href: '/admin/calls', label: 'Call queue', icon: ChatBubbleIcon },
@@ -128,11 +128,11 @@ function getNavSections(current: AppShellProps['current'], viewer: ViewerContext
           { key: 'dashboard', href: '/client', label: 'Overview', icon: HomeIcon },
           { key: 'assistants', href: '/client/assistants', label: 'Assistants', icon: Component1Icon },
           { key: 'leads', href: '/client/leads', label: 'Lead pipeline', icon: BarChartIcon },
-          { key: 'calls', href: '/client/calls', label: 'Call explorer', icon: ChatBubbleIcon },
-          { key: 'tickets', href: '/client/tickets', label: 'Tickets', icon: FileTextIcon },
+          { key: 'calls', href: '/client/calls', label: 'Calls', icon: ChatBubbleIcon },
+          { key: 'tickets', href: '/client/tickets', label: 'Requests', icon: FileTextIcon },
           { key: 'campaigns', href: '/client/campaigns', label: 'Campaigns', icon: PaperPlaneIcon },
-          { key: 'sandbox', href: '/client/sandbox', label: 'Sandbox', icon: MixerHorizontalIcon },
-          { key: 'settings', href: '/client/settings', label: 'Settings', icon: GearIcon },
+          { key: 'sandbox', href: '/client/sandbox', label: 'Call tester', icon: MixerHorizontalIcon },
+          { key: 'settings', href: '/client/settings', label: 'Workspace', icon: GearIcon },
         ],
       },
       {

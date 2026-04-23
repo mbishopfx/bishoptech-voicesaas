@@ -14,9 +14,9 @@ export default async function ClientPage() {
       current="client"
       viewer={viewer}
       activeNav="dashboard"
-      eyebrow="Client Operations Console"
-      title="Client Operations Console"
-      description="See exactly what the assistant stack is doing: recovered leads, call quality, enrichment status, and live playground confidence without touching protected operator settings."
+      eyebrow="Workspace overview"
+      title="Workspace overview"
+      description="Use this workspace to review calls, monitor new leads, test the live experience, and request updates from one place."
     >
       <ClientCommandCenter data={data} />
     </AppShell>

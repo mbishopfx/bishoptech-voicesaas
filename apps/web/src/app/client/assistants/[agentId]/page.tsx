@@ -1,14 +1,14 @@
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
+import { BookOpen, MessageSquarePlus } from 'lucide-react';
 
-import { AgentEditor } from '@/components/agent-editor';
 import { AppShell } from '@/components/app-shell';
 import { CallCommandCenter } from '@/components/call-command-center';
 import { ClientWorkspaceSummarySection } from '@/components/client-dashboard-sections';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { canManageOrganization, requireViewer } from '@/lib/auth';
+import { requireViewer } from '@/lib/auth';
 import { getClientDashboardData } from '@/lib/dashboard-data';
 import { loadAssistantDetail } from '@/lib/voiceops-platform';
 
@@ -32,8 +32,6 @@ export default async function ClientAssistantPage({ params }: ClientAssistantPag
     notFound();
   }
 
-  const canEdit = canManageOrganization(viewer, workspace.organizationId);
-
   return (
     <AppShell
       current="client"
@@ -50,12 +48,71 @@ export default async function ClientAssistantPage({ params }: ClientAssistantPag
     >
       <div className="flex flex-col gap-6">
         <div className="grid gap-6 2xl:grid-cols-[minmax(0,1fr)_320px]">
-          <AgentEditor agent={detail.agent} organizationName={workspace.organizationName} canEdit={canEdit} />
+          <Card className="py-0">
+            <CardHeader className="border-b pb-5">
+              <div className="space-y-2">
+                <div className="flex flex-wrap items-center gap-2">
+                  <Badge tone={detail.agent.status === 'live' ? 'success' : detail.agent.status === 'ready' ? 'cyan' : 'muted'}>
+                    {detail.agent.status === 'live' ? 'Live' : detail.agent.status === 'ready' ? 'Ready' : 'In setup'}
+                  </Badge>
+                  <Badge tone="muted">{detail.agent.role}</Badge>
+                </div>
+                <CardTitle className="text-2xl tracking-[-0.04em]">{detail.agent.name}</CardTitle>
+                <CardDescription className="max-w-3xl text-sm leading-6">
+                  {detail.agent.purpose}
+                </CardDescription>
+              </div>
+            </CardHeader>
+            <CardContent className="space-y-5 px-4 py-4">
+              <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
+                <div className="rounded-md border border-border/70 bg-muted/20 px-4 py-3">
+                  <div className="text-xs uppercase tracking-[0.16em] text-muted-foreground">Voice</div>
+                  <div className="mt-2 text-sm font-medium text-foreground">{detail.agent.voice}</div>
+                </div>
+                <div className="rounded-md border border-border/70 bg-muted/20 px-4 py-3">
+                  <div className="text-xs uppercase tracking-[0.16em] text-muted-foreground">Phone lines</div>
+                  <div className="mt-2 text-sm font-medium text-foreground">{detail.stats.phoneNumbers.length}</div>
+                </div>
+                <div className="rounded-md border border-border/70 bg-muted/20 px-4 py-3">
+                  <div className="text-xs uppercase tracking-[0.16em] text-muted-foreground">Recent calls</div>
+                  <div className="mt-2 text-sm font-medium text-foreground">{detail.stats.totalCalls}</div>
+                </div>
+                <div className="rounded-md border border-border/70 bg-muted/20 px-4 py-3">
+                  <div className="text-xs uppercase tracking-[0.16em] text-muted-foreground">Last updated</div>
+                  <div className="mt-2 text-sm font-medium text-foreground">{detail.agent.lastSyncedAt}</div>
+                </div>
+              </div>
+
+              <div className="grid gap-4 xl:grid-cols-[minmax(0,1.1fr)_320px]">
+                <div className="rounded-[24px] border border-border/75 bg-background/72 px-4 py-4">
+                  <p className="text-[0.68rem] uppercase tracking-[0.18em] text-muted-foreground">How to use this page</p>
+                  <div className="mt-3 space-y-3 text-sm leading-6 text-muted-foreground">
+                    <p>Use this page to review how this assistant is performing and to inspect recent calls connected to it.</p>
+                    <p>If you want tone, routing, or content updates, send a support request instead of editing the assistant directly.</p>
+                  </div>
+                </div>
+                <div className="grid gap-3">
+                  <Button asChild variant="outline" className="h-11 justify-between rounded-[18px] px-4">
+                    <Link href="/client/tickets">
+                      Request an update
+                      <MessageSquarePlus data-icon="inline-end" />
+                    </Link>
+                  </Button>
+                  <Button asChild variant="outline" className="h-11 justify-between rounded-[18px] px-4">
+                    <Link href="/help">
+                      Open playbooks
+                      <BookOpen data-icon="inline-end" />
+                    </Link>
+                  </Button>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
           <aside className="flex flex-col gap-6">
             <Card className="py-0">
               <CardHeader className="border-b pb-4">
-                <CardTitle className="text-base">Assistant stats</CardTitle>
-                <CardDescription>Live sync state, cost, quality, and conversation volume.</CardDescription>
+                <CardTitle className="text-base">Performance</CardTitle>
+                <CardDescription>Recent call and conversion totals for this assistant.</CardDescription>
               </CardHeader>
               <CardContent className="grid gap-3 px-4 py-4">
                 <div className="rounded-md border border-border/70 bg-muted/20 px-4 py-3">
@@ -71,8 +128,10 @@ export default async function ClientAssistantPage({ params }: ClientAssistantPag
                   <div className="mt-2 text-2xl font-semibold">{detail.stats.wonCalls}</div>
                 </div>
                 <div className="rounded-md border border-border/70 bg-muted/20 px-4 py-3">
-                  <div className="text-xs uppercase tracking-[0.16em] text-muted-foreground">Cost</div>
-                  <div className="mt-2 text-2xl font-semibold">${detail.stats.totalCostUsd.toFixed(2)}</div>
+                  <div className="text-xs uppercase tracking-[0.16em] text-muted-foreground">Average call length</div>
+                  <div className="mt-2 text-2xl font-semibold">
+                    {Math.max(1, Math.round(detail.stats.averageDurationSeconds / 60))}m
+                  </div>
                 </div>
                 <div className="flex flex-wrap gap-2">
                   {detail.stats.phoneNumbers.map((phoneNumber) => (
@@ -86,46 +145,41 @@ export default async function ClientAssistantPage({ params }: ClientAssistantPag
 
             <Card className="py-0">
               <CardHeader className="border-b pb-4">
-                <CardTitle className="text-base">Embeds and knowledge</CardTitle>
-                <CardDescription>Read-only demo asset visibility for this assistant workspace.</CardDescription>
+                <CardTitle className="text-base">Coverage</CardTitle>
+                <CardDescription>Resources and follow-up signals attached to this assistant.</CardDescription>
               </CardHeader>
               <CardContent className="grid gap-3 px-4 py-4">
                 <div className="rounded-md border border-border/70 bg-muted/20 px-4 py-3">
-                  <div className="text-xs uppercase tracking-[0.16em] text-muted-foreground">Assistant ID</div>
-                  <div className="mt-2 break-all text-sm font-medium">{detail.agent.vapiAssistantId ?? 'Not published yet'}</div>
+                  <div className="text-xs uppercase tracking-[0.16em] text-muted-foreground">Knowledge status</div>
+                  <div className="mt-2 break-all text-sm font-medium">
+                    {detail.agent.kbSyncStatus === 'synced' ? 'Knowledge updated' : 'Knowledge review pending'}
+                  </div>
                 </div>
                 <div className="flex flex-wrap gap-2">
                   <Badge tone={detail.agent.kbSyncStatus === 'synced' ? 'success' : 'warning'}>
-                    {detail.agent.kbSyncStatus ?? 'pending'}
+                    {detail.agent.kbSyncStatus === 'synced' ? 'Updated' : 'Review needed'}
                   </Badge>
-                  {detail.agent.knowledgePackSlug ? <Badge tone="muted">{detail.agent.knowledgePackSlug}</Badge> : null}
-                  {detail.agent.queryToolId ? <Badge tone="cyan">Query tool ready</Badge> : null}
+                  {detail.demoBlueprint?.uploadedAssets?.length ? (
+                    <Badge tone="muted">{detail.demoBlueprint.uploadedAssets.length} resources</Badge>
+                  ) : null}
                 </div>
                 {detail.demoBlueprint?.uploadedAssets?.length ? (
                   <div className="rounded-md border border-border/70 bg-muted/20 px-4 py-3">
-                    <div className="text-xs uppercase tracking-[0.16em] text-muted-foreground">Knowledge assets</div>
+                    <div className="text-xs uppercase tracking-[0.16em] text-muted-foreground">Attached resources</div>
                     <div className="mt-3 flex flex-col gap-2 text-sm">
                       {detail.demoBlueprint.uploadedAssets.map((asset) => (
                         <div key={asset.id} className="flex items-center justify-between gap-3">
                           <span className="truncate">{asset.sourceLabel}</span>
-                          <Badge tone={asset.syncStatus === 'synced' ? 'success' : 'muted'}>{asset.syncStatus}</Badge>
+                          <Badge tone={asset.syncStatus === 'synced' ? 'success' : 'muted'}>
+                            {asset.syncStatus === 'synced' ? 'Ready' : 'Pending'}
+                          </Badge>
                         </div>
                       ))}
                     </div>
                   </div>
                 ) : null}
-                {detail.agent.embedSnippet ? (
-                  <div className="rounded-md border border-border/70 bg-background px-4 py-3">
-                    <div className="text-xs uppercase tracking-[0.16em] text-muted-foreground">Embed snippet</div>
-                    <pre className="mt-3 overflow-x-auto whitespace-pre-wrap text-[0.72rem] leading-5 text-muted-foreground">
-                      {detail.agent.embedSnippet}
-                    </pre>
-                  </div>
-                ) : (
-                  <div className="text-sm text-muted-foreground">No embed snippet is attached to this assistant yet.</div>
-                )}
                 <div className="text-sm text-muted-foreground">
-                  Last test call: {detail.agent.lastTestCallAt ?? 'Not run yet'}
+                  Last reviewed call: {detail.agent.lastTestCallAt ?? 'Not recorded yet'}
                 </div>
               </CardContent>
             </Card>
@@ -135,8 +189,8 @@ export default async function ClientAssistantPage({ params }: ClientAssistantPag
 
         <Card className="py-0">
           <CardHeader className="border-b pb-4">
-            <CardTitle>Revision tickets</CardTitle>
-            <CardDescription>Protected changes and operator requests tied to this assistant.</CardDescription>
+            <CardTitle>Requests tied to this assistant</CardTitle>
+            <CardDescription>Questions and updates already submitted for this assistant.</CardDescription>
           </CardHeader>
           <CardContent className="grid gap-3 px-4 py-4">
             {detail.tickets.length ? (

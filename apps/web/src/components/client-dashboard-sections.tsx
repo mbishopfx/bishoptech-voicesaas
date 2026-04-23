@@ -144,41 +144,39 @@ export function ClientControlDeckSection({
       <Card className="border border-border/80 bg-card/85 py-0 shadow-none">
         <CardHeader className="gap-3 border-b border-border/70 pb-5">
           <div className="space-y-2">
-            <SectionEyebrow>Workspace pulse</SectionEyebrow>
+            <SectionEyebrow>Workspace summary</SectionEyebrow>
             <CardTitle className="text-3xl tracking-[-0.05em]">{data.organizationName}</CardTitle>
             <CardDescription className="max-w-2xl text-sm leading-6">
-              Live operations snapshot for agent readiness, call handling, campaign pressure, and account health.
+              A clear view of call activity, new opportunities, and the assistant experiences currently supporting your team.
             </CardDescription>
           </div>
           <CardAction className="flex items-center gap-2">
-            <Badge tone="cyan">{data.planName ?? 'Managed'}</Badge>
-            <Badge tone={data.vapiAccountMode === 'byo' ? 'warning' : 'success'}>
-              {data.vapiAccountMode === 'byo' ? 'BYO Vapi' : 'Managed Vapi'}
-            </Badge>
+            <Badge tone="cyan">{data.planName ?? 'Active plan'}</Badge>
+            <Badge tone="muted">{data.phoneNumbers.length} lines</Badge>
           </CardAction>
         </CardHeader>
         <CardContent className="space-y-5 px-5 py-5">
           <div className="rounded-lg border border-border/70 bg-background/60 p-3">
             <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
               <div className="text-xs uppercase tracking-[0.18em] text-muted-foreground">
-                sessions / response quality / transcript depth
+                recent activity / engagement / conversation flow
               </div>
-              <div className="text-xs text-muted-foreground">Primary agent: {primaryAgent?.name ?? 'Pending'}</div>
+              <div className="text-xs text-muted-foreground">Primary assistant: {primaryAgent?.name ?? 'Not assigned yet'}</div>
             </div>
             <PulseAreaChart recentCalls={data.recentCalls} />
           </div>
 
           <div className="grid gap-3 md:grid-cols-4">
             <div className="rounded-lg border border-border/70 bg-muted/20 px-4 py-3">
-              <div className="text-xs uppercase tracking-[0.16em] text-muted-foreground">Lead agent</div>
-              <div className="mt-2 text-base font-medium text-foreground">{primaryAgent?.name ?? 'Pending'}</div>
+              <div className="text-xs uppercase tracking-[0.16em] text-muted-foreground">Lead assistant</div>
+              <div className="mt-2 text-base font-medium text-foreground">{primaryAgent?.name ?? 'Pending setup'}</div>
             </div>
             <div className="rounded-lg border border-border/70 bg-muted/20 px-4 py-3">
-              <div className="text-xs uppercase tracking-[0.16em] text-muted-foreground">Latest outcome</div>
-              <div className="mt-2 text-base font-medium text-foreground">{activeCall?.outcome ?? 'Standby'}</div>
+              <div className="text-xs uppercase tracking-[0.16em] text-muted-foreground">Latest result</div>
+              <div className="mt-2 text-base font-medium text-foreground">{activeCall?.outcome ?? 'No recent calls'}</div>
             </div>
             <div className="rounded-lg border border-border/70 bg-muted/20 px-4 py-3">
-              <div className="text-xs uppercase tracking-[0.16em] text-muted-foreground">Phone numbers</div>
+              <div className="text-xs uppercase tracking-[0.16em] text-muted-foreground">Phone coverage</div>
               <div className="mt-2 text-base font-medium text-foreground">{data.phoneNumbers.length}</div>
             </div>
             <div className="rounded-lg border border-border/70 bg-muted/20 px-4 py-3">
@@ -193,22 +191,17 @@ export function ClientControlDeckSection({
         <Card className="border border-border/80 bg-card/80 py-0 shadow-none">
           <CardHeader className="border-b border-border/70 pb-4">
             <SectionEyebrow>Assistants</SectionEyebrow>
-            <CardTitle>Live stack</CardTitle>
-            <CardDescription>Current assistant footprint and ownership.</CardDescription>
+            <CardTitle>Assistant lineup</CardTitle>
+            <CardDescription>The experiences currently available in this workspace.</CardDescription>
           </CardHeader>
           <CardContent className="px-4 py-4">
             <StackList
               items={data.agents.slice(0, 4).map((agent) => ({
                 title: agent.name,
-                detail: `${agent.role} • ${agent.voice} • ${agent.model}`,
+                detail: `${agent.purpose} • ${agent.voice}`,
                 badge: {
-                  label: agent.syncStatus ?? 'unknown',
-                  tone:
-                    agent.syncStatus === 'synced'
-                      ? 'success'
-                      : agent.syncStatus === 'error'
-                        ? 'warning'
-                        : 'muted',
+                  label: agent.status === 'live' ? 'Live' : agent.status === 'ready' ? 'Ready' : 'In setup',
+                  tone: agent.status === 'live' ? 'success' : agent.status === 'ready' ? 'cyan' : 'muted',
                 },
               }))}
             />
@@ -217,9 +210,9 @@ export function ClientControlDeckSection({
 
         <Card className="border border-border/80 bg-card/80 py-0 shadow-none">
           <CardHeader className="border-b border-border/70 pb-4">
-            <SectionEyebrow>Recent queue</SectionEyebrow>
+            <SectionEyebrow>Recent activity</SectionEyebrow>
             <CardTitle>Calls</CardTitle>
-            <CardDescription>Most recent interaction outcomes across the workspace.</CardDescription>
+            <CardDescription>The latest call outcomes across your workspace.</CardDescription>
           </CardHeader>
           <CardContent className="px-4 py-4">
             <StackList
@@ -315,16 +308,10 @@ export function ClientWorkspaceSummarySection({
   showSettingsLink?: boolean;
 }) {
   const workspaceRows = [
-    { label: 'Plan', value: data.planName ?? 'Managed' },
-    {
-      label: 'Vapi ownership',
-      value:
-        data.vapiAccountMode === 'byo'
-          ? `BYO • ${data.vapiApiKeyLabel ?? 'Key connected'}`
-          : data.vapiManagedLabel ?? 'Managed by BishopTech',
-    },
-    { label: 'Numbers', value: `${data.phoneNumbers.length}` },
-    { label: 'Blueprints', value: `${data.recentBlueprints.length}` },
+    { label: 'Plan', value: data.planName ?? 'Active plan' },
+    { label: 'Assistants', value: `${data.agents.length}` },
+    { label: 'Phone lines', value: `${data.phoneNumbers.length}` },
+    { label: 'Campaigns', value: `${data.campaigns.length}` },
     { label: 'Timezone', value: data.timezone },
   ];
 
@@ -332,8 +319,8 @@ export function ClientWorkspaceSummarySection({
     <Card className="py-0">
       <CardHeader className="border-b pb-4">
         <SectionEyebrow>Workspace</SectionEyebrow>
-        <CardTitle>Environment</CardTitle>
-        <CardDescription>Commercial mode, credentials, and operating context.</CardDescription>
+        <CardTitle>At a glance</CardTitle>
+        <CardDescription>The basics your team may want to reference quickly.</CardDescription>
       </CardHeader>
       <CardContent className="space-y-5 px-5 py-5">
         <div className="divide-y">
@@ -405,8 +392,8 @@ export function ClientLeadsSection({ leads }: { leads: LeadRecord[] }) {
     <Card className="py-0">
       <CardHeader className="border-b pb-4">
         <SectionEyebrow>Leads</SectionEyebrow>
-        <CardTitle>Recovered and enriched lead records</CardTitle>
-        <CardDescription>Every captured lead with pipeline state, transcript proof, call history, and close status.</CardDescription>
+        <CardTitle>Lead captures</CardTitle>
+        <CardDescription>New contacts and follow-up opportunities captured through your workspace.</CardDescription>
       </CardHeader>
       <CardContent className="px-0 py-0">
         <TableWrap>
@@ -452,7 +439,7 @@ export function ClientLeadsSection({ leads }: { leads: LeadRecord[] }) {
                         {lead.recoveryStatus ?? 'structured'}
                       </Badge>
                     </TableCell>
-                    <TableCell>{lead.owner ?? 'Ops queue'}</TableCell>
+                    <TableCell>{lead.owner ?? 'Team queue'}</TableCell>
                     <TableCell>{lead.nextAction ?? lead.urgency}</TableCell>
                     <TableCell className="px-4">{lead.createdAt}</TableCell>
                   </TableRow>
@@ -477,7 +464,7 @@ export function ClientCallLogSection({ recentCalls }: { recentCalls: RecentCall[
     <Card className="border border-border/80 bg-card/80 py-0 shadow-none">
       <CardHeader className="border-b border-border/70 pb-4">
         <SectionEyebrow>Call log</SectionEyebrow>
-        <CardTitle>Recordings</CardTitle>
+        <CardTitle>Call history</CardTitle>
         <CardDescription>Recent calls with transcript summaries and recording access.</CardDescription>
       </CardHeader>
       <CardContent className="px-0 py-0">
@@ -536,8 +523,8 @@ export function ClientOutcomeChartSection({ recentCalls }: { recentCalls: Recent
     <Card className="border border-border/80 bg-card/80 py-0 shadow-none">
       <CardHeader className="border-b border-border/70 pb-4">
         <SectionEyebrow>Outcomes</SectionEyebrow>
-        <CardTitle>Result distribution</CardTitle>
-        <CardDescription>How call outcomes are trending across the current reporting window.</CardDescription>
+        <CardTitle>Call outcomes</CardTitle>
+        <CardDescription>How call results are trending across the current reporting window.</CardDescription>
       </CardHeader>
       <CardContent className="px-4 py-4">
         <OutcomeBarChart recentCalls={recentCalls} />
@@ -563,8 +550,8 @@ export function ClientCampaignsSection({
     <Card className="py-0">
       <CardHeader className="border-b pb-4">
         <SectionEyebrow>Campaigns</SectionEyebrow>
-        <CardTitle>Campaign runs</CardTitle>
-        <CardDescription>Queued and active campaign activity.</CardDescription>
+        <CardTitle>Campaign activity</CardTitle>
+        <CardDescription>Saved and active campaign outreach in this workspace.</CardDescription>
         <SectionAction href={actionHref} label={actionLabel} />
       </CardHeader>
       <CardContent className="px-4 py-4">

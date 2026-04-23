@@ -17,7 +17,7 @@ export default async function ClientCampaignsPage() {
       activeNav="campaigns"
       headerMode="compact"
       eyebrow="Campaigns"
-      title="Campaign assistant"
+      title="Campaigns"
     >
       <div className="grid gap-6 2xl:grid-cols-[minmax(0,1.6fr)_320px]">
         <div className="space-y-6">

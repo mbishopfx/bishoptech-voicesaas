@@ -30,7 +30,7 @@ export function ClientSandboxPanel({ organizationId, agents, publicKey, scenario
   const [selectedAgentId, setSelectedAgentId] = useState(agents[0]?.id ?? '');
   const [selectedScenarioId, setSelectedScenarioId] = useState(scenarios[0]?.id ?? '');
   const [mode, setMode] = useState<'draft' | 'live'>('draft');
-  const [statusLabel, setStatusLabel] = useState('Pick an assistant and run a browser call to hear the current behavior.');
+  const [statusLabel, setStatusLabel] = useState('Pick an assistant and start a browser call to hear the experience for yourself.');
   const [errorLabel, setErrorLabel] = useState('');
   const [transcripts, setTranscripts] = useState<TranscriptEntry[]>([]);
   const [notes, setNotes] = useState('');
@@ -48,13 +48,13 @@ export function ClientSandboxPanel({ organizationId, agents, publicKey, scenario
 
     const handleCallStart = () => {
       setCallState('live');
-      setStatusLabel(`Sandbox call connected in ${mode} mode.`);
+      setStatusLabel(`Call connected in ${mode === 'draft' ? 'proposed update' : 'live'} mode.`);
       setErrorLabel('');
     };
 
     const handleCallEnd = () => {
       setCallState('idle');
-      setStatusLabel('Sandbox call finished. Review the transcript and save a revision ticket if needed.');
+      setStatusLabel('Call finished. Review the transcript and leave feedback if you want changes.');
     };
 
     const handleMessage = (message: { type?: string; role?: 'assistant' | 'user'; transcript?: string }) => {
@@ -81,7 +81,7 @@ export function ClientSandboxPanel({ organizationId, agents, publicKey, scenario
 
     const handleError = (error: unknown) => {
       setCallState('idle');
-      setErrorLabel(error instanceof Error ? error.message : 'Unable to run the sandbox call.');
+      setErrorLabel(error instanceof Error ? error.message : 'Unable to run the test call.');
     };
 
     vapi.on('call-start', handleCallStart);
@@ -104,7 +104,7 @@ export function ClientSandboxPanel({ organizationId, agents, publicKey, scenario
     setErrorLabel('');
     setTranscripts([]);
     setCallState('connecting');
-    setStatusLabel('Provisioning sandbox session...');
+    setStatusLabel('Starting the call tester...');
 
     startTransition(async () => {
       const response = await fetch('/api/client/sandbox/session', {
@@ -123,7 +123,7 @@ export function ClientSandboxPanel({ organizationId, agents, publicKey, scenario
 
       if (!response.ok || !payload.session) {
         setCallState('idle');
-        setErrorLabel(payload.error ?? 'Unable to provision a sandbox session.');
+        setErrorLabel(payload.error ?? 'Unable to start a browser call for this test.');
         return;
       }
 
@@ -131,7 +131,7 @@ export function ClientSandboxPanel({ organizationId, agents, publicKey, scenario
         await vapiRef.current?.start(payload.session.assistantId);
       } catch (error) {
         setCallState('idle');
-        setErrorLabel(error instanceof Error ? error.message : 'Unable to start the sandbox call.');
+        setErrorLabel(error instanceof Error ? error.message : 'Unable to start the test call.');
       }
     });
   }
@@ -147,8 +147,8 @@ export function ClientSandboxPanel({ organizationId, agents, publicKey, scenario
   if (!publicKey) {
     return (
       <Alert variant="destructive">
-        <AlertTitle>Sandbox unavailable</AlertTitle>
-        <AlertDescription>NEXT_PUBLIC_VAPI_PUBLIC_KEY is required to run embedded browser calls.</AlertDescription>
+        <AlertTitle>Call tester unavailable</AlertTitle>
+        <AlertDescription>This browser-based call tester is not configured on this deployment yet.</AlertDescription>
       </Alert>
     );
   }
@@ -159,10 +159,10 @@ export function ClientSandboxPanel({ organizationId, agents, publicKey, scenario
         <CardHeader className="border-b pb-4">
           <div className="flex items-center justify-between gap-3">
             <div>
-              <CardTitle>Browser call sandbox</CardTitle>
-              <CardDescription>Test live or draft behavior without leaving the workspace.</CardDescription>
+              <CardTitle>Call tester</CardTitle>
+              <CardDescription>Hear the current experience, compare updates, and leave feedback without leaving the workspace.</CardDescription>
             </div>
-            <Badge tone={mode === 'draft' ? 'warning' : 'success'}>{mode}</Badge>
+            <Badge tone={mode === 'draft' ? 'warning' : 'success'}>{mode === 'draft' ? 'Proposed update' : 'Live'}</Badge>
           </div>
         </CardHeader>
         <CardContent className="flex flex-col gap-4 px-4 py-4">
@@ -210,8 +210,8 @@ export function ClientSandboxPanel({ organizationId, agents, publicKey, scenario
               </SelectTrigger>
               <SelectContent>
                 <SelectGroup>
-                  <SelectItem value="draft">Draft</SelectItem>
-                  <SelectItem value="live">Live</SelectItem>
+                  <SelectItem value="draft">Proposed update</SelectItem>
+                  <SelectItem value="live">Current live</SelectItem>
                 </SelectGroup>
               </SelectContent>
             </Select>
@@ -226,7 +226,7 @@ export function ClientSandboxPanel({ organizationId, agents, publicKey, scenario
             ) : (
               <Button type="button" disabled={isPending || !selectedAgentId} onClick={startSession}>
                 <Mic data-icon="inline-start" />
-                Start sandbox call
+                Start test call
               </Button>
             )}
             <span className="text-sm text-muted-foreground">{statusLabel}</span>
@@ -276,14 +276,14 @@ export function ClientSandboxPanel({ organizationId, agents, publicKey, scenario
 
               <Card className="py-0">
                 <CardHeader className="border-b pb-3">
-                  <CardTitle className="text-base">Operator notes</CardTitle>
-                  <CardDescription>Capture anything that should turn into a revision ticket.</CardDescription>
+                  <CardTitle className="text-base">Feedback notes</CardTitle>
+                  <CardDescription>Capture anything you want reviewed or updated after the call.</CardDescription>
                 </CardHeader>
                 <CardContent className="px-4 py-4">
                   <Textarea
                     value={notes}
                     onChange={(event) => setNotes(event.target.value)}
-                    placeholder="Tone notes, routing issues, objections that felt off, or KB gaps."
+                    placeholder="Tone notes, routing feedback, missed details, or changes you want the team to review."
                     rows={8}
                   />
                 </CardContent>

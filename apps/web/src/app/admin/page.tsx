@@ -14,9 +14,9 @@ export default async function AdminPage() {
       current="admin"
       viewer={viewer}
       activeNav="dashboard"
-      eyebrow="Operator Command Center"
-      title="VoiceOps Command Center"
-      description="Provision refined vertical stacks, reserve demo numbers, recover failed lead data, and keep the Vapi-backed portfolio operational from one surface."
+      eyebrow="Portfolio overview"
+      title="Owner platform"
+      description="See the full portfolio in one place: workspace health, call activity, assistant coverage, and the open work across every client."
     >
       <AdminCommandCenter data={data} />
     </AppShell>

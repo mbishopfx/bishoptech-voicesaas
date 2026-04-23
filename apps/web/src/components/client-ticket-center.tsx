@@ -103,14 +103,14 @@ export function ClientTicketCenter({ organizationId, agents, initialTickets }: C
     <div className="flex flex-col gap-6">
       {notice ? (
         <Alert>
-          <AlertTitle>Tickets</AlertTitle>
+          <AlertTitle>Requests</AlertTitle>
           <AlertDescription>{notice}</AlertDescription>
         </Alert>
       ) : null}
 
       {error ? (
         <Alert variant="destructive">
-          <AlertTitle>Tickets</AlertTitle>
+          <AlertTitle>Requests</AlertTitle>
           <AlertDescription>{error}</AlertDescription>
         </Alert>
       ) : null}
@@ -120,8 +120,8 @@ export function ClientTicketCenter({ organizationId, agents, initialTickets }: C
           <CardHeader className="border-b pb-4">
             <div className="flex items-center justify-between gap-3">
               <div>
-                <CardTitle>Open support threads</CardTitle>
-                <CardDescription>Revisions, questions, bugs, and meeting requests tied to this workspace.</CardDescription>
+                <CardTitle>Open requests</CardTitle>
+                <CardDescription>Questions, change requests, issues, and meeting requests tied to this workspace.</CardDescription>
               </div>
               <Button type="button" variant="outline" onClick={exportTickets} disabled={isPending}>
                 <Download data-icon="inline-start" />
@@ -181,8 +181,8 @@ export function ClientTicketCenter({ organizationId, agents, initialTickets }: C
 
         <Card className="py-0">
           <CardHeader className="border-b pb-4">
-            <CardTitle>Create a ticket</CardTitle>
-            <CardDescription>Open a revision request, question, bug report, or meeting request.</CardDescription>
+            <CardTitle>Create a request</CardTitle>
+            <CardDescription>Send a question, change request, issue report, or meeting request to the team.</CardDescription>
           </CardHeader>
           <CardContent className="flex flex-col gap-4 px-4 py-4">
             <Input value={subject} onChange={(event) => setSubject(event.target.value)} placeholder="Subject" />
@@ -228,7 +228,7 @@ export function ClientTicketCenter({ organizationId, agents, initialTickets }: C
             />
             <Button type="button" disabled={isPending || subject.trim().length < 2 || description.trim().length < 2} onClick={submitTicket}>
               <MessageSquarePlus data-icon="inline-start" />
-              Submit ticket
+              Submit request
             </Button>
           </CardContent>
         </Card>

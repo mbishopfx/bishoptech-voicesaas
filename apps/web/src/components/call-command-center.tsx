@@ -138,9 +138,15 @@ export function CallCommandCenter({ recentCalls, mode }: CallCommandCenterProps)
         <Card className="py-0">
           <CardHeader className="border-b pb-4">
             <div className="space-y-2">
-              <p className="text-[0.68rem] uppercase tracking-[0.22em] text-muted-foreground">Recent calls</p>
+              <p className="text-[0.68rem] uppercase tracking-[0.22em] text-muted-foreground">
+                {mode === 'admin' ? 'Recent calls' : 'Call history'}
+              </p>
               <CardTitle>Queue</CardTitle>
-              <CardDescription>Search and inspect the latest voice traffic without leaving the dashboard.</CardDescription>
+              <CardDescription>
+                {mode === 'admin'
+                  ? 'Search and inspect the latest voice traffic without leaving the dashboard.'
+                  : 'Search and inspect recent calls without leaving your workspace.'}
+              </CardDescription>
             </div>
             <CardAction className="w-full md:w-auto">
               <Badge tone="muted">{filteredCalls.length} visible</Badge>
@@ -215,7 +221,7 @@ export function CallCommandCenter({ recentCalls, mode }: CallCommandCenterProps)
               <CardHeader className="gap-4 border-b pb-5">
                 <div className="space-y-2">
                   <div className="flex flex-wrap items-center gap-2">
-                    <Badge tone="muted">{selectedCall.organizationName}</Badge>
+                    <Badge tone="muted">{mode === 'admin' ? selectedCall.organizationName : selectedCall.caller}</Badge>
                     <Badge tone={selectedCall.direction === 'inbound' ? 'cyan' : 'success'}>
                       {selectedCall.direction}
                     </Badge>
@@ -375,9 +381,15 @@ export function CallCommandCenter({ recentCalls, mode }: CallCommandCenterProps)
                 <Card className="border border-border/80 bg-card/80 py-0 shadow-none">
                   <CardHeader className="border-b border-border/70 pb-4">
                     <div className="space-y-2">
-                      <p className="text-[0.68rem] uppercase tracking-[0.22em] text-muted-foreground">Runtime</p>
-                      <CardTitle>Call log</CardTitle>
-                      <CardDescription>Operational metadata captured alongside the transcript.</CardDescription>
+                      <p className="text-[0.68rem] uppercase tracking-[0.22em] text-muted-foreground">
+                        {mode === 'admin' ? 'Runtime' : 'Details'}
+                      </p>
+                      <CardTitle>{mode === 'admin' ? 'Call log' : 'Call details'}</CardTitle>
+                      <CardDescription>
+                        {mode === 'admin'
+                          ? 'Operational metadata captured alongside the transcript.'
+                          : 'The key details captured alongside the transcript.'}
+                      </CardDescription>
                     </div>
                   </CardHeader>
                   <CardContent className="px-4 py-4">

@@ -16,9 +16,9 @@ export default async function ClientSandboxPage() {
       viewer={viewer}
       activeNav="sandbox"
       headerMode="compact"
-      eyebrow="Sandbox"
-      title="Assistant sandbox"
-      description="Run live or draft browser calls, compare tone and behavior, and keep revisions inside the workspace."
+      eyebrow="Call tester"
+      title="Call tester"
+      description="Try the live experience, compare updates, and capture feedback from one place."
     >
       <ClientSandboxPanel
         organizationId={data.organizationId}

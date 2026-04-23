@@ -17,7 +17,7 @@ function MetricCards({ data }: { data: ClientDashboardData }) {
     {
       label: 'Assistants',
       value: String(data.agents.length),
-      delta: `${data.agents.filter((agent) => agent.vapiAssistantId).length} provisioned IDs`,
+      delta: `${data.agents.filter((agent) => agent.status === 'live' || agent.status === 'ready').length} available now`,
     },
     {
       label: 'Call logs',
@@ -82,59 +82,42 @@ export function ClientCommandCenter({ data }: { data: ClientDashboardData }) {
           <TabsTrigger value="overview">Overview</TabsTrigger>
           <TabsTrigger value="assistants">Assistants</TabsTrigger>
           <TabsTrigger value="leads">Lead captures</TabsTrigger>
-          <TabsTrigger value="logs">Logs</TabsTrigger>
+          <TabsTrigger value="logs">Call history</TabsTrigger>
         </TabsList>
 
         <TabsContent value="overview" className="space-y-4">
-          <div className="grid gap-4 2xl:grid-cols-[minmax(0,1.9fr)_360px]">
-            <Card>
-              <CardHeader className="border-b">
-                <CardTitle>{data.organizationName}</CardTitle>
-                <CardDescription>Assistants, leads, calls, and campaign status.</CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <PulseAreaChart recentCalls={data.recentCalls} />
-                <div className="grid gap-4 md:grid-cols-3">
-                  <div>
-                    <p className="text-xs uppercase tracking-[0.18em] text-muted-foreground">Mode</p>
-                    <p className="mt-2 text-2xl font-semibold">{data.vapiAccountMode === 'byo' ? 'BYO' : 'Managed'}</p>
-                    <p className="text-sm text-muted-foreground">Current Vapi ownership</p>
-                  </div>
-                  <div>
-                    <p className="text-xs uppercase tracking-[0.18em] text-muted-foreground">Numbers</p>
-                    <p className="mt-2 text-2xl font-semibold">{data.phoneNumbers.length}</p>
-                    <p className="text-sm text-muted-foreground">Connected phone lines</p>
-                  </div>
-                  <div>
-                    <p className="text-xs uppercase tracking-[0.18em] text-muted-foreground">Pack</p>
-                    <p className="mt-2 text-2xl font-semibold">{data.currentPack.label}</p>
-                    <p className="text-sm text-muted-foreground">Current workflow template</p>
-                  </div>
+          <Card>
+            <CardHeader className="border-b">
+              <CardTitle>{data.organizationName}</CardTitle>
+              <CardDescription>Calls, leads, campaigns, and assistant performance in one shared workspace.</CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <PulseAreaChart recentCalls={data.recentCalls} />
+              <div className="grid gap-4 md:grid-cols-3">
+                <div>
+                  <p className="text-xs uppercase tracking-[0.18em] text-muted-foreground">Plan</p>
+                  <p className="mt-2 text-2xl font-semibold">{data.planName ?? 'Active'}</p>
+                  <p className="text-sm text-muted-foreground">Workspace subscription</p>
                 </div>
-              </CardContent>
-            </Card>
-
-            <Card>
-              <CardHeader className="border-b">
-                <CardTitle className="text-base">Assistant IDs</CardTitle>
-                <CardDescription>Provisioned assistant profiles for this workspace.</CardDescription>
-              </CardHeader>
-              <CardContent>
-                <PanelList
-                  items={assistantRows.map((agent, index) => ({
-                    title: agent ? `${agent.role} assistant` : ['inbound', 'outbound', 'campaign'][index],
-                    description: agent?.vapiAssistantId ?? 'Not provisioned yet',
-                  }))}
-                />
-              </CardContent>
-            </Card>
-          </div>
+                <div>
+                  <p className="text-xs uppercase tracking-[0.18em] text-muted-foreground">Phone lines</p>
+                  <p className="mt-2 text-2xl font-semibold">{data.phoneNumbers.length}</p>
+                  <p className="text-sm text-muted-foreground">Connected calling lines</p>
+                </div>
+                <div>
+                  <p className="text-xs uppercase tracking-[0.18em] text-muted-foreground">Timezone</p>
+                  <p className="mt-2 text-2xl font-semibold">{data.timezone}</p>
+                  <p className="text-sm text-muted-foreground">Primary scheduling timezone</p>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
 
           <div className="grid gap-4 2xl:grid-cols-[minmax(0,1.35fr)_minmax(320px,0.9fr)]">
             <Card>
               <CardHeader className="border-b">
                 <CardTitle className="text-base">Recent calls</CardTitle>
-                <CardDescription>Latest logged call activity.</CardDescription>
+                <CardDescription>The latest logged conversations in this workspace.</CardDescription>
               </CardHeader>
               <CardContent>
                 <PanelList
@@ -146,24 +129,41 @@ export function ClientCommandCenter({ data }: { data: ClientDashboardData }) {
               </CardContent>
             </Card>
 
-            <Card>
-              <CardHeader className="border-b">
-                <CardTitle className="flex items-center gap-2 text-base">
-                  <FileAudio2 className="size-4" />
-                  Exports
-                </CardTitle>
-                <CardDescription>Audio and transcript exports live in call logs.</CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <PanelList
-                  items={[
-                    { title: 'Audio files', description: 'Download WAV or MP3 from individual call records when available.' },
-                    { title: 'Transcripts', description: 'Export transcripts directly from the call log viewer.' },
-                    { title: 'Structured data', description: 'Lead captures and recovery state stay attached to each call and contact.' },
-                  ]}
-                />
-              </CardContent>
-            </Card>
+            <div className="grid gap-4">
+              <Card>
+                <CardHeader className="border-b">
+                  <CardTitle className="text-base">Assistant lineup</CardTitle>
+                  <CardDescription>The assistant experiences currently available to your team.</CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <PanelList
+                    items={assistantRows.map((agent, index) => ({
+                      title: agent ? agent.name : ['Inbound assistant', 'Outbound assistant', 'Campaign assistant'][index],
+                      description: agent?.purpose ?? 'This assistant is not configured yet.',
+                    }))}
+                  />
+                </CardContent>
+              </Card>
+
+              <Card>
+                <CardHeader className="border-b">
+                  <CardTitle className="flex items-center gap-2 text-base">
+                    <FileAudio2 className="size-4" />
+                    Downloads
+                  </CardTitle>
+                  <CardDescription>Use call history to export transcripts or recordings when you need them.</CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <PanelList
+                    items={[
+                      { title: 'Recordings', description: 'Download call recordings from the call history view whenever an audio file is available.' },
+                      { title: 'Transcripts', description: 'Export transcripts directly from the call history view.' },
+                      { title: 'Lead details', description: 'Captured contact details remain attached to each conversation and lead record.' },
+                    ]}
+                  />
+                </CardContent>
+              </Card>
+            </div>
           </div>
         </TabsContent>
 
@@ -171,8 +171,8 @@ export function ClientCommandCenter({ data }: { data: ClientDashboardData }) {
           <div className="grid gap-4 2xl:grid-cols-[minmax(0,1.6fr)_360px]">
             <Card>
               <CardHeader className="border-b">
-                <CardTitle>Assistant IDs</CardTitle>
-                <CardDescription>Inbound, outbound, and campaign profiles.</CardDescription>
+                <CardTitle>Assistants</CardTitle>
+                <CardDescription>The assistants currently assigned to this workspace.</CardDescription>
               </CardHeader>
               <CardContent className="px-0">
                 <TableWrap>
@@ -180,10 +180,10 @@ export function ClientCommandCenter({ data }: { data: ClientDashboardData }) {
                     <TableHeader>
                       <TableRow>
                         <TableHead className="px-4">Assistant</TableHead>
-                        <TableHead>ID</TableHead>
+                        <TableHead>Focus</TableHead>
                         <TableHead>Role</TableHead>
                         <TableHead>Voice</TableHead>
-                        <TableHead>Model</TableHead>
+                        <TableHead>Updated</TableHead>
                       </TableRow>
                     </TableHeader>
                     <TableBody>
@@ -195,10 +195,10 @@ export function ClientCommandCenter({ data }: { data: ClientDashboardData }) {
                               <p className="text-xs text-muted-foreground">{agent.purpose}</p>
                             </div>
                           </TableCell>
-                          <TableCell className="font-mono text-xs">{agent.vapiAssistantId ?? 'pending'}</TableCell>
+                          <TableCell>{agent.status === 'live' ? 'Live coverage' : agent.status === 'ready' ? 'Ready to review' : 'In setup'}</TableCell>
                           <TableCell>{agent.role}</TableCell>
                           <TableCell>{agent.voice}</TableCell>
-                          <TableCell>{agent.model}</TableCell>
+                          <TableCell>{agent.lastSyncedAt}</TableCell>
                         </TableRow>
                       ))}
                     </TableBody>
@@ -211,15 +211,15 @@ export function ClientCommandCenter({ data }: { data: ClientDashboardData }) {
               <CardHeader className="border-b">
                 <CardTitle className="flex items-center gap-2 text-base">
                   <Bot className="size-4" />
-                  Primary profiles
+                  Featured assistants
                 </CardTitle>
-                <CardDescription>Role-specific assistant assignment.</CardDescription>
+                <CardDescription>The primary assistant assigned for each workflow lane.</CardDescription>
               </CardHeader>
               <CardContent className="space-y-4">
                 <PanelList
                   items={assistantRows.map((agent, index) => ({
                     title: agent?.name ?? ['Inbound', 'Outbound', 'Campaign'][index],
-                    description: agent?.vapiAssistantId ?? 'Not provisioned yet',
+                    description: agent?.purpose ?? 'This assistant is not configured yet.',
                   }))}
                 />
               </CardContent>
@@ -232,7 +232,7 @@ export function ClientCommandCenter({ data }: { data: ClientDashboardData }) {
             <Card>
               <CardHeader className="border-b">
                 <CardTitle>Lead captures</CardTitle>
-                <CardDescription>Recovered contacts with capture status and next action.</CardDescription>
+                <CardDescription>Captured contacts with current status and the next suggested step.</CardDescription>
               </CardHeader>
               <CardContent className="px-0">
                 <TableWrap>
@@ -240,9 +240,9 @@ export function ClientCommandCenter({ data }: { data: ClientDashboardData }) {
                     <TableHeader>
                       <TableRow>
                         <TableHead className="px-4">Lead</TableHead>
-                        <TableHead>Intent</TableHead>
-                        <TableHead>Recovery</TableHead>
-                        <TableHead>Enrichment</TableHead>
+                        <TableHead>Service</TableHead>
+                        <TableHead>Status</TableHead>
+                        <TableHead>Research</TableHead>
                         <TableHead>Next action</TableHead>
                       </TableRow>
                     </TableHeader>
@@ -258,12 +258,12 @@ export function ClientCommandCenter({ data }: { data: ClientDashboardData }) {
                           <TableCell>{lead.service}</TableCell>
                           <TableCell>
                             <Badge tone={lead.recoveryStatus === 'recovered' ? 'success' : lead.recoveryStatus === 'needs-review' ? 'warning' : 'muted'}>
-                              {lead.recoveryStatus ?? 'structured'}
+                              {lead.recoveryStatus ?? 'captured'}
                             </Badge>
                           </TableCell>
                           <TableCell>
                             <Badge tone={lead.enrichmentStatus === 'completed' ? 'success' : lead.enrichmentStatus === 'failed' ? 'warning' : 'muted'}>
-                              {lead.enrichmentStatus ?? 'not run'}
+                              {lead.enrichmentStatus ?? 'not started'}
                             </Badge>
                           </TableCell>
                           <TableCell>{lead.nextAction ?? 'Review and route'}</TableCell>
@@ -277,22 +277,22 @@ export function ClientCommandCenter({ data }: { data: ClientDashboardData }) {
 
             <Card>
               <CardHeader className="border-b">
-                <CardTitle className="text-base">Lead status</CardTitle>
-                <CardDescription>Capture and enrichment totals.</CardDescription>
+                <CardTitle className="text-base">Lead activity</CardTitle>
+                <CardDescription>A quick summary of recent lead handling in this workspace.</CardDescription>
               </CardHeader>
               <CardContent>
                 <PanelList
                   items={[
                     {
-                      title: 'Recovered leads',
-                      description: `${data.leadRecoveryRuns.filter((item) => item.status !== 'failed').length} fallback runs preserved lead data.`,
+                      title: 'Captured leads',
+                      description: `${data.leadRecoveryRuns.filter((item) => item.status !== 'failed').length} recent follow-up records were preserved from calls.`,
                     },
                     {
-                      title: 'Enrichment runs',
-                      description: `${data.leadEnrichmentRuns.length} manual scans recorded from the lead table.`,
+                      title: 'Research activity',
+                      description: `${data.leadEnrichmentRuns.length} research runs were saved from the lead table.`,
                     },
                     {
-                      title: 'Phone numbers',
+                      title: 'Phone lines',
                       description: `${data.phoneNumbers.length} active numbers attached to the workspace.`,
                     },
                   ]}
@@ -306,8 +306,8 @@ export function ClientCommandCenter({ data }: { data: ClientDashboardData }) {
           <div className="grid gap-4 2xl:grid-cols-[minmax(0,1.4fr)_minmax(320px,1fr)]">
             <Card>
               <CardHeader className="border-b">
-                <CardTitle>Call logs</CardTitle>
-                <CardDescription>Recent log outcomes and export-ready records.</CardDescription>
+                <CardTitle>Call results</CardTitle>
+                <CardDescription>Recent call outcomes and trend lines for this workspace.</CardDescription>
               </CardHeader>
               <CardContent>
                 <OutcomeBarChart recentCalls={data.recentCalls} />
@@ -318,9 +318,9 @@ export function ClientCommandCenter({ data }: { data: ClientDashboardData }) {
               <CardHeader className="border-b">
                 <CardTitle className="flex items-center gap-2 text-base">
                   <PhoneCall className="size-4" />
-                  Recent logs
+                  Recent calls
                 </CardTitle>
-                <CardDescription>Open the call log page to export transcript or audio.</CardDescription>
+                <CardDescription>Open call history whenever you need a full transcript or recording.</CardDescription>
               </CardHeader>
               <CardContent>
                 <PanelList
