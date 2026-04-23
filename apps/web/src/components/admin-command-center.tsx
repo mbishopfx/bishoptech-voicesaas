@@ -2,7 +2,13 @@ import Link from 'next/link';
 import type { Route } from 'next';
 import { ArrowRight, Bot, FileCheck2, RadioTower, Sparkles, Workflow } from 'lucide-react';
 
-import { OrganizationLoadChart, PulseAreaChart } from '@/components/dashboard-charts';
+import {
+  AdminBlueprintHistorySection,
+  AdminRecentCallsSection,
+  OrganizationLoadSection,
+  OrganizationRosterSection,
+} from '@/components/admin-dashboard-sections';
+import { PulseAreaChart } from '@/components/dashboard-charts';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -66,8 +72,8 @@ export function AdminCommandCenter({ data }: { data: AdminDashboardData }) {
         </TabsList>
 
         <TabsContent value="overview" className="space-y-4">
-          <div className="grid gap-4 xl:grid-cols-[minmax(0,1.9fr)_360px]">
-            <Card>
+          <div className="grid gap-4 2xl:grid-cols-[minmax(0,1.45fr)_minmax(340px,0.9fr)]">
+            <Card className="min-w-0 2xl:col-span-2">
               <CardHeader className="border-b">
                 <CardTitle>Platform pulse</CardTitle>
                 <CardDescription>
@@ -96,70 +102,89 @@ export function AdminCommandCenter({ data }: { data: AdminDashboardData }) {
               </CardContent>
             </Card>
 
-            <Card>
-              <CardHeader className="border-b">
-                <CardTitle className="flex items-center gap-2 text-base">
-                  <FileCheck2 className="size-4" />
-                  Operator focus
-                </CardTitle>
-                <CardDescription>The live issues to resolve before the next client revision or demo.</CardDescription>
-              </CardHeader>
-              <CardContent>
-                <PanelList
-                  items={data.recoveryQueue.slice(0, 6).map((item) => ({
-                    title: item.title,
-                    description: `${item.detail} • Confidence ${(item.confidence * 100).toFixed(0)}%`,
-                    badge: {
-                      label: item.status,
-                      tone: item.status === 'recovered' ? 'success' : item.status === 'needs-review' ? 'warning' : 'muted',
-                    },
-                  }))}
-                />
-              </CardContent>
-            </Card>
+            <OrganizationRosterSection
+              organizations={data.organizations}
+              limit={6}
+              actionHref="/admin/clients"
+              actionLabel="Open clients"
+            />
+
+            <div className="grid gap-4">
+              <Card>
+                <CardHeader className="border-b">
+                  <CardTitle className="flex items-center gap-2 text-base">
+                    <FileCheck2 className="size-4" />
+                    Operator focus
+                  </CardTitle>
+                  <CardDescription>The live issues to resolve before the next client revision or demo.</CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <PanelList
+                    items={data.recoveryQueue.slice(0, 5).map((item) => ({
+                      title: item.title,
+                      description: `${item.detail} • Confidence ${(item.confidence * 100).toFixed(0)}%`,
+                      badge: {
+                        label: item.status,
+                        tone: item.status === 'recovered' ? 'success' : item.status === 'needs-review' ? 'warning' : 'muted',
+                      },
+                    }))}
+                  />
+                </CardContent>
+              </Card>
+
+              <Card>
+                <CardHeader className="border-b">
+                  <CardTitle className="text-base">Command posture</CardTitle>
+                  <CardDescription>Quick portfolio read before moving deeper into factory, numbers, or recovery.</CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <PanelList
+                    items={[
+                      {
+                        title: 'Managed capacity',
+                        description: `${data.organizations.filter((organization) => organization.isActive).length} active workspaces with ${data.organizations.reduce((sum, organization) => sum + organization.liveAgentCount, 0)} live agents assigned right now.`,
+                        badge: { label: 'Live', tone: 'success' },
+                      },
+                      {
+                        title: 'Recovery visibility',
+                        description: `${data.recoveryQueue.filter((item) => item.status === 'needs-review').length} calls need review and ${data.recoveryQueue.filter((item) => item.status === 'recovered').length} have already been recovered.`,
+                        badge: { label: 'Queue', tone: 'warning' },
+                      },
+                      {
+                        title: 'Demo readiness',
+                        description: `${data.demoSessions.length} recent demo sessions and ${data.recentBlueprints.length} saved blueprints are ready for follow-up.`,
+                        badge: { label: 'Ready', tone: 'cyan' },
+                      },
+                      {
+                        title: 'Number inventory',
+                        description: `${data.numberPoolHealth.assigned}/${data.numberPoolHealth.total} numbers are assigned with ${data.numberPoolHealth.free} free for the next launch.`,
+                        badge: { label: 'Inventory', tone: 'muted' },
+                      },
+                    ]}
+                  />
+                </CardContent>
+              </Card>
+            </div>
           </div>
 
-          <div className="grid gap-4 xl:grid-cols-[minmax(0,1.45fr)_minmax(320px,0.85fr)]">
-            <Card>
-              <CardHeader className="border-b">
-                <CardTitle className="text-base">Organization load</CardTitle>
-                <CardDescription>Live-agent distribution and workspace load across the portfolio.</CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <OrganizationLoadChart organizations={data.organizations} />
-                <TableWrap>
-                  <Table>
-                    <TableHeader>
-                      <TableRow>
-                        <TableHead className="px-4">Organization</TableHead>
-                        <TableHead>Plan</TableHead>
-                        <TableHead>Agents</TableHead>
-                        <TableHead>Mode</TableHead>
-                      </TableRow>
-                    </TableHeader>
-                    <TableBody>
-                      {data.organizations.slice(0, 6).map((organization) => (
-                        <TableRow key={organization.id}>
-                          <TableCell className="px-4">
-                            <div>
-                              <p className="font-medium">{organization.name}</p>
-                              <p className="text-xs text-muted-foreground">{organization.slug}</p>
-                            </div>
-                          </TableCell>
-                          <TableCell>{organization.planName ?? 'Managed'}</TableCell>
-                          <TableCell>{organization.liveAgentCount}</TableCell>
-                          <TableCell>
-                            <Badge tone={organization.vapiAccountMode === 'byo' ? 'warning' : 'success'}>
-                              {organization.vapiAccountMode === 'byo' ? 'BYO' : 'Managed'}
-                            </Badge>
-                          </TableCell>
-                        </TableRow>
-                      ))}
-                    </TableBody>
-                  </Table>
-                </TableWrap>
-              </CardContent>
-            </Card>
+          <div className="grid gap-4 2xl:grid-cols-[minmax(0,1.2fr)_minmax(320px,0.8fr)]">
+            <AdminRecentCallsSection
+              recentCalls={data.recentCalls}
+              limit={5}
+              actionHref="/admin/calls"
+              actionLabel="Open queue"
+            />
+
+            <OrganizationLoadSection organizations={data.organizations} limit={6} />
+          </div>
+
+          <div className="grid gap-4 2xl:grid-cols-[minmax(0,1.2fr)_minmax(320px,0.8fr)]">
+            <AdminBlueprintHistorySection
+              recentBlueprints={data.recentBlueprints}
+              limit={4}
+              actionHref="/admin/demo-lab"
+              actionLabel="Open demo lab"
+            />
 
             <Card>
               <CardHeader className="border-b">
