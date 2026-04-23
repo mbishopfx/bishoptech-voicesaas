@@ -2,6 +2,7 @@ import Link from 'next/link';
 
 import { AppShell } from '@/components/app-shell';
 import { OrganizationLoadSection, OrganizationRosterSection } from '@/components/admin-dashboard-sections';
+import { Button } from '@/components/ui/button';
 import { requirePlatformAdmin } from '@/lib/auth';
 import { getAdminDashboardData } from '@/lib/dashboard-data';
 
@@ -20,9 +21,9 @@ export default async function AdminClientsPage() {
       eyebrow="Clients"
       title="Clients"
       actions={
-        <Link className="voice-primary-button" href="/admin/onboarding">
-          Onboard client
-        </Link>
+        <Button asChild size="lg">
+          <Link href="/admin/onboarding">Onboard client</Link>
+        </Button>
       }
     >
       <OrganizationRosterSection organizations={data.organizations} />

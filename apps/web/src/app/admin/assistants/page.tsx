@@ -2,6 +2,7 @@ import Link from 'next/link';
 
 import { AdminAssistantRegistry } from '@/components/admin-assistant-registry';
 import { AppShell } from '@/components/app-shell';
+import { Button } from '@/components/ui/button';
 import { requirePlatformAdmin } from '@/lib/auth';
 import { getAdminDashboardData } from '@/lib/dashboard-data';
 import { loadAdminAssistantInventory } from '@/lib/voiceops-platform';
@@ -25,9 +26,9 @@ export default async function AdminAssistantsPage() {
       title="Portfolio assistant registry"
       description="Continuously synced Vapi inventory across managed and workspace-linked assistants."
       actions={
-        <Link className="voice-primary-button" href="/admin/onboarding">
-          Create from template
-        </Link>
+        <Button asChild size="lg">
+          <Link href="/admin/onboarding">Create from template</Link>
+        </Button>
       }
     >
       <AdminAssistantRegistry inventory={inventory} organizations={dashboard.organizations} />

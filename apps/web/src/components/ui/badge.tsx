@@ -55,10 +55,10 @@ function Badge({
       data-tone={tone}
       className={cn(
         badgeVariants({ variant: mappedVariant }),
-        tone === "success" && "border-emerald-500/25 bg-emerald-500/12 text-emerald-200",
-        tone === "warning" && "border-amber-500/25 bg-amber-500/12 text-amber-200",
-        tone === "muted" && "border-white/10 bg-white/[0.04] text-zinc-300",
-        tone === "cyan" && "border-cyan-500/25 bg-cyan-500/12 text-cyan-200",
+        tone === "success" && "border-emerald-700/15 bg-emerald-700/[0.08] text-emerald-800 dark:border-emerald-500/25 dark:bg-emerald-500/12 dark:text-emerald-200",
+        tone === "warning" && "border-amber-600/20 bg-amber-500/[0.10] text-amber-800 dark:border-amber-500/25 dark:bg-amber-500/12 dark:text-amber-200",
+        tone === "muted" && "border-border/80 bg-background/72 text-muted-foreground dark:border-white/10 dark:bg-white/[0.04] dark:text-zinc-300",
+        tone === "cyan" && "border-sky-700/15 bg-sky-600/[0.08] text-sky-800 dark:border-cyan-500/25 dark:bg-cyan-500/12 dark:text-cyan-200",
         className
       )}
       {...props}

@@ -4,6 +4,9 @@
 @custom-variant dark (&:is(.dark *));
 
 :root {
+  --font-body: var(--font-sans);
+  --font-label: var(--font-sans);
+  --font-heading: var(--font-sans);
   --surface: #15120f;
   --surface-low: #1b1713;
   --surface-container: #221d18;
@@ -71,6 +74,42 @@ body {
   color: var(--text);
   font-family: var(--font-body), sans-serif;
   background: linear-gradient(180deg, #12100d 0%, #171411 100%);
+}
+
+.platform-theme,
+.platform-auth-theme {
+  --background: oklch(0.967 0.008 84);
+  --foreground: oklch(0.22 0.012 78);
+  --card: oklch(0.992 0.002 84);
+  --card-foreground: oklch(0.22 0.012 78);
+  --popover: oklch(0.992 0.002 84);
+  --popover-foreground: oklch(0.22 0.012 78);
+  --primary: oklch(0.34 0.055 165);
+  --primary-foreground: oklch(0.985 0.003 84);
+  --secondary: oklch(0.93 0.012 84);
+  --secondary-foreground: oklch(0.26 0.012 78);
+  --muted: oklch(0.945 0.008 84);
+  --muted-foreground: oklch(0.52 0.013 78);
+  --accent: oklch(0.91 0.015 165);
+  --accent-foreground: oklch(0.25 0.03 165);
+  --destructive: oklch(0.63 0.18 30);
+  --border: oklch(0.86 0.01 82);
+  --input: oklch(0.91 0.01 82);
+  --ring: oklch(0.55 0.055 165);
+  --chart-1: #1f5d49;
+  --chart-2: #5b7f72;
+  --chart-3: #92a49d;
+  --chart-4: #d3c7b2;
+  --chart-5: #8c7354;
+  --sidebar: oklch(0.952 0.008 84);
+  --sidebar-foreground: oklch(0.24 0.012 78);
+  --sidebar-primary: oklch(0.34 0.055 165);
+  --sidebar-primary-foreground: oklch(0.985 0.003 84);
+  --sidebar-accent: oklch(0.92 0.008 84);
+  --sidebar-accent-foreground: oklch(0.24 0.012 78);
+  --sidebar-border: oklch(0.86 0.01 82);
+  --sidebar-ring: oklch(0.55 0.055 165);
+  color: var(--foreground);
 }
 
 body::before {

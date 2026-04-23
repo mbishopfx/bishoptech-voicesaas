@@ -12,6 +12,7 @@
   "dependencies": {
     "@langchain/core": "^0.3.50",
     "@langchain/xai": "^0.0.3",
+    "@radix-ui/react-icons": "^1.3.2",
     "@remotion/player": "^4.0.443",
     "@supabase/ssr": "^0.5.1",
     "@supabase/supabase-js": "^2.50.2",
