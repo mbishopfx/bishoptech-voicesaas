@@ -7,6 +7,7 @@ import type { AssistantSyncStatus, VapiAccountMode } from '@/lib/assistant-confi
 import { getSystemMessage, setFirstMessage, setSystemMessage } from '@/lib/assistant-config';
 import type { DashboardAgent } from '@/lib/types';
 import type { VapiAssistantPayload } from '@/lib/vapi';
+import { naturalDemoVoicePreset } from '@/lib/voice-assistant-template';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -196,10 +197,10 @@ export function AgentEditor({ agent, organizationName, canEdit }: AgentEditorPro
         messages: [{ role: 'system', content: '' }],
       },
       voice: {
-        provider: 'openai',
-        voiceId: 'cedar',
+        provider: naturalDemoVoicePreset.provider,
+        voiceId: naturalDemoVoicePreset.voiceId,
         fallbackPlan: {
-          voices: [{ provider: 'openai', voiceId: 'marin' }],
+          voices: [...naturalDemoVoicePreset.fallbackVoices],
         },
       },
     }) as VapiAssistantPayload;

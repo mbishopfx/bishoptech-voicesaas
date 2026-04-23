@@ -1,5 +1,6 @@
 import { AppShell } from '@/components/app-shell';
 import { ClientLeadsSection, ClientWorkspaceSummarySection } from '@/components/client-dashboard-sections';
+import { WorkspaceExportButton } from '@/components/workspace-export-button';
 import { requireViewer } from '@/lib/auth';
 import { getClientDashboardData } from '@/lib/dashboard-data';
 
@@ -17,6 +18,13 @@ export default async function ClientLeadsPage() {
       headerMode="compact"
       eyebrow="Leads"
       title="Lead pipeline"
+      actions={
+        <WorkspaceExportButton
+          organizationId={data.organizationId}
+          exportType="leads-csv"
+          label="Export leads"
+        />
+      }
     >
       <div className="grid gap-6 xl:grid-cols-[minmax(0,1.7fr)_320px]">
         <ClientLeadsSection leads={data.leads} />

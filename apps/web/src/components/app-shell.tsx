@@ -118,7 +118,8 @@ function getNavSections(current: AppShellProps['current'], viewer: ViewerContext
         label: 'Platform',
         items: [
           { key: 'dashboard', href: '/admin', label: 'Command Center', icon: House },
-          { key: 'organizations', href: '/admin/organizations', label: 'Organizations', icon: Building2 },
+          { key: 'clients', href: '/admin/clients', label: 'Clients', icon: Building2 },
+          { key: 'assistants', href: '/admin/assistants', label: 'Assistants', icon: Bot },
           { key: 'calls', href: '/admin/calls', label: 'Call Queue', icon: PhoneCall },
           { key: 'onboarding', href: '/admin/onboarding', label: 'Onboarding', icon: ClipboardPenLine },
           { key: 'demo-lab', href: '/admin/demo-lab', label: 'Demo Lab', icon: FlaskConical },
@@ -137,10 +138,12 @@ function getNavSections(current: AppShellProps['current'], viewer: ViewerContext
         label: 'Workspace',
         items: [
           { key: 'dashboard', href: '/client', label: 'Overview', icon: House },
-          { key: 'agents', href: '/client/agents', label: 'Agent Studio', icon: Bot },
+          { key: 'assistants', href: '/client/assistants', label: 'Assistants', icon: Bot },
           { key: 'leads', href: '/client/leads', label: 'Lead Pipeline', icon: Building2 },
           { key: 'calls', href: '/client/calls', label: 'Call Explorer', icon: PhoneCall },
+          { key: 'tickets', href: '/client/tickets', label: 'Tickets', icon: FolderKanban },
           { key: 'campaigns', href: '/client/campaigns', label: 'Campaigns', icon: Send },
+          { key: 'sandbox', href: '/client/sandbox', label: 'Sandbox', icon: RadioTower },
           { key: 'settings', href: '/client/settings', label: 'Settings', icon: Settings },
         ],
       },

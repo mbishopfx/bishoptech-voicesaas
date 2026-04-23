@@ -128,6 +128,8 @@ begin
 end $$;
 
 drop policy if exists "org members can view org" on public.organizations;
+drop policy if exists organizations_select_scope on public.organizations;
+drop policy if exists organizations_write_scope on public.organizations;
 create policy organizations_select_scope on public.organizations
 for select using (public.is_member_of_org(id));
 create policy organizations_write_scope on public.organizations
@@ -135,6 +137,8 @@ for all using (public.can_manage_org(id))
 with check (public.can_manage_org(id));
 
 drop policy if exists "member rows visible to org members" on public.organization_members;
+drop policy if exists organization_members_select_scope on public.organization_members;
+drop policy if exists organization_members_write_scope on public.organization_members;
 create policy organization_members_select_scope on public.organization_members
 for select using (public.is_member_of_org(organization_id));
 create policy organization_members_write_scope on public.organization_members
@@ -143,6 +147,8 @@ with check (public.can_manage_org(organization_id));
 
 drop policy if exists "users can read own profile" on public.user_profiles;
 drop policy if exists "users can update own profile" on public.user_profiles;
+drop policy if exists user_profiles_select_scope on public.user_profiles;
+drop policy if exists user_profiles_update_scope on public.user_profiles;
 create policy user_profiles_select_scope on public.user_profiles
 for select using (id = auth.uid() or public.is_platform_admin());
 create policy user_profiles_update_scope on public.user_profiles
@@ -150,6 +156,8 @@ for update using (id = auth.uid() or public.is_platform_admin())
 with check (id = auth.uid() or public.is_platform_admin());
 
 drop policy if exists "agents org isolation" on public.agents;
+drop policy if exists agents_select_scope on public.agents;
+drop policy if exists agents_write_scope on public.agents;
 create policy agents_select_scope on public.agents
 for select using (public.is_member_of_org(organization_id));
 create policy agents_write_scope on public.agents
@@ -157,6 +165,8 @@ for all using (public.can_manage_org(organization_id))
 with check (public.can_manage_org(organization_id));
 
 drop policy if exists "api keys org isolation" on public.api_keys;
+drop policy if exists api_keys_select_scope on public.api_keys;
+drop policy if exists api_keys_write_scope on public.api_keys;
 create policy api_keys_select_scope on public.api_keys
 for select using (public.is_member_of_org(organization_id));
 create policy api_keys_write_scope on public.api_keys
@@ -164,6 +174,8 @@ for all using (public.can_manage_org(organization_id))
 with check (public.can_manage_org(organization_id));
 
 drop policy if exists "call events org isolation" on public.call_events;
+drop policy if exists call_events_select_scope on public.call_events;
+drop policy if exists call_events_write_scope on public.call_events;
 create policy call_events_select_scope on public.call_events
 for select using (public.is_member_of_org(organization_id));
 create policy call_events_write_scope on public.call_events
@@ -171,6 +183,8 @@ for all using (public.can_manage_org(organization_id))
 with check (public.can_manage_org(organization_id));
 
 drop policy if exists "calls org isolation" on public.calls;
+drop policy if exists calls_select_scope on public.calls;
+drop policy if exists calls_write_scope on public.calls;
 create policy calls_select_scope on public.calls
 for select using (public.is_member_of_org(organization_id));
 create policy calls_write_scope on public.calls
@@ -178,6 +192,8 @@ for all using (public.can_manage_org(organization_id))
 with check (public.can_manage_org(organization_id));
 
 drop policy if exists "campaigns org isolation" on public.campaigns;
+drop policy if exists campaigns_select_scope on public.campaigns;
+drop policy if exists campaigns_write_scope on public.campaigns;
 create policy campaigns_select_scope on public.campaigns
 for select using (public.is_member_of_org(organization_id));
 create policy campaigns_write_scope on public.campaigns
@@ -185,6 +201,8 @@ for all using (public.can_manage_org(organization_id))
 with check (public.can_manage_org(organization_id));
 
 drop policy if exists "contacts org isolation" on public.contacts;
+drop policy if exists contacts_select_scope on public.contacts;
+drop policy if exists contacts_write_scope on public.contacts;
 create policy contacts_select_scope on public.contacts
 for select using (public.is_member_of_org(organization_id));
 create policy contacts_write_scope on public.contacts
@@ -192,6 +210,8 @@ for all using (public.can_manage_org(organization_id))
 with check (public.can_manage_org(organization_id));
 
 drop policy if exists "phone numbers org isolation" on public.phone_numbers;
+drop policy if exists phone_numbers_select_scope on public.phone_numbers;
+drop policy if exists phone_numbers_write_scope on public.phone_numbers;
 create policy phone_numbers_select_scope on public.phone_numbers
 for select using (public.is_member_of_org(organization_id));
 create policy phone_numbers_write_scope on public.phone_numbers
@@ -199,6 +219,8 @@ for all using (public.can_manage_org(organization_id))
 with check (public.can_manage_org(organization_id));
 
 drop policy if exists "usage events org isolation" on public.usage_events;
+drop policy if exists usage_events_select_scope on public.usage_events;
+drop policy if exists usage_events_write_scope on public.usage_events;
 create policy usage_events_select_scope on public.usage_events
 for select using (public.is_member_of_org(organization_id));
 create policy usage_events_write_scope on public.usage_events
@@ -206,6 +228,8 @@ for all using (public.can_manage_org(organization_id))
 with check (public.can_manage_org(organization_id));
 
 drop policy if exists "voicemail assets org isolation" on public.voicemail_assets;
+drop policy if exists voicemail_assets_select_scope on public.voicemail_assets;
+drop policy if exists voicemail_assets_write_scope on public.voicemail_assets;
 create policy voicemail_assets_select_scope on public.voicemail_assets
 for select using (public.is_member_of_org(organization_id));
 create policy voicemail_assets_write_scope on public.voicemail_assets

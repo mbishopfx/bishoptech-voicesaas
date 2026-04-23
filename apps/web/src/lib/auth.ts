@@ -113,7 +113,7 @@ export async function getViewerContext(): Promise<ViewerContext | null> {
   };
 }
 
-export async function requireViewer() {
+export async function requireViewer(): Promise<ViewerContext> {
   const viewer = await getViewerContext();
 
   if (!viewer) {
@@ -123,7 +123,7 @@ export async function requireViewer() {
   return viewer;
 }
 
-export async function requirePlatformAdmin() {
+export async function requirePlatformAdmin(): Promise<ViewerContext> {
   const viewer = await requireViewer();
 
   if (!viewer.isPlatformAdmin) {

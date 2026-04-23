@@ -1,3 +1,5 @@
+import { randomUUID } from 'node:crypto';
+
 import { NextResponse } from 'next/server';
 import { z } from 'zod';
 
@@ -5,6 +7,7 @@ import { canManageOrganization, getViewerContext } from '@/lib/auth';
 import { buildAssistantConfigSnapshot, normalizeAssistantConfig } from '@/lib/assistant-config';
 import { getSupabaseAdminClient } from '@/lib/supabase-admin';
 import { getSystemMessage } from '@/lib/assistant-config';
+import { safeInsert } from '@/lib/ops-storage';
 import { createAssistant, getAssistant, updateAssistant, type VapiAssistantPayload } from '@/lib/vapi';
 import { resolveVapiCredentialsForOrganization } from '@/lib/vapi-credentials';
 
@@ -172,6 +175,42 @@ function buildRevisionNote(action: string, payload: VapiAssistantPayload | null,
   }
 
   return `${action}: ${payload.name}`;
+}
+
+function diffProtectedKeys(previous: VapiAssistantPayload, next: VapiAssistantPayload) {
+  const changed: string[] = [];
+  const previousModel = previous.model ?? { provider: '', model: '' };
+  const nextModel = next.model ?? { provider: '', model: '' };
+
+  if (previousModel.provider !== nextModel.provider) {
+    changed.push('model.provider');
+  }
+
+  if (previousModel.model !== nextModel.model) {
+    changed.push('model.model');
+  }
+
+  if (JSON.stringify(previous.server ?? null) !== JSON.stringify(next.server ?? null)) {
+    changed.push('server');
+  }
+
+  if (JSON.stringify(previous.tools ?? []) !== JSON.stringify(next.tools ?? [])) {
+    changed.push('tools');
+  }
+
+  if (JSON.stringify(previous.hooks ?? []) !== JSON.stringify(next.hooks ?? [])) {
+    changed.push('hooks');
+  }
+
+  if (JSON.stringify(previous.credentialIds ?? []) !== JSON.stringify(next.credentialIds ?? [])) {
+    changed.push('credentialIds');
+  }
+
+  if (JSON.stringify(previous.metadata ?? {}) !== JSON.stringify(next.metadata ?? {})) {
+    changed.push('metadata');
+  }
+
+  return changed;
 }
 
 async function persistRevision(
@@ -492,6 +531,92 @@ export async function POST(request: Request, { params }: { params: Promise<{ age
     }
 
     const publishPayload = nextDraftPayload;
+    const protectedChanges = viewer.isPlatformAdmin ? [] : diffProtectedKeys(normalizedExisting.livePayload, publishPayload);
+
+    if (protectedChanges.length) {
+      const publishTimestamp = new Date().toISOString();
+      const ticketDescription = [
+        `Protected publish requested for ${agent.name}.`,
+        '',
+        `Changed protected keys: ${protectedChanges.join(', ')}`,
+        '',
+        `First message: ${publishPayload.firstMessage ?? 'Not provided'}`,
+        '',
+        'System prompt preview:',
+        getSystemMessage(publishPayload).slice(0, 1200),
+      ].join('\n');
+
+      const draftSnapshot = buildAssistantConfigSnapshot(publishPayload, {
+        accountMode: payload.accountMode ?? normalizedExisting.accountMode,
+        syncStatus: 'draft',
+        livePayload: normalizedExisting.livePayload,
+        lastPublishedAt: agent.vapi_last_published_at ?? null,
+        lastSyncedAt: agent.vapi_last_synced_at ?? null,
+      });
+
+      await updateAgentRecord(
+        supabase,
+        agent,
+        agent.config ?? {},
+        draftSnapshot.draftPayload,
+        {
+          accountMode: draftSnapshot.accountMode,
+          syncStatus: draftSnapshot.syncStatus,
+          lastError: null,
+          lastPublishedAt: agent.vapi_last_published_at ?? null,
+          lastSyncedAt: agent.vapi_last_synced_at ?? null,
+          livePayload: draftSnapshot.livePayload,
+          assistantId: agent.vapi_assistant_id,
+        },
+      );
+
+      await persistRevision(
+        supabase,
+        agent,
+        viewer.id,
+        'draft_saved',
+        draftSnapshot.draftPayload,
+        draftSnapshot.livePayload,
+        buildRevisionNote('draft_saved', draftSnapshot.draftPayload),
+      );
+
+      const ticketId = randomUUID();
+      await safeInsert(supabase, 'support_tickets', {
+        id: ticketId,
+        organization_id: agent.organization_id,
+        agent_id: agent.id,
+        requested_by: viewer.id,
+        ticket_type: 'revision',
+        status: 'open',
+        priority: 'normal',
+        subject: `Revision approval needed for ${agent.name}`,
+        description: ticketDescription,
+        metadata: {
+          protectedKeys: protectedChanges,
+          requestedAction: 'publish',
+        },
+        created_at: publishTimestamp,
+        updated_at: publishTimestamp,
+      });
+      await safeInsert(supabase, 'ticket_messages', {
+        id: randomUUID(),
+        ticket_id: ticketId,
+        organization_id: agent.organization_id,
+        author_user_id: viewer.id,
+        body: ticketDescription,
+        is_internal: false,
+        created_at: publishTimestamp,
+      });
+
+      const updatedAgent = await loadAgent(agent.id, supabase);
+      const revisions = await loadRevisions(agent.id, supabase);
+
+      return NextResponse.json({
+        ok: true,
+        agent: toResponseAgent(updatedAgent, revisions),
+        message: 'Protected changes were saved as draft and converted into a revision ticket for operator review.',
+      });
+    }
     const createdNewAssistant = !agent.vapi_assistant_id;
     let publishedAssistantId = agent.vapi_assistant_id ?? null;
     let livePayload: VapiAssistantPayload;

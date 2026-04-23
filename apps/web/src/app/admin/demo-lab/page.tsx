@@ -3,12 +3,13 @@ import { AdminBlueprintHistorySection } from '@/components/admin-dashboard-secti
 import { DemoStudio } from '@/components/demo-studio';
 import { requirePlatformAdmin } from '@/lib/auth';
 import { getAdminDashboardData } from '@/lib/dashboard-data';
+import { getLaunchReadinessChecklist } from '@/lib/launch-readiness';
 
 export const dynamic = 'force-dynamic';
 
 export default async function AdminDemoLabPage() {
   const viewer = await requirePlatformAdmin();
-  const data = await getAdminDashboardData(viewer);
+  const [data, releaseGate] = await Promise.all([getAdminDashboardData(viewer), getLaunchReadinessChecklist()]);
 
   return (
     <AppShell
@@ -19,7 +20,7 @@ export default async function AdminDemoLabPage() {
       eyebrow="Demo lab"
       title="Demo lab"
     >
-      <DemoStudio organizationId={data.activeOrganizationId} recentBlueprints={data.recentBlueprints} />
+      <DemoStudio organizationId={data.activeOrganizationId} recentBlueprints={data.recentBlueprints} releaseGate={releaseGate} />
       <AdminBlueprintHistorySection recentBlueprints={data.recentBlueprints} />
     </AppShell>
   );

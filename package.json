@@ -11,6 +11,7 @@
   },
   "scripts": {
     "build": "npm --prefix apps/web run build",
-    "typecheck": "npm --prefix apps/web run typecheck"
+    "typecheck": "npm --prefix apps/web run typecheck",
+    "kb:build": "node scripts/build-vapi-kb-pack.mjs"
   }
 }

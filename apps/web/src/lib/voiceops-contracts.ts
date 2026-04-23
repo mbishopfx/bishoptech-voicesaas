@@ -161,3 +161,81 @@ export type NumberPoolHealth = {
   assigned: number;
   cooldown: number;
 };
+
+export type SupportTicket = {
+  id: string;
+  organizationId: string;
+  agentId?: string;
+  contactId?: string;
+  ticketType: 'revision' | 'question' | 'bug' | 'meeting';
+  status: 'open' | 'in_review' | 'waiting_on_client' | 'scheduled' | 'resolved' | 'closed';
+  priority: 'low' | 'normal' | 'high' | 'urgent';
+  subject: string;
+  description: string;
+  preferredMeetingAt?: string;
+  requesterLabel?: string;
+  messageCount: number;
+  latestMessageAt?: string;
+  createdAt: string;
+  updatedAt?: string;
+  messages: Array<{
+    id: string;
+    body: string;
+    authorLabel?: string;
+    isInternal: boolean;
+    createdAt: string;
+  }>;
+};
+
+export type AssistantInventoryItem = {
+  id: string;
+  organizationId?: string;
+  organizationName?: string;
+  localAgentId?: string;
+  remoteAssistantId: string;
+  name: string;
+  provider: string;
+  accountMode: 'managed' | 'byo';
+  syncStatus: 'synced' | 'draft' | 'dirty' | 'error' | 'unknown';
+  managedBy?: string;
+  icpPackId?: string;
+  lastSeenAt?: string;
+  lastSyncedAt?: string;
+  lastError?: string | null;
+  phoneNumbers: string[];
+  recentCallCount: number;
+  metadata: Record<string, unknown>;
+};
+
+export type AssistantStats = {
+  agentId: string;
+  organizationId: string;
+  remoteAssistantId?: string;
+  totalCalls: number;
+  bookedCalls: number;
+  wonCalls: number;
+  averageDurationSeconds: number;
+  totalDurationSeconds: number;
+  totalCostUsd: number;
+  averageLatencyMs: number;
+  lastCallAt?: string;
+  phoneNumbers: string[];
+  transcriptCoverage: number;
+  callOutcomeBreakdown: Array<{
+    label: string;
+    count: number;
+  }>;
+};
+
+export type ExportJob = {
+  id: string;
+  organizationId: string;
+  exportType: string;
+  status: 'queued' | 'completed' | 'failed';
+  fileName?: string;
+  mimeType?: string;
+  artifactPath?: string;
+  createdAt: string;
+  completedAt?: string;
+  errorText?: string;
+};

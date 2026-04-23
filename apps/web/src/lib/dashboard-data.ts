@@ -5,9 +5,12 @@ import { getDefaultOrganizationId } from '@/lib/auth';
 import { clientPlaygroundScenarios, getIcpTemplatePack, icpTemplatePacks, playbookDocuments } from '@/lib/icp-packs';
 import { getSupabaseAdminClient } from '@/lib/supabase-admin';
 import { createSupabaseServerClient } from '@/lib/supabase/server';
+import { loadSupportTickets, loadTemplatePacks } from '@/lib/voiceops-platform';
 import type {
   AssistantVersion,
   DemoSession,
+  ExportJob,
+  ICPTemplatePack,
   LeadCaptureAttempt,
   LeadEnrichmentRun,
   LeadRecoveryRun,
@@ -18,6 +21,7 @@ import type {
   ClientDashboardData,
   DashboardAgent,
   DemoBlueprintSummary,
+  KnowledgeAsset,
   LeadRecord,
   MetricCard,
   OrganizationSummary,
@@ -56,6 +60,9 @@ type AgentRow = {
 type CallRow = {
   id: string;
   organization_id: string;
+  agent_id?: string | null;
+  vapi_assistant_id?: string | null;
+  vapi_call_id?: string | null;
   direction: 'inbound' | 'outbound';
   call_status: string;
   from_number: string | null;
@@ -64,6 +71,14 @@ type CallRow = {
   summary: string | null;
   metadata: Record<string, unknown> | null;
   created_at: string;
+  started_at?: string | null;
+  ended_at?: string | null;
+  recording_url?: string | null;
+  transcript_json?: unknown;
+  cost_usd?: number | null;
+  latency_ms?: number | null;
+  disposition?: string | null;
+  win_status?: string | null;
 };
 
 type ContactRow = {
@@ -74,6 +89,10 @@ type ContactRow = {
   source: string | null;
   metadata: Record<string, unknown> | null;
   updated_at: string;
+  pipeline_stage?: string | null;
+  last_call_at?: string | null;
+  win_status?: string | null;
+  notes?: string | null;
 };
 
 type CampaignRow = {
@@ -115,6 +134,52 @@ type BlueprintRow = {
   title: string;
   website_url: string | null;
   created_at: string;
+  status?: string | null;
+  knowledge_pack_slug?: string | null;
+  query_tool_id?: string | null;
+  vapi_assistant_id?: string | null;
+  kb_sync_status?: string | null;
+  last_test_call_id?: string | null;
+  last_test_call_at?: string | null;
+  embed_snippet?: string | null;
+};
+
+type BlueprintAssetRow = {
+  id: string;
+  demo_blueprint_id: string;
+  asset_type: string;
+  source_label: string;
+  source_url?: string | null;
+  file_name?: string | null;
+  file_ext?: string | null;
+  mime_type?: string | null;
+  storage_path?: string | null;
+  byte_size?: number | null;
+  vapi_file_id?: string | null;
+  sync_status?: string | null;
+  created_at: string;
+  metadata?: Record<string, unknown> | null;
+};
+
+type ClientAccountRow = {
+  organization_id: string;
+  primary_contact_name?: string | null;
+  primary_contact_email?: string | null;
+  onboarding_status?: string | null;
+  support_tier?: string | null;
+};
+
+type ExportJobRow = {
+  id: string;
+  organization_id: string;
+  export_type: string;
+  status: ExportJob['status'];
+  file_name?: string | null;
+  mime_type?: string | null;
+  artifact_path?: string | null;
+  error_text?: string | null;
+  created_at: string;
+  completed_at?: string | null;
 };
 
 function parseString(value: unknown, fallback = '') {
@@ -313,6 +378,7 @@ function buildLogItems(row: CallRow): RecentCall['logItems'] {
   const startedAt =
     parseString(metadata.startedAt) ||
     parseString(getNestedValue(metadata, ['analysis', 'startedAt'])) ||
+    row.started_at ||
     row.created_at;
 
   return [
@@ -455,20 +521,25 @@ function mapRecentCall(row: CallRow, organizationName: string, voicemailAssetsBy
 
   const call = {
     id: row.id,
+    organizationId: row.organization_id,
+    agentId: row.agent_id ?? undefined,
+    vapiAssistantId: row.vapi_assistant_id ?? undefined,
+    vapiCallId: row.vapi_call_id ?? undefined,
     caller: formatPhoneNumber(row.from_number ?? row.to_number),
     organizationName,
     summary: row.summary ?? 'Call captured. Summary still pending.',
     duration: formatDuration(row.duration_seconds),
-    outcome: row.call_status.replace(/_/g, ' '),
+    outcome: row.disposition ?? row.call_status.replace(/_/g, ' '),
     direction: row.direction,
-    recordingUrl: recording.recordingUrl,
-    recordingLabel: recording.recordingLabel,
+    recordingUrl: row.recording_url ?? recording.recordingUrl,
+    recordingLabel: row.recording_url || recording.recordingLabel ? 'Open recording' : undefined,
     createdAt: formatRelativeTime(row.created_at),
     fromNumber: formatPhoneNumber(row.from_number),
     toNumber: formatPhoneNumber(row.to_number),
     startedAt: formatDateTime(
-      parseString(metadata.startedAt) || parseString(getNestedValue(metadata, ['analysis', 'startedAt'])) || row.created_at,
+      row.started_at || parseString(metadata.startedAt) || parseString(getNestedValue(metadata, ['analysis', 'startedAt'])) || row.created_at,
     ),
+    endedAt: row.ended_at ? formatDateTime(row.ended_at) : undefined,
     assistantName:
       parseString(metadata.assistantName) ||
       parseString(getNestedValue(metadata, ['assistant', 'name'])) ||
@@ -480,15 +551,21 @@ function mapRecentCall(row: CallRow, organizationName: string, voicemailAssetsBy
       parseString(getNestedValue(metadata, ['vapi', 'model'])) ||
       undefined,
     latencyLabel:
+      formatLatency(row.latency_ms) ||
       formatLatency(metadata.latencyMs) ||
       formatLatency(metadata.latency) ||
       formatLatency(getNestedValue(metadata, ['analysis', 'latencyMs'])) ||
       undefined,
     costLabel:
+      formatCost(row.cost_usd) ||
       formatCost(metadata.costUsd) ||
       formatCost(metadata.cost) ||
       formatCost(getNestedValue(metadata, ['analysis', 'costUsd'])) ||
       undefined,
+    costUsd: row.cost_usd ?? undefined,
+    latencyMs: row.latency_ms ?? undefined,
+    disposition: row.disposition ?? undefined,
+    winStatus: row.win_status ?? undefined,
     transcript,
     logItems,
     tags,
@@ -509,6 +586,7 @@ function mapLead(row: ContactRow): LeadRecord {
 
   return {
     id: row.id,
+    organizationId: row.organization_id,
     name: row.full_name || formatPhoneNumber(row.phone_e164),
     company: parseString(metadata.company, ''),
     phone: formatPhoneNumber(row.phone_e164),
@@ -528,16 +606,61 @@ function mapLead(row: ContactRow): LeadRecord {
     owner: parseString(metadata.owner, ''),
     nextAction: parseString(metadata.nextAction, ''),
     icpPackId: parseString(metadata.icpPackId, ''),
+    pipelineStage: row.pipeline_stage ?? undefined,
+    lastCallAt: row.last_call_at ? formatDateTime(row.last_call_at) : undefined,
+    winStatus: row.win_status ?? undefined,
+    notes: row.notes ?? undefined,
+    exportReady: true,
   };
 }
 
-function mapBlueprint(row: BlueprintRow): DemoBlueprintSummary {
+function resolveTemplatePack(templatePacks: ICPTemplatePack[], packId?: string) {
+  if (packId) {
+    const matchedPack = templatePacks.find((pack) => pack.id === packId || pack.slug === packId);
+
+    if (matchedPack) {
+      return matchedPack;
+    }
+  }
+
+  return templatePacks[0] ?? icpTemplatePacks[0];
+}
+
+function mapKnowledgeAsset(row: BlueprintAssetRow): KnowledgeAsset {
+  return {
+    id: row.id,
+    demoBlueprintId: row.demo_blueprint_id,
+    assetType: row.asset_type as KnowledgeAsset['assetType'],
+    sourceLabel: row.source_label,
+    sourceUrl: row.source_url ?? undefined,
+    fileName: row.file_name ?? undefined,
+    fileExt: row.file_ext ?? undefined,
+    mimeType: row.mime_type ?? undefined,
+    storagePath: row.storage_path ?? undefined,
+    byteSize: row.byte_size ?? undefined,
+    vapiFileId: row.vapi_file_id ?? undefined,
+    syncStatus: (row.sync_status as KnowledgeAsset['syncStatus']) ?? 'pending',
+    createdAt: row.created_at,
+    metadata: row.metadata ?? {},
+  };
+}
+
+function mapBlueprint(row: BlueprintRow, assets: KnowledgeAsset[] = []): DemoBlueprintSummary {
   return {
     id: row.id,
     organizationId: row.organization_id,
     title: row.title,
     websiteUrl: row.website_url ?? undefined,
     createdAt: formatRelativeTime(row.created_at),
+    status: (row.status as DemoBlueprintSummary['status']) ?? undefined,
+    knowledgePackSlug: row.knowledge_pack_slug ?? undefined,
+    queryToolId: row.query_tool_id ?? undefined,
+    vapiAssistantId: row.vapi_assistant_id ?? undefined,
+    kbSyncStatus: (row.kb_sync_status as DemoBlueprintSummary['kbSyncStatus']) ?? undefined,
+    uploadedAssets: assets,
+    lastTestCallId: row.last_test_call_id ?? undefined,
+    lastTestCallAt: row.last_test_call_at ? formatDateTime(row.last_test_call_at) : undefined,
+    embedSnippet: row.embed_snippet ?? undefined,
   };
 }
 
@@ -692,15 +815,18 @@ export async function getAdminDashboardData(viewer: ViewerContext): Promise<Admi
   const activeOrganizationId = getDefaultOrganizationId(viewer);
 
   const [
+    templatePacks,
     organizationResult,
     membershipResult,
     agentResult,
     callResult,
     campaignResult,
     phoneNumberResult,
+    clientAccountResult,
     blueprintResult,
     voicemailAssetResult,
   ] = await Promise.all([
+    loadTemplatePacks(),
     supabase
       .from('organizations')
       .select('id, name, slug, timezone, plan_name, is_active, vapi_account_mode, vapi_managed_label, vapi_api_key_id, created_at')
@@ -712,7 +838,7 @@ export async function getAdminDashboardData(viewer: ViewerContext): Promise<Admi
       .order('created_at', { ascending: false }),
     supabase
       .from('calls')
-      .select('id, organization_id, direction, call_status, from_number, to_number, duration_seconds, summary, metadata, created_at')
+      .select('id, organization_id, agent_id, vapi_assistant_id, vapi_call_id, direction, call_status, from_number, to_number, duration_seconds, summary, metadata, created_at, started_at, ended_at, recording_url, transcript_json, cost_usd, latency_ms, disposition, win_status')
       .order('created_at', { ascending: false })
       .limit(30),
     supabase
@@ -724,8 +850,11 @@ export async function getAdminDashboardData(viewer: ViewerContext): Promise<Admi
       .select('id, organization_id, phone_e164, friendly_name, is_active')
       .eq('is_active', true),
     supabase
+      .from('client_accounts')
+      .select('organization_id, primary_contact_name, primary_contact_email, onboarding_status, support_tier'),
+    supabase
       .from('demo_blueprints')
-      .select('id, organization_id, title, website_url, created_at')
+      .select('id, organization_id, title, website_url, created_at, status, knowledge_pack_slug, query_tool_id, vapi_assistant_id, kb_sync_status, last_test_call_id, last_test_call_at, embed_snippet')
       .order('created_at', { ascending: false })
       .limit(6),
     supabase
@@ -740,7 +869,24 @@ export async function getAdminDashboardData(viewer: ViewerContext): Promise<Admi
   const calls = (callResult.data ?? []) as CallRow[];
   const campaigns = (campaignResult.data ?? []) as CampaignRow[];
   const phoneNumbers = (phoneNumberResult.data ?? []) as PhoneNumberRow[];
+  const clientAccounts = new Map(
+    ((clientAccountResult.data ?? []) as ClientAccountRow[]).map((account) => [account.organization_id, account]),
+  );
   const blueprints = (blueprintResult.data ?? []) as BlueprintRow[];
+  const blueprintAssetResult = blueprints.length
+    ? await supabase
+        .from('demo_blueprint_assets')
+        .select('id, demo_blueprint_id, asset_type, source_label, source_url, file_name, file_ext, mime_type, storage_path, byte_size, vapi_file_id, sync_status, created_at, metadata')
+        .in('demo_blueprint_id', blueprints.map((blueprint) => blueprint.id))
+        .order('created_at', { ascending: true })
+    : { data: [] as BlueprintAssetRow[] };
+  const blueprintAssets = (blueprintAssetResult.data ?? []) as BlueprintAssetRow[];
+  const blueprintAssetsById = blueprintAssets.reduce<Map<string, KnowledgeAsset[]>>((accumulator, asset) => {
+    const next = accumulator.get(asset.demo_blueprint_id) ?? [];
+    next.push(mapKnowledgeAsset(asset));
+    accumulator.set(asset.demo_blueprint_id, next);
+    return accumulator;
+  }, new Map());
   const voicemailAssets = (voicemailAssetResult.data ?? []) as VoicemailAssetRow[];
   const voicemailAssetMap = new Map(voicemailAssets.map((asset) => [asset.id, asset]));
 
@@ -773,6 +919,7 @@ export async function getAdminDashboardData(viewer: ViewerContext): Promise<Admi
     const organizationCalls = callsByOrganization.get(organization.id) ?? [];
     const latestCall = organizationCalls[0];
     const organizationPhones = phoneByOrganization.get(organization.id) ?? [];
+    const clientAccount = clientAccounts.get(organization.id);
 
     return {
       id: organization.id,
@@ -791,6 +938,10 @@ export async function getAdminDashboardData(viewer: ViewerContext): Promise<Admi
       vapiApiKeyId: organization.vapi_api_key_id ?? null,
       lastCallAt: latestCall?.created_at,
       latestCallSummary: latestCall?.summary ?? undefined,
+      primaryContactName: clientAccount?.primary_contact_name ?? null,
+      primaryContactEmail: clientAccount?.primary_contact_email ?? null,
+      onboardingStatus: clientAccount?.onboarding_status ?? null,
+      supportTier: clientAccount?.support_tier ?? null,
     };
   });
 
@@ -833,7 +984,7 @@ export async function getAdminDashboardData(viewer: ViewerContext): Promise<Admi
     organizations: organizationCards,
     recentCalls,
     activeOrganizationId: activeOrganizationId ?? undefined,
-    recentBlueprints: blueprints.map(mapBlueprint),
+    recentBlueprints: blueprints.map((blueprint) => mapBlueprint(blueprint, blueprintAssetsById.get(blueprint.id) ?? [])),
     commandCenter: [
       {
         label: 'Revenue pressure',
@@ -855,12 +1006,12 @@ export async function getAdminDashboardData(viewer: ViewerContext): Promise<Admi
       },
       {
         label: 'ICP coverage',
-        value: `${icpTemplatePacks.length} launch packs`,
+        value: `${templatePacks.length} launch packs`,
         trend: 'Home services, dental, med spa, and legal seeded',
         tone: 'muted',
       },
     ],
-    icpPacks: icpTemplatePacks,
+    icpPacks: templatePacks,
     assistantVersions: buildAssistantVersions(mappedAgents),
     numberPool,
     numberPoolHealth: {
@@ -871,13 +1022,14 @@ export async function getAdminDashboardData(viewer: ViewerContext): Promise<Admi
     },
     recoveryQueue: buildRecoveryQueue(recentCalls),
     playbooks: playbookDocuments,
-    demoSessions: buildDemoSessions(recentCalls, activeOrganizationId ?? organizationCards[0]?.id ?? '', icpTemplatePacks[0].id),
+    demoSessions: buildDemoSessions(recentCalls, activeOrganizationId ?? organizationCards[0]?.id ?? '', templatePacks[0]?.id ?? icpTemplatePacks[0].id),
   };
 }
 
 export async function getClientDashboardData(viewer: ViewerContext, organizationId?: string | null): Promise<ClientDashboardData> {
   const supabase = await createSupabaseServerClient();
   const resolvedOrganizationId = organizationId ?? getDefaultOrganizationId(viewer);
+  const templatePacks = await loadTemplatePacks();
 
   if (!resolvedOrganizationId) {
     return {
@@ -902,13 +1054,15 @@ export async function getClientDashboardData(viewer: ViewerContext, organization
       recentCalls: [],
       campaigns: [],
       recentBlueprints: [],
-      currentPack: icpTemplatePacks[0],
+      currentPack: templatePacks[0] ?? icpTemplatePacks[0],
       leadCaptureAttempts: [],
       leadRecoveryRuns: [],
       leadEnrichmentRuns: [],
       playgroundScenarios: clientPlaygroundScenarios,
       recentDemoSessions: [],
       protectedBlocks: ['Compliance guardrails', 'Escalation logic', 'Protected tool usage'],
+      tickets: [],
+      exportJobs: [],
     };
   }
 
@@ -919,6 +1073,7 @@ export async function getClientDashboardData(viewer: ViewerContext, organization
     callResult,
     campaignResult,
     phoneNumberResult,
+    exportJobResult,
     blueprintResult,
     voicemailAssetResult,
   ] = await Promise.all([
@@ -934,13 +1089,13 @@ export async function getClientDashboardData(viewer: ViewerContext, organization
       .order('created_at', { ascending: true }),
     supabase
       .from('contacts')
-      .select('id, organization_id, full_name, phone_e164, source, metadata, updated_at')
+      .select('id, organization_id, full_name, phone_e164, source, metadata, updated_at, pipeline_stage, last_call_at, win_status, notes')
       .eq('organization_id', resolvedOrganizationId)
       .order('updated_at', { ascending: false })
       .limit(20),
     supabase
       .from('calls')
-      .select('id, organization_id, direction, call_status, from_number, to_number, duration_seconds, summary, metadata, created_at')
+      .select('id, organization_id, agent_id, vapi_assistant_id, vapi_call_id, direction, call_status, from_number, to_number, duration_seconds, summary, metadata, created_at, started_at, ended_at, recording_url, transcript_json, cost_usd, latency_ms, disposition, win_status')
       .eq('organization_id', resolvedOrganizationId)
       .order('created_at', { ascending: false })
       .limit(20),
@@ -956,8 +1111,14 @@ export async function getClientDashboardData(viewer: ViewerContext, organization
       .eq('organization_id', resolvedOrganizationId)
       .eq('is_active', true),
     supabase
+      .from('export_jobs')
+      .select('id, organization_id, export_type, status, file_name, mime_type, artifact_path, error_text, created_at, completed_at')
+      .eq('organization_id', resolvedOrganizationId)
+      .order('created_at', { ascending: false })
+      .limit(12),
+    supabase
       .from('demo_blueprints')
-      .select('id, organization_id, title, website_url, created_at')
+      .select('id, organization_id, title, website_url, created_at, status, knowledge_pack_slug, query_tool_id, vapi_assistant_id, kb_sync_status, last_test_call_id, last_test_call_at, embed_snippet')
       .eq('organization_id', resolvedOrganizationId)
       .order('created_at', { ascending: false })
       .limit(6),
@@ -974,18 +1135,54 @@ export async function getClientDashboardData(viewer: ViewerContext, organization
   const calls = (callResult.data ?? []) as CallRow[];
   const campaigns = (campaignResult.data ?? []) as CampaignRow[];
   const phoneNumbers = (phoneNumberResult.data ?? []) as PhoneNumberRow[];
+  const exportJobs = ((exportJobResult.data ?? []) as ExportJobRow[]).map((job) => ({
+    id: job.id,
+    organizationId: job.organization_id,
+    exportType: job.export_type,
+    status: job.status,
+    fileName: job.file_name ?? undefined,
+    mimeType: job.mime_type ?? undefined,
+    artifactPath: job.artifact_path ?? undefined,
+    errorText: job.error_text ?? undefined,
+    createdAt: formatRelativeTime(job.created_at),
+    completedAt: job.completed_at ? formatRelativeTime(job.completed_at) : undefined,
+  }));
   const blueprints = (blueprintResult.data ?? []) as BlueprintRow[];
+  const blueprintAssetResult = blueprints.length
+    ? await supabase
+        .from('demo_blueprint_assets')
+        .select('id, demo_blueprint_id, asset_type, source_label, source_url, file_name, file_ext, mime_type, storage_path, byte_size, vapi_file_id, sync_status, created_at, metadata')
+        .in('demo_blueprint_id', blueprints.map((blueprint) => blueprint.id))
+        .order('created_at', { ascending: true })
+    : { data: [] as BlueprintAssetRow[] };
+  const blueprintAssets = (blueprintAssetResult.data ?? []) as BlueprintAssetRow[];
+  const blueprintAssetsById = blueprintAssets.reduce<Map<string, KnowledgeAsset[]>>((accumulator, asset) => {
+    const next = accumulator.get(asset.demo_blueprint_id) ?? [];
+    next.push(mapKnowledgeAsset(asset));
+    accumulator.set(asset.demo_blueprint_id, next);
+    return accumulator;
+  }, new Map());
   const voicemailAssets = (voicemailAssetResult.data ?? []) as VoicemailAssetRow[];
   const voicemailAssetMap = new Map(voicemailAssets.map((asset) => [asset.id, asset]));
   const organizationName = organization?.name ?? 'Workspace';
   const vapiApiKeyLabel = await getVapiApiKeyLabel(supabase, resolvedOrganizationId, organization?.vapi_api_key_id);
+  const leads = contacts.map(mapLead);
+  const recentCalls = calls.map((call) => mapRecentCall(call, organizationName, voicemailAssetMap));
+  const currentPack = resolveTemplatePack(
+    templatePacks,
+    parseString(
+      (agents[0]?.config as Record<string, unknown> | undefined)?.icpPackId,
+      contacts[0] ? parseString(contacts[0].metadata?.icpPackId, templatePacks[0]?.id ?? icpTemplatePacks[0].id) : templatePacks[0]?.id ?? icpTemplatePacks[0].id,
+    ),
+  );
+  const tickets = await loadSupportTickets(resolvedOrganizationId);
 
   const metrics: MetricCard[] = [
     {
       label: 'Captured leads',
-      value: String(contacts.length),
+      value: String(leads.length),
       delta: contacts[0] ? `Last lead ${formatRelativeTime(contacts[0].updated_at)}` : 'No leads captured yet',
-      tone: contacts.length ? 'positive' : 'neutral',
+      tone: leads.length ? 'positive' : 'neutral',
     },
     {
       label: 'Live agents',
@@ -995,9 +1192,9 @@ export async function getClientDashboardData(viewer: ViewerContext, organization
     },
     {
       label: 'Logged calls',
-      value: String(calls.length),
+      value: String(recentCalls.length),
       delta: calls[0] ? `Last call ${formatRelativeTime(calls[0].created_at)}` : 'No call traffic yet',
-      tone: calls.length ? 'warning' : 'neutral',
+      tone: recentCalls.length ? 'warning' : 'neutral',
     },
     {
       label: 'Campaigns',
@@ -1020,31 +1217,28 @@ export async function getClientDashboardData(viewer: ViewerContext, organization
     metrics,
     phoneNumbers: phoneNumbers.map((phoneNumber) => formatPhoneNumber(phoneNumber.phone_e164)),
     agents,
-    leads: contacts.map(mapLead),
-    recentCalls: calls.map((call) => mapRecentCall(call, organizationName, voicemailAssetMap)),
+    leads,
+    recentCalls,
     campaigns: campaigns.map((campaign) => ({
       id: campaign.id,
       name: campaign.name,
       status: campaign.status,
       createdAt: formatDateTime(campaign.created_at),
     })),
-    recentBlueprints: blueprints.map(mapBlueprint),
-    currentPack: getIcpTemplatePack(
-      parseString(
-        (agents[0]?.config as Record<string, unknown> | undefined)?.icpPackId,
-        contacts[0] ? parseString(contacts[0].metadata?.icpPackId, icpTemplatePacks[0].id) : icpTemplatePacks[0].id,
-      ),
-    ),
-    leadCaptureAttempts: buildLeadCaptureAttempts(contacts.map(mapLead), resolvedOrganizationId),
-    leadRecoveryRuns: buildLeadRecoveryRuns(contacts.map(mapLead), resolvedOrganizationId),
-    leadEnrichmentRuns: buildLeadEnrichmentRuns(contacts.map(mapLead), resolvedOrganizationId),
+    recentBlueprints: blueprints.map((blueprint) => mapBlueprint(blueprint, blueprintAssetsById.get(blueprint.id) ?? [])),
+    currentPack,
+    leadCaptureAttempts: buildLeadCaptureAttempts(leads, resolvedOrganizationId),
+    leadRecoveryRuns: buildLeadRecoveryRuns(leads, resolvedOrganizationId),
+    leadEnrichmentRuns: buildLeadEnrichmentRuns(leads, resolvedOrganizationId),
     playgroundScenarios: clientPlaygroundScenarios,
     recentDemoSessions: buildDemoSessions(
-      calls.map((call) => mapRecentCall(call, organizationName, voicemailAssetMap)),
+      recentCalls,
       resolvedOrganizationId,
-      getIcpTemplatePack(parseString((agents[0]?.config as Record<string, unknown> | undefined)?.icpPackId, icpTemplatePacks[0].id)).id,
+      currentPack.id,
     ),
     protectedBlocks: ['Global compliance phrasing', 'Protected routing logic', 'Tool permissions'],
+    tickets,
+    exportJobs,
   };
 }
 

@@ -4,6 +4,7 @@ import { z } from 'zod';
 import { getViewerContext } from '@/lib/auth';
 import { appConfig } from '@/lib/app-config';
 import { buildFallbackDemoTemplate, buildVapiAssistantPayload } from '@/lib/demo-template';
+import { launchDemoProspectorCall } from '@/lib/demo-prospector';
 import { createAssistant, createOutboundCall } from '@/lib/vapi';
 import { resolveVapiCredentialsForOrganization } from '@/lib/vapi-credentials';
 
@@ -55,11 +56,22 @@ const demoTemplateResponseSchema = z.object({
   }),
   mermaidFlowchart: z.string(),
   persistedBlueprintId: z.string().optional(),
+  status: z.enum(['draft', 'building', 'kb_ready', 'assistant_ready', 'test_called', 'failed']).optional(),
+  knowledgePackSlug: z.string().optional(),
+  packDir: z.string().optional(),
+  queryToolId: z.string().optional(),
+  vapiAssistantId: z.string().optional(),
+  uploadedAssets: z.array(z.any()).optional(),
+  lastTestCallId: z.string().optional(),
+  lastTestCallAt: z.string().optional(),
+  embedSnippet: z.string().optional(),
+  kbSyncStatus: z.enum(['pending', 'building', 'synced', 'failed']).optional(),
 });
 
 const demoCallRequestSchema = z.object({
   organizationId: z.string().uuid().optional(),
   targetPhoneNumber: z.string().min(7),
+  demoBlueprintId: z.string().uuid().optional(),
   assistantId: z.string().optional(),
   template: demoTemplateResponseSchema.optional(),
 });
@@ -89,6 +101,18 @@ export async function POST(request: Request) {
     const payload = demoCallRequestSchema.parse(await request.json());
     const normalizedPhone = normalizePhoneNumber(payload.targetPhoneNumber);
     const template = payload.template ?? buildFallbackDemoTemplate({});
+
+    if (payload.demoBlueprintId || template.persistedBlueprintId || template.vapiAssistantId) {
+      const result = await launchDemoProspectorCall({
+        demoBlueprintId: payload.demoBlueprintId ?? template.persistedBlueprintId,
+        organizationId: payload.organizationId,
+        assistantId: payload.assistantId ?? template.vapiAssistantId,
+        targetPhoneNumber: normalizedPhone,
+      });
+
+      return NextResponse.json(result);
+    }
+
     const credentials = await resolveVapiCredentialsForOrganization(payload.organizationId);
     const phoneNumberId = template.recommendedStack.telephony.phoneNumberId ?? appConfig.vapi.demoPhoneNumberId;
 

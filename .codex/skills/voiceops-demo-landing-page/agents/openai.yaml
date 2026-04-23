@@ -1,0 +1,4 @@
+interface:
+  display_name: "Voice Demo Landing Page"
+  short_description: "Create prospect-facing demo pages with assistant embeds, QR sharing, transcripts, and sales sections"
+  default_prompt: "Build a vertical demo landing page with an embedded assistant widget, animated audio visualization, exportable transcript, share and QR links, and a sales feature section."

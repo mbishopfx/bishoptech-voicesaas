@@ -401,7 +401,7 @@ export function ClientLeadsSection({ leads }: { leads: LeadRecord[] }) {
       <CardHeader className="border-b pb-4">
         <SectionEyebrow>Leads</SectionEyebrow>
         <CardTitle>Recovered and enriched lead records</CardTitle>
-        <CardDescription>Every captured lead with transcript proof, recovery state, and next action.</CardDescription>
+        <CardDescription>Every captured lead with pipeline state, transcript proof, call history, and close status.</CardDescription>
       </CardHeader>
       <CardContent className="px-0 py-0">
         <TableWrap>
@@ -409,9 +409,10 @@ export function ClientLeadsSection({ leads }: { leads: LeadRecord[] }) {
             <TableHeader>
               <TableRow>
                 <TableHead className="px-4">Lead</TableHead>
-                <TableHead>Intent</TableHead>
+                <TableHead>Pipeline</TableHead>
+                <TableHead>Win status</TableHead>
                 <TableHead>Recovery</TableHead>
-                <TableHead>Enrichment</TableHead>
+                <TableHead>Owner</TableHead>
                 <TableHead>Next action</TableHead>
                 <TableHead className="px-4">Updated</TableHead>
               </TableRow>
@@ -423,27 +424,37 @@ export function ClientLeadsSection({ leads }: { leads: LeadRecord[] }) {
                     <TableCell className="px-4 py-3 align-top">
                       <div className="space-y-1">
                         <div className="font-medium text-foreground">{lead.name}</div>
+                        <div className="text-xs text-muted-foreground">
+                          {[lead.phone, lead.email].filter(Boolean).join(' • ') || lead.service}
+                        </div>
                         <div className="max-w-md text-xs leading-5 text-muted-foreground">{lead.transcriptExcerpt}</div>
+                        {lead.notes ? <div className="text-xs text-muted-foreground">Notes: {lead.notes}</div> : null}
                       </div>
                     </TableCell>
-                    <TableCell>{lead.service}</TableCell>
+                    <TableCell>
+                      <div className="flex flex-col gap-1">
+                        <Badge tone="muted">{lead.pipelineStage ?? 'new'}</Badge>
+                        <span className="text-xs text-muted-foreground">{lead.lastCallAt ?? lead.service}</span>
+                      </div>
+                    </TableCell>
+                    <TableCell>
+                      <Badge tone={lead.winStatus === 'won' ? 'success' : lead.winStatus === 'lost' ? 'warning' : 'cyan'}>
+                        {lead.winStatus ?? 'open'}
+                      </Badge>
+                    </TableCell>
                     <TableCell>
                       <Badge tone={lead.recoveryStatus === 'recovered' ? 'success' : lead.recoveryStatus === 'needs-review' ? 'warning' : 'muted'}>
                         {lead.recoveryStatus ?? 'structured'}
                       </Badge>
                     </TableCell>
-                    <TableCell>
-                      <Badge tone={lead.enrichmentStatus === 'completed' ? 'success' : lead.enrichmentStatus === 'failed' ? 'warning' : 'muted'}>
-                        {lead.enrichmentStatus ?? 'not run'}
-                      </Badge>
-                    </TableCell>
+                    <TableCell>{lead.owner ?? 'Ops queue'}</TableCell>
                     <TableCell>{lead.nextAction ?? lead.urgency}</TableCell>
                     <TableCell className="px-4">{lead.createdAt}</TableCell>
                   </TableRow>
                 ))
               ) : (
                 <TableRow>
-                  <TableCell colSpan={6} className="px-4 py-8">
+                  <TableCell colSpan={7} className="px-4 py-8">
                     <EmptyState>No leads captured.</EmptyState>
                   </TableCell>
                 </TableRow>

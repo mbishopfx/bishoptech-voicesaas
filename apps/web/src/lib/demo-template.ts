@@ -1,5 +1,6 @@
 import { appConfig } from '@/lib/app-config';
 import type { DemoTemplateInput, DemoTemplateResult } from '@/lib/types';
+import { buildNaturalFirstMessage, buildNaturalSystemPrompt, naturalDemoVoicePreset } from '@/lib/voice-assistant-template';
 
 type VerticalProfile = {
   vertical: string;
@@ -124,19 +125,17 @@ export function buildFallbackDemoTemplate(input: DemoTemplateInput, diagnostics:
   const profile = detectVertical(sourceText);
   const orchestrationMode = input.orchestrationMode ?? 'multi';
 
-  const systemPrompt = [
-    `You are the front-desk voice assistant for ${businessName}.`,
-    `Primary objective: ${profile.summary}`,
-    `Primary topology: ${orchestrationMode}.`,
-    'Always sound calm, credible, and concise.',
-    'Lead with one question at a time and confirm important details back to the caller.',
-    'If the caller is not ready to book, collect intent data and offer a callback or text follow-up.',
-    'Never invent prices, availability, insurance coverage, or compliance-sensitive promises.',
-    `Capture these lead fields before ending when appropriate: ${profile.qualificationChecklist.join(', ')}.`,
-    orchestrationMode === 'multi'
-      ? 'If the caller asks deeper product or case-specific questions, hand the conversation off to the specialist AI agent.'
-      : 'If a caller asks for a human immediately, acknowledge it and route the conversation toward a callback or transfer.',
-  ].join('\n');
+  const systemPrompt = buildNaturalSystemPrompt({
+    businessName,
+    role: 'inbound',
+    vertical: profile.vertical,
+    summary: profile.summary,
+    targetCaller: profile.targetCaller,
+    orchestrationMode,
+    qualificationChecklist: profile.qualificationChecklist,
+    faqSnippets: profile.faqSnippets,
+    objectionHandling: profile.objectionHandling,
+  });
 
   return {
     mode: 'fallback',
@@ -150,14 +149,19 @@ export function buildFallbackDemoTemplate(input: DemoTemplateInput, diagnostics:
     },
     assistantDraft: {
       name: `${businessName} Demo Concierge`,
-      firstMessage: `Thanks for calling ${businessName}. I'm the voice concierge for the team. What can I help you with today?`,
+      firstMessage: buildNaturalFirstMessage({
+        businessName,
+        role: 'inbound',
+        vertical: profile.vertical,
+      }),
       systemPrompt,
       leadCaptureFields: profile.qualificationChecklist,
       qualificationChecklist: profile.qualificationChecklist,
       faqSnippets: profile.faqSnippets,
       objectionHandling: profile.objectionHandling,
       successCriteria: [
-        'The caller feels like they reached a real front desk, not a toy demo.',
+        'The assistant opens naturally and sounds like a real front desk, not a toy demo.',
+        'The assistant answers direct questions before it shifts back to intake.',
         'The assistant captures enough detail to route the lead confidently.',
         'The call ends with a booked next step, a callback task, or a clean qualification outcome.',
       ],
@@ -169,16 +173,11 @@ export function buildFallbackDemoTemplate(input: DemoTemplateInput, diagnostics:
         reason: 'Configured as the default fast-path model for live voice demos and low-latency qualification.',
       },
       voice: {
-        provider: appConfig.vapi.defaults.voiceProvider,
-        voiceId: appConfig.vapi.defaults.voiceId,
+        provider: naturalDemoVoicePreset.provider,
+        voiceId: naturalDemoVoicePreset.voiceId,
         label: 'Primary demo voice',
-        reason: 'Tuned for natural delivery with a fallback voice already defined for resilience.',
-        fallbackVoices: [
-          {
-            provider: appConfig.vapi.defaults.fallbackVoiceProvider,
-            voiceId: appConfig.vapi.defaults.fallbackVoiceId,
-          },
-        ],
+        reason: 'Tuned for a more natural front-desk feel while keeping response latency low.',
+        fallbackVoices: [...naturalDemoVoicePreset.fallbackVoices],
       },
       telephony: {
         phoneNumberId: appConfig.vapi.demoPhoneNumberId,
@@ -190,7 +189,12 @@ export function buildFallbackDemoTemplate(input: DemoTemplateInput, diagnostics:
   };
 }
 
-export function buildVapiAssistantPayload(template: DemoTemplateResult) {
+export function buildVapiAssistantPayload(
+  template: DemoTemplateResult,
+  options: {
+    metadata?: Record<string, unknown>;
+  } = {},
+) {
   return {
     name: template.assistantDraft.name,
     firstMessage: template.assistantDraft.firstMessage,
@@ -211,5 +215,6 @@ export function buildVapiAssistantPayload(template: DemoTemplateResult) {
         voices: template.recommendedStack.voice.fallbackVoices,
       },
     },
+    metadata: options.metadata,
   };
 }

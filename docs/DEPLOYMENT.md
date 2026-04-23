@@ -44,8 +44,8 @@ Keep those server-side only.
 - `VAPI_OUTBOUND_PHONE_NUMBER_ID` — Vapi phone number ID reserved for client blast campaigns
 - `RAILWAY_WORKER_BASE_URL` — public Railway base URL used for health checks / operational visibility
 - `VAPI_DEFAULT_MODEL_NAME` — default low-latency voice model for new assistants
-- `VAPI_DEFAULT_VOICE_ID` — primary realistic demo voice
-- `VAPI_FALLBACK_VOICE_ID` — fallback voice for resilience
+- `VAPI_DEFAULT_VOICE_ID` — primary realistic demo voice (`marin` by default)
+- `VAPI_FALLBACK_VOICE_ID` — fallback voice for resilience (`cedar` by default)
 - `GEMINI_API_KEY` — Google AI Studio key for generating demo templates from raw business inputs
 
 Worker-specific:

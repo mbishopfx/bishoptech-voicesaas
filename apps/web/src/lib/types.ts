@@ -1,9 +1,12 @@
 import type { AssistantConfigSnapshot } from '@/lib/assistant-config';
 import type {
+  AssistantInventoryItem,
+  AssistantStats,
   AssistantVersion,
   CallQaGrade,
   ClientPlaygroundScenario,
   DemoSession,
+  ExportJob,
   ICPTemplatePack,
   LeadCaptureAttempt,
   LeadEnrichmentRun,
@@ -11,6 +14,7 @@ import type {
   ManagedNumberReservation,
   NumberPoolHealth,
   PlaybookDocument,
+  SupportTicket,
 } from '@/lib/voiceops-contracts';
 
 export type MetricTone = 'neutral' | 'positive' | 'warning';
@@ -67,6 +71,20 @@ export type DashboardAgent = {
   config?: AssistantConfigSnapshot | Record<string, unknown>;
   draftPayload?: Record<string, unknown>;
   livePayload?: Record<string, unknown>;
+  phoneNumbers?: string[];
+  inventoryId?: string;
+  recentCallCount?: number;
+  ticketCount?: number;
+  lastCallAt?: string | null;
+  lastPublishedAt?: string | null;
+  demoBlueprintId?: string;
+  knowledgePackSlug?: string;
+  queryToolId?: string;
+  kbSyncStatus?: 'pending' | 'building' | 'synced' | 'failed';
+  embedSnippet?: string | null;
+  knowledgeAssets?: KnowledgeAsset[];
+  lastTestCallAt?: string | null;
+  stats?: AssistantStats;
 };
 
 export type OrganizationSummary = {
@@ -86,10 +104,18 @@ export type OrganizationSummary = {
   vapiApiKeyId?: string | null;
   lastCallAt?: string;
   latestCallSummary?: string;
+  primaryContactName?: string | null;
+  primaryContactEmail?: string | null;
+  onboardingStatus?: string | null;
+  supportTier?: string | null;
 };
 
 export type RecentCall = {
   id: string;
+  organizationId?: string;
+  agentId?: string;
+  vapiAssistantId?: string;
+  vapiCallId?: string;
   caller: string;
   organizationName: string;
   summary: string;
@@ -102,10 +128,15 @@ export type RecentCall = {
   fromNumber?: string;
   toNumber?: string;
   startedAt?: string;
+  endedAt?: string;
   assistantName?: string;
   modelName?: string;
   latencyLabel?: string;
   costLabel?: string;
+  costUsd?: number;
+  latencyMs?: number;
+  disposition?: string;
+  winStatus?: string;
   transcript: Array<{
     id: string;
     speaker: 'assistant' | 'caller' | 'system';
@@ -125,6 +156,7 @@ export type RecentCall = {
 
 export type LeadRecord = {
   id: string;
+  organizationId?: string;
   name: string;
   company?: string;
   phone?: string;
@@ -141,6 +173,28 @@ export type LeadRecord = {
   owner?: string;
   nextAction?: string;
   icpPackId?: string;
+  pipelineStage?: string;
+  lastCallAt?: string;
+  winStatus?: string;
+  notes?: string;
+  exportReady?: boolean;
+};
+
+export type KnowledgeAsset = {
+  id: string;
+  demoBlueprintId: string;
+  assetType: 'website-page' | 'google-business-profile' | 'operator-file' | 'goal-notes' | 'generated-pack';
+  sourceLabel: string;
+  sourceUrl?: string;
+  fileName?: string;
+  fileExt?: string;
+  mimeType?: string;
+  storagePath?: string;
+  byteSize?: number;
+  vapiFileId?: string;
+  syncStatus: 'pending' | 'uploaded' | 'synced' | 'failed';
+  createdAt: string;
+  metadata?: Record<string, unknown>;
 };
 
 export type DemoBlueprintSummary = {
@@ -149,6 +203,15 @@ export type DemoBlueprintSummary = {
   organizationId: string;
   createdAt: string;
   websiteUrl?: string;
+  status?: 'draft' | 'building' | 'kb_ready' | 'assistant_ready' | 'test_called' | 'failed';
+  knowledgePackSlug?: string;
+  queryToolId?: string;
+  vapiAssistantId?: string;
+  kbSyncStatus?: 'pending' | 'building' | 'synced' | 'failed';
+  uploadedAssets?: KnowledgeAsset[];
+  lastTestCallId?: string;
+  lastTestCallAt?: string;
+  embedSnippet?: string;
 };
 
 export type DemoTemplateInput = {
@@ -160,6 +223,7 @@ export type DemoTemplateInput = {
   targetPhoneNumber?: string;
   notes?: string;
   orchestrationMode?: OrchestrationMode;
+  persistedBlueprintId?: string;
 };
 
 export type DemoTemplateResult = {
@@ -206,12 +270,25 @@ export type DemoTemplateResult = {
   };
   mermaidFlowchart: string;
   persistedBlueprintId?: string;
+  status?: 'draft' | 'building' | 'kb_ready' | 'assistant_ready' | 'test_called' | 'failed';
+  knowledgePackSlug?: string;
+  packDir?: string;
+  queryToolId?: string;
+  vapiAssistantId?: string;
+  uploadedAssets?: KnowledgeAsset[];
+  lastTestCallId?: string;
+  lastTestCallAt?: string;
+  embedSnippet?: string;
+  kbSyncStatus?: 'pending' | 'building' | 'synced' | 'failed';
 };
+
+export type DemoProspectorResult = DemoTemplateResult;
 
 export type DemoCallRequest = {
   organizationId?: string;
   targetPhoneNumber: string;
   assistantId?: string;
+  demoBlueprintId?: string;
   template?: DemoTemplateResult;
 };
 
@@ -317,6 +394,7 @@ export type AdminDashboardData = {
   recoveryQueue: RecoveryQueueItem[];
   playbooks: PlaybookDocument[];
   demoSessions: DemoSession[];
+  assistantInventory?: AssistantInventoryItem[];
 };
 
 export type ClientDashboardData = {
@@ -348,4 +426,6 @@ export type ClientDashboardData = {
   playgroundScenarios: ClientPlaygroundScenario[];
   recentDemoSessions: DemoSession[];
   protectedBlocks: string[];
+  tickets?: SupportTicket[];
+  exportJobs?: ExportJob[];
 };

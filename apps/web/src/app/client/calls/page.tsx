@@ -1,5 +1,6 @@
 import { AppShell } from '@/components/app-shell';
 import { CallCommandCenter } from '@/components/call-command-center';
+import { WorkspaceExportButton } from '@/components/workspace-export-button';
 import { requireViewer } from '@/lib/auth';
 import { getClientDashboardData } from '@/lib/dashboard-data';
 
@@ -17,6 +18,13 @@ export default async function ClientCallsPage() {
       headerMode="compact"
       eyebrow="Calls"
       title="Calls"
+      actions={
+        <WorkspaceExportButton
+          organizationId={data.organizationId}
+          exportType="calls-json"
+          label="Export calls"
+        />
+      }
     >
       <CallCommandCenter recentCalls={data.recentCalls} mode="client" />
     </AppShell>

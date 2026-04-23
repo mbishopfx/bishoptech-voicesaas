@@ -1,32 +1,5 @@
-import Link from 'next/link';
+import { redirect } from 'next/navigation';
 
-import { AppShell } from '@/components/app-shell';
-import { OrganizationLoadSection, OrganizationRosterSection } from '@/components/admin-dashboard-sections';
-import { requirePlatformAdmin } from '@/lib/auth';
-import { getAdminDashboardData } from '@/lib/dashboard-data';
-
-export const dynamic = 'force-dynamic';
-
-export default async function AdminOrganizationsPage() {
-  const viewer = await requirePlatformAdmin();
-  const data = await getAdminDashboardData(viewer);
-
-  return (
-    <AppShell
-      current="admin"
-      viewer={viewer}
-      activeNav="organizations"
-      headerMode="compact"
-      eyebrow="Organizations"
-      title="Organizations"
-      actions={
-        <Link className="voice-primary-button" href="/admin/onboarding">
-          Onboard client
-        </Link>
-      }
-    >
-      <OrganizationRosterSection organizations={data.organizations} />
-      <OrganizationLoadSection organizations={data.organizations} />
-    </AppShell>
-  );
+export default function AdminOrganizationsRedirectPage() {
+  redirect('/admin/clients');
 }
