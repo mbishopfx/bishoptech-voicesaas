@@ -86,34 +86,34 @@ export function ClientCommandCenter({ data }: { data: ClientDashboardData }) {
         </TabsList>
 
         <TabsContent value="overview" className="space-y-4">
-          <Card>
-            <CardHeader className="border-b">
-              <CardTitle>{data.organizationName}</CardTitle>
-              <CardDescription>Calls, leads, campaigns, and assistant performance in one shared workspace.</CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <PulseAreaChart recentCalls={data.recentCalls} />
-              <div className="grid gap-4 md:grid-cols-3">
-                <div>
-                  <p className="text-xs uppercase tracking-[0.18em] text-muted-foreground">Plan</p>
-                  <p className="mt-2 text-2xl font-semibold">{data.planName ?? 'Active'}</p>
-                  <p className="text-sm text-muted-foreground">Workspace subscription</p>
-                </div>
-                <div>
-                  <p className="text-xs uppercase tracking-[0.18em] text-muted-foreground">Phone lines</p>
-                  <p className="mt-2 text-2xl font-semibold">{data.phoneNumbers.length}</p>
-                  <p className="text-sm text-muted-foreground">Connected calling lines</p>
-                </div>
-                <div>
-                  <p className="text-xs uppercase tracking-[0.18em] text-muted-foreground">Timezone</p>
-                  <p className="mt-2 text-2xl font-semibold">{data.timezone}</p>
-                  <p className="text-sm text-muted-foreground">Primary scheduling timezone</p>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-
           <div className="grid gap-4 2xl:grid-cols-[minmax(0,1.35fr)_minmax(320px,0.9fr)]">
+            <Card className="min-w-0 2xl:col-span-2">
+              <CardHeader className="border-b">
+                <CardTitle>{data.organizationName}</CardTitle>
+                <CardDescription>Calls, leads, campaigns, and assistant performance in one shared workspace.</CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <PulseAreaChart recentCalls={data.recentCalls} />
+                <div className="grid gap-4 md:grid-cols-3">
+                  <div>
+                    <p className="text-xs uppercase tracking-[0.18em] text-muted-foreground">Plan</p>
+                    <p className="mt-2 text-2xl font-semibold">{data.planName ?? 'Active'}</p>
+                    <p className="text-sm text-muted-foreground">Workspace subscription</p>
+                  </div>
+                  <div>
+                    <p className="text-xs uppercase tracking-[0.18em] text-muted-foreground">Phone lines</p>
+                    <p className="mt-2 text-2xl font-semibold">{data.phoneNumbers.length}</p>
+                    <p className="text-sm text-muted-foreground">Connected calling lines</p>
+                  </div>
+                  <div>
+                    <p className="text-xs uppercase tracking-[0.18em] text-muted-foreground">Timezone</p>
+                    <p className="mt-2 text-2xl font-semibold">{data.timezone}</p>
+                    <p className="text-sm text-muted-foreground">Primary scheduling timezone</p>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+
             <Card>
               <CardHeader className="border-b">
                 <CardTitle className="text-base">Recent calls</CardTitle>
